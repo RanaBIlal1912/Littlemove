@@ -1,0 +1,183 @@
+from django.contrib import messages
+from django.core.paginator import Paginator
+from django.db.models import F, Q
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.http import require_POST
+
+from .cart import Cart
+from .models import Banner, Category, Need, Product, Testimonial
+
+SORTS = {
+    "new": ("Newest", "-created_at"),
+    "price-low": ("Price: low to high", "price"),
+    "price-high": ("Price: high to low", "-price"),
+    "name": ("Name", "name"),
+}
+AGE_BANDS = {
+    "0-2": ("0–2 years", 0, 2),
+    "2-4": ("2–4 years", 2, 4),
+    "4-6": ("4–6 years", 4, 6),
+    "6+": ("6+ years", 6, 99),
+}
+PRICE_CAPS = [1000, 2000, 3000, 5000]
+
+
+def home(request):
+    live = Product.objects.live().select_related("category")
+    featured = live.filter(is_featured=True)[:8] or live[:8]
+    on_sale = [p for p in live.filter(compare_at_price__isnull=False, stock__gt=0) if p.on_sale][:8]
+    return render(request, "store/home.html", {
+        "banners": Banner.objects.filter(is_active=True),
+        "categories": Category.objects.filter(is_active=True),
+        "needs": Need.objects.filter(is_active=True),
+        "featured": featured,
+        "on_sale": on_sale,
+        "new_arrivals": live.order_by("-created_at")[:8],
+        "picks": live.filter(therapist_pick=True)[:8],
+        "testimonials": Testimonial.objects.filter(is_active=True)[:6],
+        "age_bands": AGE_BANDS,
+        "price_caps": PRICE_CAPS,
+    })
+
+
+def shop(request):
+    products = Product.objects.live().select_related("category")
+    category = None
+    if slug := request.GET.get("category"):
+        category = Category.objects.filter(slug=slug, is_active=True).first()
+        if category is None:  # old or renamed link: show all toys instead of an error
+            return redirect("store:shop")
+        products = products.filter(category=category)
+
+    need = None
+    if nslug := request.GET.get("need"):
+        need = Need.objects.filter(slug=nslug, is_active=True).first()
+        if need is None:
+            return redirect("store:shop")
+        products = products.filter(needs=need)
+
+    age = request.GET.get("age")
+    if age in AGE_BANDS:
+        _, lo, hi = AGE_BANDS[age]
+        products = products.filter(age_from__lt=hi, age_to__gte=lo)
+
+    q = (request.GET.get("q") or "").strip()[:60]
+    if q:
+        products = products.filter(
+            Q(name__icontains=q) | Q(summary__icontains=q) | Q(helps_with__icontains=q)
+            | Q(category__name__icontains=q)
+        )
+
+    if request.GET.get("instock"):
+        products = products.filter(stock__gt=0)
+
+    on_sale = bool(request.GET.get("sale"))
+    if on_sale:
+        products = products.filter(compare_at_price__isnull=False, compare_at_price__gt=F("price"))
+
+    picks = bool(request.GET.get("pick"))
+    if picks:
+        products = products.filter(therapist_pick=True)
+
+    max_price = request.GET.get("max")
+    max_price = int(max_price) if (max_price or "").isdigit() else None
+    if max_price:
+        products = products.filter(price__lte=max_price)
+
+    sort = request.GET.get("sort", "new")
+    if sort not in SORTS:
+        sort = "new"
+    products = products.order_by(SORTS[sort][1], "pk")
+
+    page = Paginator(products, 12).get_page(request.GET.get("page"))
+    params = request.GET.copy()
+    params.pop("page", None)
+    return render(request, "store/shop.html", {
+        "page": page,
+        "category": category,
+        "need": need,
+        "needs": Need.objects.filter(is_active=True),
+        "q": q,
+        "age": age,
+        "sort": sort,
+        "sorts": SORTS,
+        "age_bands": AGE_BANDS,
+        "price_caps": PRICE_CAPS,
+        "max_price": max_price,
+        "on_sale": on_sale,
+        "picks": picks,
+        "categories": Category.objects.filter(is_active=True),
+        "querystring": params.urlencode(),
+    })
+
+
+def product_detail(request, slug):
+    product = get_object_or_404(Product.objects.live().select_related("category"), slug=slug)
+    related = (Product.objects.live().filter(category=product.category)
+               .exclude(pk=product.pk).select_related("category")[:8])
+    in_cart = Cart(request).data.get(str(product.pk), 0)
+    return render(request, "store/product.html", {
+        "product": product, "related": related, "in_cart": in_cart,
+        "photos": product.photos.all(),
+    })
+
+
+def _back(request, fallback="store:cart"):
+    nxt = request.POST.get("next")
+    if nxt and url_has_allowed_host_and_scheme(nxt, {request.get_host()}, request.is_secure()):
+        return redirect(nxt)
+    return redirect(fallback)
+
+
+@require_POST
+def cart_add(request, product_id):
+    product = get_object_or_404(Product.objects.live(), pk=product_id)
+    cart = Cart(request)
+    try:
+        qty = max(1, int(request.POST.get("qty", 1)))
+    except ValueError:
+        qty = 1
+    if not product.in_stock:
+        messages.error(request, f"{product.name} is sold out right now.")
+        return _back(request, product.get_absolute_url())
+    before = cart.data.get(str(product.pk), 0)
+    cart.add(product, qty)
+    after = cart.data.get(str(product.pk), 0)
+    if after - before < qty:
+        messages.warning(request, f"Only {product.stock} of {product.name} available — your cart has {after}.")
+    else:
+        messages.success(request, f"Added {product.name} to your cart.")
+    if request.POST.get("buy_now"):
+        return redirect("orders:checkout")
+    return _back(request, product.get_absolute_url())
+
+
+@require_POST
+def cart_update(request, product_id):
+    cart = Cart(request)
+    product = Product.objects.live().filter(pk=product_id).first()
+    if product is None:
+        cart.remove(product_id)
+        return redirect("store:cart")
+    try:
+        qty = int(request.POST.get("qty", 1))
+    except ValueError:
+        qty = 1
+    cart.set(product, qty)
+    return redirect("store:cart")
+
+
+@require_POST
+def cart_remove(request, product_id):
+    Cart(request).remove(product_id)
+    messages.info(request, "Removed from your cart.")
+    return redirect("store:cart")
+
+
+def cart_view(request):
+    return render(request, "store/cart.html", Cart(request).summary())
+
+
+def delivery_info(request):
+    return render(request, "store/delivery.html")

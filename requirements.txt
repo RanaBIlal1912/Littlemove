@@ -1,0 +1,7 @@
+Django>=5.2,<5.3
+whitenoise>=6.9
+Pillow>=11
+dj-database-url>=2.3
+gunicorn>=23
+# Uncomment for PostgreSQL:
+# psycopg[binary]>=3.2

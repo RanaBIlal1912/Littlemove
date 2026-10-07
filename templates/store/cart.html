@@ -1,0 +1,69 @@
+{% extends "base.html" %}{% load store_tags %}
+{% block title %}Your cart — {{ shop.store_name }}{% endblock %}
+{% block content %}
+<div class="wrap">
+  <div class="page-head"><h1 class="page-title">Your cart</h1></div>
+
+  {% if lines %}
+  <div class="two-col">
+    <div class="lines">
+      {% for line in lines %}{% with p=line.product %}
+      <div class="line">
+        <a class="card-media t-{{ p.category.color }}" href="{{ p.get_absolute_url }}" tabindex="-1" aria-hidden="true">
+          {% if p.image %}<img class="photo" src="{{ p.image.url }}" alt="">{% else %}{% illus p.illustration %}{% endif %}
+        </a>
+        <div>
+          <h3><a href="{{ p.get_absolute_url }}">{{ p.name }}</a></h3>
+          <p class="small muted">{{ p.price|rs }} each</p>
+          <div class="line-actions">
+            <form method="post" action="{% url 'store:cart_update' p.pk %}">
+              {% csrf_token %}
+              <div class="qty">
+                <button type="button" data-step="-1" data-autosubmit aria-label="One less {{ p.name }}">−</button>
+                <label class="sr-only" for="qty-{{ p.pk }}">Quantity of {{ p.name }}</label>
+                <input id="qty-{{ p.pk }}" name="qty" type="number" value="{{ line.qty }}" min="0" max="{{ p.stock }}" inputmode="numeric" onchange="this.form.submit()">
+                <button type="button" data-step="1" data-autosubmit aria-label="One more {{ p.name }}">+</button>
+              </div>
+            </form>
+            <form method="post" action="{% url 'store:cart_remove' p.pk %}">
+              {% csrf_token %}<button class="linkish" type="submit">Remove</button>
+            </form>
+          </div>
+          {% if line.over_stock %}<p class="warn" style="margin-top:6px">Only {{ p.stock }} left — lower the quantity to check out.</p>{% endif %}
+        </div>
+        <div class="line-total">{{ line.line_total|rs }}</div>
+      </div>
+      {% endwith %}{% endfor %}
+      <a class="link" href="{% url 'store:shop' %}" style="margin-top:8px">Keep shopping</a>
+    </div>
+
+    <aside class="box" aria-label="Order summary">
+      <h2>Order summary</h2>
+      <div class="rows">
+        <div><span>Subtotal</span><span>{{ subtotal|rs }}</span></div>
+        <div><span>Delivery</span><span>{% if delivery %}{{ delivery|rs }}{% else %}Free{% endif %}</span></div>
+        <div class="total"><span>Total</span><span>{{ total|rs }}</span></div>
+      </div>
+      {% if to_free_delivery %}
+      <div class="free-meter">Add <b>{{ to_free_delivery|rs }}</b> more for free delivery.
+        <div class="meter" aria-hidden="true"><span style="width:{% widthratio subtotal shop.free_delivery_over 100 %}%"></span></div>
+      </div>
+      {% endif %}
+      {% if has_problems %}
+      <p class="warn" style="margin-top:16px">Some items have less stock than your cart. Update them to continue.</p>
+      <button class="btn btn-block" disabled>Check out</button>
+      {% else %}
+      <a class="btn btn-block" href="{% url 'orders:checkout' %}">Check out</a>
+      {% endif %}
+      <div class="pay-chips"><span>Cash on delivery</span>{% if shop.jazzcash_number %}<span>JazzCash</span>{% endif %}{% if shop.easypaisa_number %}<span>EasyPaisa</span>{% endif %}</div>
+    </aside>
+  </div>
+  {% else %}
+  <div class="empty" style="margin:24px 0 80px">
+    <h3>Your cart is empty</h3>
+    <p class="muted">Find something for your little one — start with the skill they're working on.</p>
+    <a class="btn" href="{% url 'store:shop' %}">Shop toys</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

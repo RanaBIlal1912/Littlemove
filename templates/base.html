@@ -1,0 +1,229 @@
+{% load static store_tags %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{% block title %}{{ shop.store_name }} — {{ shop.tagline }} | Kids learning toys in Pakistan{% endblock %}</title>
+  <meta name="description" content="{% block description %}Developmental, sensory and speech toys for babies and kids, chosen with therapists at Wellness Rehabilitation Clinic, Bahawalpur. Cash on delivery across Pakistan.{% endblock %}">
+  <meta name="theme-color" content="#5B3FD6">
+  <link rel="preload" href="{% static 'fonts/fredoka-latin-600-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{% static 'fonts/nunito-sans-latin-400-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{% static 'css/site.css' %}">
+  <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
+  <meta property="og:site_name" content="{{ shop.store_name }}">
+  <meta property="og:title" content="{% block og_title %}{{ shop.store_name }} — {{ shop.tagline }}{% endblock %}">
+  <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+  {% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <a class="sr-only" href="#main">Skip to content</a>
+
+  {% with msgs=shop.announcements %}{% if msgs %}
+  <div class="topbar">
+    <div class="wrap">
+      <div class="ticker" aria-live="off">
+        {% for a in msgs %}<span class="{% if forloop.first %}on{% endif %}">{{ a }}</span>{% endfor %}
+      </div>
+      <div class="topbar-links">
+        <a href="{% url 'orders:track' %}">Track order</a>
+        <a href="{% url 'store:delivery' %}">Delivery and returns</a>
+        <a href="https://wa.me/{{ shop.whatsapp_number }}" target="_blank" rel="noopener">WhatsApp +{{ shop.whatsapp_number }}</a>
+      </div>
+    </div>
+  </div>
+  {% endif %}{% endwith %}
+
+  <header class="header">
+    <div class="wrap header-main">
+      <button class="menu-btn" type="button" data-open-drawer aria-label="Open menu">{% icon 'menu' 22 2.2 %}</button>
+      <a class="brand" href="{% url 'store:home' %}" aria-label="{{ shop.store_name }} home">
+        {% logo 42 %}<span class="brand-name">Little<b>Move</b></span>
+      </a>
+      <form class="search" action="{% url 'store:shop' %}" role="search">
+        {% icon 'search' 20 2.2 %}
+        <label class="sr-only" for="q">Search toys</label>
+        <input id="q" name="q" type="search" placeholder="Search toys, e.g. stacking rings" value="{{ q|default:'' }}">
+        <button type="submit">Search</button>
+      </form>
+      <div class="header-icons">
+        <a class="icon-link hide-sm" href="https://wa.me/{{ shop.whatsapp_number }}" target="_blank" rel="noopener">
+          <span class="ico" style="color:var(--wa)">{% whatsapp_icon 22 'currentColor' %}</span>
+          <span class="lbl"><small>Need help?</small>WhatsApp us</span>
+        </a>
+        <a class="icon-link hide-sm" href="{% url 'orders:track' %}">
+          <span class="ico">{% icon 'truck' 22 %}</span>
+          <span class="lbl"><small>Where is it?</small>Track order</span>
+        </a>
+        <a class="icon-link" href="{% url 'store:cart' %}">
+          <span class="ico">{% icon 'cart' 22 2.2 %}<span class="badge-count" aria-label="{{ cart_count }} items in cart">{{ cart_count }}</span></span>
+          <span class="lbl hide-sm"><small>Your</small>Cart</span>
+        </a>
+      </div>
+    </div>
+
+    <nav class="navbar" aria-label="Main">
+      <div class="wrap">
+        <div class="nav-item">
+          <button class="nav-link nav-all" type="button" aria-haspopup="true">{% icon 'grid' 18 2.2 %} Shop by skill {% icon 'chev-d' 16 2.4 %}</button>
+          <div class="dropdown">
+            {% for c in nav_categories %}
+            <a class="t-{{ c.color }}" href="{{ c.get_absolute_url }}">
+              <span class="mini">{% if c.image %}<img src="{{ c.image.url }}" alt="">{% else %}{% with first=c.products.first %}{% illus first.illustration|default:'blocks' %}{% endwith %}{% endif %}</span>
+              <span>{{ c.name }}{% if c.short %}<small>{{ c.short }}</small>{% endif %}</span>
+            </a>
+            {% endfor %}
+            <a href="{% url 'store:shop' %}"><span class="mini">{% icon 'grid' 20 %}</span><span>All toys</span></a>
+          </div>
+        </div>
+        <div class="nav-item">
+          <button class="nav-link" type="button" aria-haspopup="true">Shop by age {% icon 'chev-d' 16 2.4 %}</button>
+          <div class="dropdown dropdown-ages">
+            {% for key, band in nav_ages.items %}<a href="{% url 'store:shop' %}?age={{ key }}">{{ band.0 }}</a>{% endfor %}
+          </div>
+        </div>
+        <div class="nav-item">
+          <button class="nav-link" type="button" aria-haspopup="true">Shop by need {% icon 'chev-d' 16 2.4 %}</button>
+          <div class="dropdown">
+            {% for n in nav_needs %}<a class="t-{{ n.color }}" href="{{ n.get_absolute_url }}"><span class="mini need-dot"></span><span>{{ n.name }}{% if n.short %}<small>{{ n.short }}</small>{% endif %}</span></a>{% endfor %}
+          </div>
+        </div>
+        <a class="nav-link nav-sale" href="{% url 'store:shop' %}?sale=1"><span class="dot-live"></span>Sale</a>
+        <a class="nav-link" href="{% url 'store:shop' %}?sort=new">New arrivals</a>
+        <a class="nav-link" href="{% url 'store:shop' %}?pick=1">Therapist picks</a>
+        <span class="nav-right">{% icon 'shield' 18 2.2 %} Chosen with therapists</span>
+      </div>
+    </nav>
+  </header>
+
+  <div class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawer-bg" data-close-drawer></div>
+    <div class="drawer-panel" role="dialog" aria-label="Menu">
+      <div class="drawer-head">
+        <a class="brand" href="{% url 'store:home' %}">{% logo 34 %}<span class="brand-name">Little<b>Move</b></span></a>
+        <button class="close-btn" type="button" data-close-drawer aria-label="Close menu">{% icon 'x' 20 2.4 %}</button>
+      </div>
+      <h3>Shop by skill</h3>
+      {% for c in nav_categories %}
+      <a class="t-{{ c.color }}" href="{{ c.get_absolute_url }}"><span class="mini">{% if c.image %}<img src="{{ c.image.url }}" alt="">{% else %}{% with first=c.products.first %}{% illus first.illustration|default:'blocks' %}{% endwith %}{% endif %}</span>{{ c.name }}</a>
+      {% endfor %}
+      <h3>Shop by need</h3>
+      {% for n in nav_needs %}<a class="t-{{ n.color }}" href="{{ n.get_absolute_url }}"><span class="mini need-dot"></span>{{ n.name }}</a>{% endfor %}
+      <h3>Shop by age</h3>
+      {% for key, band in nav_ages.items %}<a href="{% url 'store:shop' %}?age={{ key }}">{{ band.0 }}</a>{% endfor %}
+      <h3>More</h3>
+      <a href="{% url 'store:shop' %}?sale=1" style="color:var(--pink)">Sale</a>
+      <a href="{% url 'store:shop' %}?pick=1">Therapist picks</a>
+      <a href="{% url 'orders:track' %}">Track your order</a>
+      <a href="{% url 'store:delivery' %}">Delivery and returns</a>
+      <a href="https://wa.me/{{ shop.whatsapp_number }}" target="_blank" rel="noopener">WhatsApp us</a>
+    </div>
+  </div>
+
+  {% if messages %}
+  <ul class="messages" aria-live="polite">
+    {% for m in messages %}
+    <li class="msg {{ m.tags }}"><span>{{ m }}</span>
+      {% if m.tags == 'success' %}<a href="{% url 'store:cart' %}">View cart</a>{% endif %}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  <main id="main">{% block content %}{% endblock %}</main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <div class="footer-grid">
+        <div>
+          <a class="brand" href="{% url 'store:home' %}">{% logo 38 %}<span class="brand-name">LittleMove</span></a>
+          <p style="margin-top:14px;max-width:26em">Toys for little hands, voices and feet — chosen with the therapists at Wellness Rehabilitation Clinic, {{ shop.city }}. {{ shop.tagline }}</p>
+          <div class="pay-chips" style="margin-top:18px"><span>Cash on delivery</span>{% if shop.jazzcash_number %}<span>JazzCash</span>{% endif %}{% if shop.easypaisa_number %}<span>EasyPaisa</span>{% endif %}{% if shop.bank_details %}<span>Bank transfer</span>{% endif %}</div>
+        </div>
+        <div>
+          <h2>Shop</h2>
+          <ul>
+            {% for c in nav_categories %}<li><a href="{{ c.get_absolute_url }}">{{ c.name }}</a></li>{% endfor %}
+            <li><a href="{% url 'store:shop' %}?sale=1">Sale</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Help</h2>
+          <ul>
+            <li><a href="{% url 'orders:track' %}">Track your order</a></li>
+            <li><a href="{% url 'store:delivery' %}">Delivery and returns</a></li>
+            <li><a href="{% url 'store:home' %}#faq">Questions and answers</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Contact</h2>
+          <ul>
+            <li><a href="https://wa.me/{{ shop.whatsapp_number }}" target="_blank" rel="noopener">WhatsApp +{{ shop.whatsapp_number }}</a></li>
+            <li><a href="mailto:{{ shop.email }}">{{ shop.email }}</a></li>
+            <li>{{ shop.city }}, Pakistan</li>
+            {% if shop.instagram_url %}<li><a href="{{ shop.instagram_url }}" target="_blank" rel="noopener">Instagram</a></li>{% endif %}
+            {% if shop.facebook_url %}<li><a href="{{ shop.facebook_url }}" target="_blank" rel="noopener">Facebook</a></li>{% endif %}
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© {% now "Y" %} {{ shop.store_name }}, {{ shop.city }}</span>
+        <span>{{ shop.tagline }}</span>
+      </div>
+    </div>
+  </footer>
+
+  {% with name=request.resolver_match.url_name %}
+  <nav class="bottom-nav" aria-label="Quick links">
+    <a href="{% url 'store:home' %}" {% if name == 'home' %}aria-current="page"{% endif %}>{% icon 'home' 22 %}Home</a>
+    <button type="button" data-open-drawer>{% icon 'grid' 22 %}Categories</button>
+    <a class="sale" href="{% url 'store:shop' %}?sale=1">{% icon 'tag' 22 %}Sale</a>
+    <a href="{% url 'store:cart' %}" {% if name == 'cart' %}aria-current="page"{% endif %}>{% icon 'cart' 22 %}<span class="badge-count">{{ cart_count }}</span>Cart</a>
+    <a href="{% url 'orders:track' %}" {% if name == 'track' %}aria-current="page"{% endif %}>{% icon 'truck' 22 %}Track</a>
+  </nav>
+  {% endwith %}
+
+  <a class="wa-float" href="https://wa.me/{{ shop.whatsapp_number }}" target="_blank" rel="noopener" aria-label="Chat with us on WhatsApp">{% whatsapp_icon %}</a>
+
+  <script>
+    (function () {
+      // rotating top-bar messages
+      var items = document.querySelectorAll(".ticker span"), i = 0;
+      if (items.length > 1 && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        setInterval(function () {
+          items[i].className = "off";
+          i = (i + 1) % items.length;
+          items[i].className = "on";
+          setTimeout(function () { items.forEach(function (el, k) { if (k !== i) el.className = ""; }); }, 600);
+        }, 4000);
+      }
+      // mobile drawer
+      var drawer = document.getElementById("drawer");
+      function setDrawer(open) {
+        drawer.classList.toggle("open", open);
+        drawer.setAttribute("aria-hidden", open ? "false" : "true");
+        document.body.style.overflow = open ? "hidden" : "";
+      }
+      document.querySelectorAll("[data-open-drawer]").forEach(function (b) { b.addEventListener("click", function () { setDrawer(true); }); });
+      document.querySelectorAll("[data-close-drawer]").forEach(function (b) { b.addEventListener("click", function () { setDrawer(false); }); });
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape") setDrawer(false); });
+      // +/- quantity buttons
+      document.querySelectorAll("[data-step]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          var input = b.parentElement.querySelector("input");
+          var max = parseInt(input.max || "99", 10), min = parseInt(input.min || "1", 10);
+          var v = (parseInt(input.value, 10) || min) + parseInt(b.dataset.step, 10);
+          input.value = Math.max(min, Math.min(max, v));
+          if (b.dataset.autosubmit !== undefined) b.form.submit();
+        });
+      });
+      // carousels: arrow buttons scroll their row
+      document.querySelectorAll("[data-scroll]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          var row = document.getElementById(b.dataset.target);
+          row.scrollBy({ left: (b.dataset.scroll === "next" ? 1 : -1) * row.clientWidth * 0.9, behavior: "smooth" });
+        });
+      });
+    })();
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

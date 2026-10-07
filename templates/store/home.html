@@ -1,0 +1,266 @@
+{% extends "base.html" %}{% load store_tags %}
+{% block content %}
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div class="slider" aria-roledescription="carousel" aria-label="Offers">
+      <div class="slides" id="slides">
+        {% for b in banners %}
+          {% if b.image %}
+          <a class="slide has-photo" href="{{ b.link }}" aria-label="{{ b.title }}">
+            <picture>
+              {% if b.mobile_image %}<source media="(max-width: 760px)" srcset="{{ b.mobile_image.url }}">{% endif %}
+              <img src="{{ b.image.url }}" alt="{% if b.image_has_text %}{{ b.title }}{% endif %}" {% if not forloop.first %}loading="lazy"{% endif %}>
+            </picture>
+            {% if not b.image_has_text %}
+            <div class="slide-text">
+              <h2>{{ b.title }}</h2>
+              {% if b.subtitle %}<p>{{ b.subtitle }}</p>{% endif %}
+              <span class="btn btn-white" style="align-self:start">{{ b.button_text }} {% icon 'arrow-r' 18 2.4 %}</span>
+            </div>
+            {% endif %}
+          </a>
+          {% else %}
+          <a class="slide s-{{ b.style }}" href="{{ b.link }}">
+            <span class="confetti c1"></span><span class="confetti c2"></span><span class="confetti c3"></span><span class="confetti c4"></span>
+            <div>
+              <h2>{{ b.title }}</h2>
+              {% if b.subtitle %}<p>{{ b.subtitle }}</p>{% endif %}
+              <span class="btn btn-white">{{ b.button_text }} {% icon 'arrow-r' 18 2.4 %}</span>
+            </div>
+            <div class="slide-art">{% illus b.illustration %}</div>
+          </a>
+          {% endif %}
+        {% empty %}
+          <a class="slide s-purple" href="{% url 'store:shop' %}">
+            <span class="confetti c1"></span><span class="confetti c2"></span><span class="confetti c3"></span><span class="confetti c4"></span>
+            <div>
+              <h2>Toys that help little ones grow</h2>
+              <p>Sensory, motor and speech toys chosen with therapists. Cash on delivery across Pakistan.</p>
+              <span class="btn btn-white">Shop all toys {% icon 'arrow-r' 18 2.4 %}</span>
+            </div>
+            <div class="slide-art">{% illus 'rings' %}</div>
+          </a>
+        {% endfor %}
+      </div>
+      {% if banners|length > 1 %}
+      <button class="slider-arrow prev" type="button" data-slide="-1" aria-label="Previous banner">{% icon 'chev-l' 20 2.4 %}</button>
+      <button class="slider-arrow next" type="button" data-slide="1" aria-label="Next banner">{% icon 'chev-r' 20 2.4 %}</button>
+      <div class="slider-nav">
+        {% for b in banners %}<button type="button" data-goto="{{ forloop.counter0 }}" aria-label="Show banner {{ forloop.counter }}" {% if forloop.first %}aria-current="true"{% endif %}></button>{% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="side-promos">
+      <a class="promo promo-yellow" href="{% url 'store:shop' %}?max=1000">
+        <h3>Toys under Rs 1,000</h3>
+        <p>Small gifts that still teach something</p>
+        <span class="go">Shop now {% icon 'arrow-r' 16 2.4 %}</span>
+        {% illus 'cards' %}
+      </a>
+      <a class="promo promo-mint" href="{% url 'store:shop' %}?pick=1">
+        <h3>Therapist picks</h3>
+        <p>Used in sessions, made for home</p>
+        <span class="go">See the picks {% icon 'arrow-r' 16 2.4 %}</span>
+        {% illus 'balls' %}
+      </a>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="trust">
+      <div style="--accent:var(--green)"><span class="ti">{% icon 'cash' 22 2.2 %}</span><p><b>Cash on delivery</b><span>Pay when the parcel arrives</span></p></div>
+      <div style="--accent:var(--sky)"><span class="ti">{% icon 'truck' 22 2.2 %}</span><p><b>All over Pakistan</b><span>{% if shop.free_delivery_over %}Free over {{ shop.free_delivery_over|rs }}{% else %}Fast courier delivery{% endif %}</span></p></div>
+      <div style="--accent:var(--orange)"><span class="ti">{% icon 'return' 22 2.2 %}</span><p><b>Easy returns</b><span>Damaged item? We replace it</span></p></div>
+      <div style="--accent:var(--brand)"><span class="ti">{% icon 'shield' 22 2.2 %}</span><p><b>Therapist chosen</b><span>Safe, age-right toys</span></p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <h2><span class="title-dot" style="background:var(--brand)"></span>Shop by skill</h2>
+        <p>Pick what your child is working on right now.</p>
+      </div>
+      <a class="link" href="{% url 'store:shop' %}">All toys</a>
+    </div>
+    <div class="cat-row">
+      {% for c in categories %}
+      <a class="cat t-{{ c.color }}" href="{{ c.get_absolute_url }}">
+        <span class="circle">{% if c.image %}<img src="{{ c.image.url }}" alt="" loading="lazy">{% else %}{% with first=c.products.first %}{% illus first.illustration|default:'blocks' %}{% endwith %}{% endif %}</span>
+        <b>{{ c.name }}</b>
+        {% if c.short %}<span>{{ c.short }}</span>{% endif %}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% if needs %}
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <h2><span class="title-dot" style="background:var(--orange)"></span>Shop by need</h2>
+        <p>Start from what your child needs help with — we'll show the toys parents choose for it.</p>
+      </div>
+    </div>
+    <div class="need-grid">
+      {% for n in needs %}
+      <a class="need t-{{ n.color }}" href="{{ n.get_absolute_url }}">
+        <b>{{ n.name }}</b>
+        {% if n.short %}<span>{{ n.short }}</span>{% endif %}
+        <i class="need-go">{% icon 'arrow-r' 16 2.4 %}</i>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<div class="marquee" aria-hidden="true"><div class="marquee-track">
+  {% for i in "123456" %}<span>Play.</span><span>Learn.</span><span>Grow.</span>{% endfor %}
+</div></div>
+
+{% include "store/_row.html" with items=featured title="Parents' favourites" sub="The toys families order again and again." link="/shop/" rid="row-fav" soft=True %}
+
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <h2><span class="title-dot" style="background:var(--sky)"></span>Shop by age</h2>
+        <p>Every toy is marked with the ages it suits best.</p>
+      </div>
+    </div>
+    <div class="age-row">
+      {% for key, band in age_bands.items %}
+      <a class="age age-{{ forloop.counter0 }}" href="{% url 'store:shop' %}?age={{ key }}">
+        <div class="num">{{ band.0|cut:" years" }}</div>
+        <div class="unit">years</div>
+        <span class="go">Shop {% icon 'arrow-r' 16 2.4 %}</span>
+        {% cycle 'rings' 'shapes' 'beads' 'board' as age_ill silent %}{% illus age_ill %}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% include "store/_row.html" with items=on_sale title="On sale now" sub="Limited stock at these prices." link="/shop/?sale=1" rid="row-sale" soft=True %}
+
+<section class="section">
+  <div class="wrap split">
+    <a class="split-a" href="{% url 'store:shop' %}?category=speech-language">
+      <h3>Help them find their first words</h3>
+      <p>Picture cards and talking games for toddlers starting to speak.</p>
+      <span class="btn btn-white">Shop speech toys</span>
+      {% illus 'cards' %}
+    </a>
+    <a class="split-b" href="{% url 'store:shop' %}?category=gross-motor">
+      <h3>Balance, crawl and jump</h3>
+      <p>Boards and tunnels that get little bodies moving indoors.</p>
+      <span class="btn btn-white">Shop movement toys</span>
+      {% illus 'board' %}
+    </a>
+  </div>
+</section>
+
+{% include "store/_row.html" with items=new_arrivals title="New arrivals" link="/shop/?sort=new" rid="row-new" dot="var(--yellow)" %}
+
+<section class="section section-soft">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <h2><span class="title-dot" style="background:var(--green)"></span>Shop by budget</h2>
+        <p>Great learning toys at every price.</p>
+      </div>
+    </div>
+    <div class="price-row-tiles">
+      {% for cap in price_caps %}
+      <a class="ptile" href="{% url 'store:shop' %}?max={{ cap }}">
+        <span><small>Under</small><b>{{ cap|rs }}</b></span>
+        <span class="arrow">{% icon 'arrow-r' 18 2.4 %}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% include "store/_row.html" with items=picks title="Therapist picks" sub="What our therapists suggest most for practice at home." link="/shop/?pick=1" rid="row-picks" dot="var(--green)" %}
+
+{% if testimonials %}
+<section class="section section-soft">
+  <div class="wrap">
+    <div class="section-head"><h2><span class="title-dot" style="background:var(--yellow)"></span>What parents say</h2></div>
+    <div class="quotes">
+      {% for t in testimonials %}
+      <blockquote class="quote" style="margin:0">
+        <div class="stars">{% stars t.rating %}</div>
+        <p>{{ t.text }}</p>
+        <footer>{{ t.name }}{% if t.product %} · {{ t.product.name }}{% endif %}</footer>
+      </blockquote>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section">
+  <div class="wrap">
+    <div class="wa-band">
+      <span class="wa-ico">{% whatsapp_icon 34 %}</span>
+      <div>
+        <h3>Not sure which toy fits your child?</h3>
+        <p>Tell us your child's age and what they're working on. We'll suggest toys on WhatsApp.</p>
+      </div>
+      <a class="btn btn-wa" href="https://wa.me/{{ shop.whatsapp_number }}?text={{ 'Assalam o Alaikum! Please suggest toys for my child. Age: '|urlencode }}" target="_blank" rel="noopener">Ask on WhatsApp</a>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="faq" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head"><h2><span class="title-dot" style="background:var(--brand)"></span>Questions parents ask</h2></div>
+    <div class="faq">
+      <details><summary>How do I pay?</summary><p>Pay cash to the rider when your parcel arrives. You can also pay in advance by {% if shop.jazzcash_number %}JazzCash{% endif %}{% if shop.jazzcash_number and shop.easypaisa_number %} or {% endif %}{% if shop.easypaisa_number %}EasyPaisa{% endif %} and enter the transaction ID at checkout.</p></details>
+      <details><summary>How long does delivery take, and what does it cost?</summary><p>{{ shop.city }} orders usually arrive in 1–2 days, other cities in 3–5 working days. Delivery is {{ shop.delivery_fee|rs }}{% if shop.free_delivery_over %}, and free on orders of {{ shop.free_delivery_over|rs }} or more{% endif %}.</p></details>
+      <details><summary>What if a toy arrives damaged?</summary><p>Send us a photo on WhatsApp within 3 days and we'll replace it at no cost. Unused toys in their original packing can be returned within 7 days.</p></details>
+      <details><summary>How do I know a toy suits my child's age?</summary><p>Every toy shows the ages it suits and the skills it helps with. If you're unsure, message us your child's age and we'll suggest options.</p></details>
+      <details><summary>Are these the toys used in therapy?</summary><p>Many are. LittleMove started at Wellness Rehabilitation Clinic in {{ shop.city }}, and toys marked "Therapist pick" are ones our therapists recommend for practice at home.</p></details>
+      <details><summary>Do I need an account to order?</summary><p>No. Add toys to your cart, fill in your name, number and address, and we'll confirm your order on WhatsApp.</p></details>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function () {
+    var track = document.getElementById("slides");
+    if (!track) return;
+    var dots = document.querySelectorAll(".slider-nav button");
+    var count = track.children.length, cur = 0, timer;
+    function go(n) {
+      cur = (n + count) % count;
+      track.scrollTo({ left: track.clientWidth * cur, behavior: "smooth" });
+    }
+    track.addEventListener("scroll", function () {
+      var n = Math.round(track.scrollLeft / track.clientWidth);
+      if (n !== cur) cur = n;
+      dots.forEach(function (d, k) { d.setAttribute("aria-current", k === n ? "true" : "false"); });
+    }, { passive: true });
+    dots.forEach(function (d) { d.addEventListener("click", function () { go(+d.dataset.goto); restart(); }); });
+    document.querySelectorAll("[data-slide]").forEach(function (b) {
+      b.addEventListener("click", function () { go(cur + parseInt(b.dataset.slide, 10)); restart(); });
+    });
+    function restart() {
+      clearInterval(timer);
+      if (count > 1 && !matchMedia("(prefers-reduced-motion: reduce)").matches) timer = setInterval(function () { go(cur + 1); }, 5000);
+    }
+    track.addEventListener("pointerdown", function () { clearInterval(timer); });
+    restart();
+  })();
+</script>
+{% endblock %}

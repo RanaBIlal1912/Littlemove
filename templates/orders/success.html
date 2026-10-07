@@ -1,0 +1,47 @@
+{% extends "base.html" %}{% load store_tags %}
+{% block title %}Order {{ order.number }} placed — {{ shop.store_name }}{% endblock %}
+{% block head %}<meta name="robots" content="noindex">{% endblock %}
+{% block content %}
+<div class="wrap">
+  <div class="confirm">
+    <div class="confirm-head">
+      <div class="ok">{% icon 'check' 48 3 %}</div>
+      <h1 style="font-size:clamp(2rem,4vw,2.6rem)">Thank you, {{ order.full_name|first_name }}!</h1>
+      <p class="lede">Your order is in. We'll message you on WhatsApp at {{ order.phone }} to confirm it before packing.</p>
+      <span class="order-no">{{ order.number }}</span>
+      <p class="small muted">Save this order number to track your parcel.</p>
+    </div>
+
+    <div class="actions">
+      <a class="btn btn-wa" href="{{ whatsapp_url }}" target="_blank" rel="noopener">{% whatsapp_icon %} Send order on WhatsApp</a>
+      <a class="btn btn-ghost" href="{% url 'orders:track' %}?number={{ order.number }}&phone={{ order.phone }}">Track this order</a>
+    </div>
+
+    {% if order.is_prepaid %}
+    <div class="card-panel note">
+      <h2>Payment check</h2>
+      <p>We'll match transaction ID <b>{{ order.transaction_id }}</b> with our {{ order.get_payment_method_display }} account and confirm on WhatsApp.</p>
+    </div>
+    {% endif %}
+
+    <div class="card-panel">
+      <h2>Order details</h2>
+      <div class="mini-lines">
+        {% for i in order.items.all %}<div><span>{{ i.qty }} × {{ i.name }}</span><span>{{ i.line_total|rs }}</span></div>{% endfor %}
+      </div>
+      <div class="rows">
+        <div><span>Subtotal</span><span>{{ order.subtotal|rs }}</span></div>
+        <div><span>Delivery</span><span>{% if order.delivery_fee %}{{ order.delivery_fee|rs }}{% else %}Free{% endif %}</span></div>
+        <div class="total"><span>Total ({{ order.get_payment_method_display }})</span><span>{{ order.total|rs }}</span></div>
+      </div>
+    </div>
+
+    <div class="card-panel">
+      <h2>Delivering to</h2>
+      <p>{{ order.full_name }}<br>{{ order.address|linebreaksbr }}<br>{{ order.city }}</p>
+    </div>
+
+    <div class="actions"><a class="link" href="{% url 'store:shop' %}">Continue shopping</a></div>
+  </div>
+</div>
+{% endblock %}

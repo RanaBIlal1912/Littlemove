@@ -1,0 +1,103 @@
+{% extends "base.html" %}{% load store_tags %}
+{% block title %}Checkout — {{ shop.store_name }}{% endblock %}
+{% block content %}
+<div class="wrap">
+  <div class="page-head">
+    <p class="crumbs"><a href="{% url 'store:cart' %}">Cart</a> / Checkout</p>
+    <h1 class="page-title">Checkout</h1>
+    <p class="muted" style="margin-top:8px">No account needed. We'll confirm your order on WhatsApp before sending it.</p>
+  </div>
+
+  <div class="two-col">
+    <form class="form" method="post" novalidate>
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      {{ form.website }}
+
+      <fieldset class="fieldset">
+        <legend>Your details</legend>
+        <div class="row-2">
+          {% include "orders/_field.html" with f=form.full_name %}
+          {% include "orders/_field.html" with f=form.phone %}
+        </div>
+        {% include "orders/_field.html" with f=form.email %}
+      </fieldset>
+
+      <fieldset class="fieldset">
+        <legend>Delivery address</legend>
+        {% include "orders/_field.html" with f=form.city %}
+        <datalist id="pk-cities">{% for c in cities %}<option value="{{ c }}">{% endfor %}</datalist>
+        {% include "orders/_field.html" with f=form.address %}
+        {% include "orders/_field.html" with f=form.notes %}
+      </fieldset>
+
+      <fieldset class="fieldset">
+        <legend>Payment</legend>
+        <div class="pay-options" role="radiogroup" aria-label="{{ form.payment_method.label }}">
+          {% for radio in form.payment_method %}
+          <label class="pay" for="{{ radio.id_for_label }}">
+            {{ radio.tag }}
+            <span>{{ radio.choice_label }}
+              <small>{% if radio.data.value == 'cod' %}Pay the rider in cash when the parcel arrives{% elif radio.data.value == 'bank' %}Transfer first, then enter the transaction ID{% else %}Send the total first, then enter the transaction ID{% endif %}</small>
+            </span>
+          </label>
+          {% endfor %}
+        </div>
+        {{ form.payment_method.errors }}
+
+        {% if shop.jazzcash_number %}
+        <div class="pay-detail" data-pay="jazzcash">
+          <span>Send <b>{{ total|rs }}</b> to this JazzCash account:</span>
+          <strong>{{ shop.jazzcash_number }}</strong>
+          {% if shop.account_title %}<span class="small">Account title: {{ shop.account_title }}</span>{% endif %}
+        </div>
+        {% endif %}
+        {% if shop.easypaisa_number %}
+        <div class="pay-detail" data-pay="easypaisa">
+          <span>Send <b>{{ total|rs }}</b> to this EasyPaisa account:</span>
+          <strong>{{ shop.easypaisa_number }}</strong>
+          {% if shop.account_title %}<span class="small">Account title: {{ shop.account_title }}</span>{% endif %}
+        </div>
+        {% endif %}
+        {% if shop.bank_details %}
+        <div class="pay-detail" data-pay="bank">
+          <span>Transfer <b>{{ total|rs }}</b> to:</span>
+          <span>{{ shop.bank_details|linebreaksbr }}</span>
+        </div>
+        {% endif %}
+        <div id="txn-field">{% include "orders/_field.html" with f=form.transaction_id %}</div>
+      </fieldset>
+
+      <button class="btn btn-pink btn-block" type="submit" style="min-height:56px;font-size:1.05rem">Place order — {{ total|rs }}</button>
+      <p class="small muted" style="text-align:center;margin-top:-12px">By placing the order you agree to our <a class="link" href="{% url 'store:delivery' %}">delivery and returns terms</a>.</p>
+    </form>
+
+    <aside class="box" aria-label="Order summary">
+      <h2>Your order</h2>
+      <div class="mini-lines">
+        {% for line in lines %}<div><span>{{ line.qty }} × {{ line.product.name }}</span><span>{{ line.line_total|rs }}</span></div>{% endfor %}
+      </div>
+      <div class="rows">
+        <div><span>Subtotal</span><span>{{ subtotal|rs }}</span></div>
+        <div><span>Delivery</span><span>{% if delivery %}{{ delivery|rs }}{% else %}Free{% endif %}</span></div>
+        <div class="total"><span>Total</span><span>{{ total|rs }}</span></div>
+      </div>
+      <a class="link small" href="{% url 'store:cart' %}" style="display:inline-block;margin-top:16px">Edit cart</a>
+    </aside>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  (function () {
+    var radios = document.querySelectorAll('input[name="payment_method"]');
+    function sync() {
+      var v = (document.querySelector('input[name="payment_method"]:checked') || {}).value;
+      document.querySelectorAll("[data-pay]").forEach(function (el) { el.hidden = el.dataset.pay !== v; });
+      document.getElementById("txn-field").hidden = !v || v === "cod";
+    }
+    radios.forEach(function (r) { r.addEventListener("change", sync); });
+    sync();
+  })();
+</script>
+{% endblock %}

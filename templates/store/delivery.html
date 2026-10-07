@@ -1,0 +1,34 @@
+{% extends "base.html" %}{% load store_tags %}
+{% block title %}Delivery and returns — {{ shop.store_name }}{% endblock %}
+{% block content %}
+<div class="wrap" style="max-width:760px;padding-bottom:80px">
+  <div class="page-head"><h1 class="page-title">Delivery and returns</h1></div>
+
+  <div class="panel" style="border:0;padding-top:8px">
+    <h2>Delivery</h2>
+    <div class="prose">
+      <p>We deliver all over Pakistan by courier. Orders in {{ shop.city }} usually arrive in 1–2 days, other cities in 3–5 working days.</p>
+      <p>Delivery costs {{ shop.delivery_fee|rs }} per order{% if shop.free_delivery_over %}, and is free when your order is {{ shop.free_delivery_over|rs }} or more{% endif %}.</p>
+      <p>Before packing, we confirm your order and address on WhatsApp. If we can't reach you within 2 days, the order is cancelled.</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Payment</h2>
+    <div class="prose">
+      <p>Pay cash to the rider when the parcel arrives{% if shop.jazzcash_number or shop.easypaisa_number %}, or send the amount in advance by{% if shop.jazzcash_number %} JazzCash{% endif %}{% if shop.jazzcash_number and shop.easypaisa_number %} or{% endif %}{% if shop.easypaisa_number %} EasyPaisa{% endif %} and enter the transaction ID at checkout{% endif %}.</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Returns and replacements</h2>
+    <div class="prose">
+      <p>Please check the parcel when it arrives. If a toy is damaged, broken or not what you ordered, send us a photo on WhatsApp within 3 days and we'll replace it at no cost.</p>
+      <p>Unused toys in their original packing can be returned within 7 days. The return delivery charge is paid by the customer, and we refund the toy's price once we receive it.</p>
+      <p>For hygiene reasons, opened play dough, slime and mouthing toys can't be returned unless they arrived faulty.</p>
+    </div>
+  </div>
+
+  <a class="btn btn-wa" style="margin-top:32px" href="https://wa.me/{{ shop.whatsapp_number }}" target="_blank" rel="noopener">Ask us on WhatsApp</a>
+</div>
+{% endblock %}

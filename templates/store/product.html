@@ -1,0 +1,130 @@
+{% extends "base.html" %}{% load store_tags %}
+{% block title %}{{ product.name }} — {{ shop.store_name }}{% endblock %}
+{% block description %}{{ product.summary }}{% endblock %}
+{% block og_title %}{{ product.name }}{% endblock %}
+{% block og_type %}product{% endblock %}
+{% block body_class %}{% if product.in_stock %}has-sticky-buy{% endif %}{% endblock %}
+{% block head %}
+{% if product.image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ product.image.url }}">{% endif %}
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Product","name":"{{ product.name|escapejs }}","description":"{{ product.summary|escapejs }}","sku":"{{ product.sku|escapejs }}","brand":{"@type":"Brand","name":"{{ shop.store_name|escapejs }}"},"offers":{"@type":"Offer","priceCurrency":"PKR","price":"{{ product.price }}","availability":"https://schema.org/{% if product.in_stock %}InStock{% else %}OutOfStock{% endif %}"}}
+</script>
+{% endblock %}
+{% block content %}
+<div class="wrap t-{{ product.category.color }}">
+  <div class="page-head" style="padding-bottom:0">
+    <p class="crumbs"><a href="{% url 'store:home' %}">Home</a><span>/</span><a href="{{ product.category.get_absolute_url }}">{{ product.category.name }}</a><span>/</span>{{ product.name }}</p>
+  </div>
+
+  <div class="pdp">
+    <div class="pdp-media">
+      <div class="pdp-main">
+        {% if product.image %}<img class="photo" id="main-img" src="{{ product.image.url }}" alt="{{ product.name }}" width="800" height="800">
+        {% else %}{% illus product.illustration product.name %}{% endif %}
+        <div class="badges">
+          <span>{% if product.on_sale and product.in_stock %}<span class="badge badge-sale">-{{ product.discount_percent }}%</span>{% endif %}</span>
+          {% if product.therapist_pick %}<span class="badge badge-pick">{% icon 'star' 13 2.4 %} Therapist pick</span>{% endif %}
+        </div>
+      </div>
+      {% if product.image and photos %}
+      <div class="thumbs">
+        <button type="button" aria-pressed="true" data-src="{{ product.image.url }}" aria-label="Photo 1"><img src="{{ product.image.url }}" alt=""></button>
+        {% for ph in photos %}<button type="button" aria-pressed="false" data-src="{{ ph.image.url }}" aria-label="Photo {{ forloop.counter|add:1 }}"><img src="{{ ph.image.url }}" alt="{{ ph.alt }}"></button>{% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="pdp-info">
+      <div class="facts">
+        <a class="fact fact-cat" href="{{ product.category.get_absolute_url }}" style="text-decoration:none">{{ product.category.name }}</a>
+        <span class="fact">Ages {{ product.age_label }}</span>
+        {% if product.sku %}<span class="fact">SKU {{ product.sku }}</span>{% endif %}
+      </div>
+      <h1>{{ product.name }}</h1>
+
+      <div class="price-box">
+        <span class="price{% if product.on_sale %} price-sale{% endif %}">{{ product.price|rs }}</span>
+        {% if product.on_sale %}<span class="price-old">{{ product.compare_at_price|rs }}</span><span class="save">You save {{ product.saving|rs }}</span>{% endif %}
+      </div>
+
+      {% if product.in_stock %}
+        {% if product.low_stock %}<span class="stock low">Hurry — only {{ product.stock }} left</span>{% else %}<span class="stock">In stock, ready to ship</span>{% endif %}
+      {% else %}<span class="stock out">Sold out right now</span>{% endif %}
+
+      <p class="summary">{{ product.summary }}</p>
+
+      {% if product.in_stock %}
+      <form class="buy" method="post" action="{% url 'store:cart_add' product.pk %}" id="buy-form">
+        {% csrf_token %}
+        <div class="qty">
+          <button type="button" data-step="-1" aria-label="One less">−</button>
+          <label class="sr-only" for="qty">Quantity</label>
+          <input id="qty" name="qty" type="number" value="1" min="1" max="{{ product.stock }}" inputmode="numeric">
+          <button type="button" data-step="1" aria-label="One more">+</button>
+        </div>
+        <button class="btn" type="submit">{% icon 'cart' 18 2.2 %} Add to cart</button>
+        <button class="btn btn-pink" type="submit" name="buy_now" value="1">Buy now</button>
+      </form>
+      <a class="btn btn-wa-ghost btn-block wa-order" target="_blank" rel="noopener"
+         href="https://wa.me/{{ shop.whatsapp_number }}?text={{ 'Assalam o Alaikum! I want to order: '|urlencode }}{{ product.name|urlencode }}{{ ' ('|urlencode }}{{ product.price|rs|urlencode }}{{ ')'|urlencode }}">{% whatsapp_icon 20 'currentColor' %} Order on WhatsApp</a>
+      {% if in_cart %}<p class="in-cart-note">You have {{ in_cart }} in your cart. <a class="link" href="{% url 'store:cart' %}">Go to cart</a></p>{% endif %}
+      {% else %}
+      <a class="btn btn-wa btn-block" style="margin-top:18px" target="_blank" rel="noopener"
+         href="https://wa.me/{{ shop.whatsapp_number }}?text={{ 'Assalam o Alaikum! When will this be back in stock: '|urlencode }}{{ product.name|urlencode }}">{% whatsapp_icon 20 %} Ask when it's back</a>
+      {% endif %}
+
+      <div class="assure">
+        <div>{% icon 'cash' 20 2.2 %} Cash on delivery</div>
+        <div>{% icon 'truck' 20 2.2 %} {% if shop.free_delivery_over %}Free delivery over {{ shop.free_delivery_over|rs }}{% else %}Delivery {{ shop.delivery_fee|rs }}{% endif %}</div>
+        <div>{% icon 'return' 20 2.2 %} Damaged? We replace it</div>
+        <div>{% icon 'shield' 20 2.2 %} Chosen with therapists</div>
+      </div>
+
+      {% with nlist=product.needs.all %}{% if nlist %}
+      <div class="panel">
+        <h2>Parents often choose this for</h2>
+        <div class="chips-row">{% for n in nlist %}<a class="chip t-{{ n.color }} need-chip" href="{{ n.get_absolute_url }}">{{ n.name }}</a>{% endfor %}</div>
+      </div>
+      {% endif %}{% endwith %}
+
+      {% if product.helps_with_list %}
+      <div class="panel">
+        <h2>Helps with</h2>
+        <ul class="ticks">{% for s in product.helps_with_list %}<li>{{ s }}</li>{% endfor %}</ul>
+      </div>
+      {% endif %}
+      {% if product.description %}
+      <div class="panel">
+        <h2>About this toy</h2>
+        <div class="prose">{{ product.description|linebreaks }}</div>
+      </div>
+      {% endif %}
+      {% if product.in_the_box_list %}
+      <div class="panel">
+        <h2>In the box</h2>
+        <ul class="ticks">{% for s in product.in_the_box_list %}<li>{{ s }}</li>{% endfor %}</ul>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% include "store/_row.html" with items=related title="You may also like" link=product.category.get_absolute_url rid="row-related" soft=True %}
+
+{% if product.in_stock %}
+<div class="sticky-buy" aria-label="Quick buy">
+  <div><small>{{ product.name|truncatechars:26 }}</small><span class="price{% if product.on_sale %} price-sale{% endif %}">{{ product.price|rs }}</span></div>
+  <button class="btn" type="submit" form="buy-form">{% icon 'cart' 18 2.2 %} Add to cart</button>
+</div>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+<script>
+  document.querySelectorAll(".thumbs button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      document.getElementById("main-img").src = b.dataset.src;
+      document.querySelectorAll(".thumbs button").forEach(function (x) { x.setAttribute("aria-pressed", x === b); });
+    });
+  });
+</script>
+{% endblock %}

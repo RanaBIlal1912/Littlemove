@@ -1,0 +1,28 @@
+{% load store_tags %}<article class="pcard t-{{ p.category.color }}">
+  <div class="pcard-media">
+    {% if p.image %}<img class="photo" src="{{ p.image.url }}" alt="{{ p.name }}" loading="lazy" width="400" height="400">
+    {% else %}{% illus p.illustration %}{% endif %}
+    <div class="badges">
+      <span>{% if p.on_sale and p.in_stock %}<span class="badge badge-sale">-{{ p.discount_percent }}%</span>{% endif %}</span>
+      {% if p.therapist_pick %}<span class="badge badge-pick">{% icon 'star' 13 2.4 %} Therapist pick</span>{% endif %}
+    </div>
+    {% if not p.in_stock %}<div class="sold-veil"><span>Sold out</span></div>{% endif %}
+  </div>
+  <div class="pcard-body">
+    <span class="pcard-cat">{{ p.category.name }}</span>
+    <h3><a href="{{ p.get_absolute_url }}">{{ p.name }}</a></h3>
+    <span class="pcard-age">Ages {{ p.age_label }}</span>
+    <div class="price-row">
+      <span class="price{% if p.on_sale %} price-sale{% endif %}">{{ p.price|rs }}</span>
+      {% if p.on_sale %}<span class="price-old">{{ p.compare_at_price|rs }}</span>{% endif %}
+    </div>
+    <form method="post" action="{% url 'store:cart_add' p.pk %}">
+      {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+      {% if p.in_stock %}
+      <button class="btn" type="submit" aria-label="Add {{ p.name }} to cart">{% icon 'cart' 17 2.2 %} Add to cart</button>
+      {% else %}
+      <button class="btn" type="button" disabled>Sold out</button>
+      {% endif %}
+    </form>
+  </div>
+</article>

@@ -1,0 +1,20 @@
+{% load store_tags %}{% if items %}
+<section class="section{% if soft %} section-soft{% endif %}">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <h2><span class="title-dot" style="background:{{ dot|default:'var(--pink)' }}"></span>{{ title }}</h2>
+        {% if sub %}<p>{{ sub }}</p>{% endif %}
+      </div>
+      <div class="head-tools">
+        {% if link %}<a class="link" href="{{ link }}">View all</a>{% endif %}
+        <button class="arrow-btn" type="button" data-scroll="prev" data-target="{{ rid }}" aria-label="Scroll back">{% icon 'chev-l' 18 2.4 %}</button>
+        <button class="arrow-btn" type="button" data-scroll="next" data-target="{{ rid }}" aria-label="Scroll forward">{% icon 'chev-r' 18 2.4 %}</button>
+      </div>
+    </div>
+    <div class="row-scroll" id="{{ rid }}">
+      {% for p in items %}{% include "store/_card.html" %}{% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}

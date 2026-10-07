@@ -1,0 +1,103 @@
+{% extends "base.html" %}{% load store_tags %}
+{% block title %}{% if category %}{{ category.name }} toys{% elif need %}Toys for {{ need.name|lower }}{% elif on_sale %}Toys on sale{% elif picks %}Therapist picks{% elif q %}Search: {{ q }}{% else %}All toys{% endif %} — {{ shop.store_name }}{% endblock %}
+{% block content %}
+<div class="wrap">
+  <div class="page-head">
+    <p class="crumbs"><a href="{% url 'store:home' %}">Home</a><span>/</span>{% if category %}<a href="{% url 'store:shop' %}">Shop</a><span>/</span>{{ category.name }}{% else %}Shop{% endif %}</p>
+    <div class="shop-banner {% if category %}t-{{ category.color }}{% elif need %}t-{{ need.color }}{% else %}t-lilac{% endif %}">
+      <h1 class="page-title">{% if category %}{{ category.name }}{% elif need %}{{ need.name }}{% elif on_sale %}Toys on sale{% elif picks %}Therapist picks{% elif q %}Results for “{{ q }}”{% elif max_price %}Toys under {{ max_price|rs }}{% else %}All toys{% endif %}</h1>
+      <p>{% if category.short %}{{ category.short }}{% elif need %}{{ need.short|default:"Toys parents often choose for this." }}{% elif on_sale %}Lower prices while stock lasts.{% elif picks %}The toys our therapists recommend most for home practice.{% else %}Learning toys for babies and kids, delivered across Pakistan.{% endif %}</p>
+      {% if category %}{% with first=category.products.first %}{% illus first.illustration|default:'blocks' %}{% endwith %}{% else %}{% illus 'blocks' %}{% endif %}
+    </div>
+  </div>
+
+  <div class="shop-layout">
+    <aside class="filters" id="filters" aria-label="Filters">
+      <h2>Skill</h2>
+      <div class="flist">
+        <a href="?{% if age %}age={{ age }}{% endif %}" aria-current="{% if not category %}true{% else %}false{% endif %}"><span>All skills</span></a>
+        {% for c in categories %}
+        <a class="t-{{ c.color }}" href="?category={{ c.slug }}{% if age %}&age={{ age }}{% endif %}" aria-current="{% if category == c %}true{% else %}false{% endif %}"><span><i class="sw"></i>{{ c.name }}</span></a>
+        {% endfor %}
+      </div>
+      {% if needs %}
+      <h2>Need</h2>
+      <div class="flist">
+        {% for n in needs %}
+        <a class="t-{{ n.color }}" href="?need={{ n.slug }}{% if age %}&age={{ age }}{% endif %}" aria-current="{% if need == n %}true{% else %}false{% endif %}"><span><i class="sw"></i>{{ n.name }}</span></a>
+        {% endfor %}
+      </div>
+      {% endif %}
+      <h2>Age</h2>
+      <div class="flist">
+        <a href="?{% if category %}category={{ category.slug }}{% endif %}" aria-current="{% if not age %}true{% else %}false{% endif %}"><span>Any age</span></a>
+        {% for key, band in age_bands.items %}
+        <a href="?age={{ key }}{% if category %}&category={{ category.slug }}{% endif %}" aria-current="{% if age == key %}true{% else %}false{% endif %}"><span>{{ band.0 }}</span></a>
+        {% endfor %}
+      </div>
+      <h2>Price</h2>
+      <div class="flist">
+        {% for cap in price_caps %}
+        <a href="?max={{ cap }}{% if category %}&category={{ category.slug }}{% endif %}{% if age %}&age={{ age }}{% endif %}" aria-current="{% if max_price == cap %}true{% else %}false{% endif %}"><span>Under {{ cap|rs }}</span></a>
+        {% endfor %}
+      </div>
+      <h2>Offers</h2>
+      <div class="flist">
+        <a href="?sale=1" aria-current="{% if on_sale %}true{% else %}false{% endif %}"><span>On sale</span></a>
+        <a href="?pick=1" aria-current="{% if picks %}true{% else %}false{% endif %}"><span>Therapist picks</span></a>
+      </div>
+    </aside>
+
+    <div>
+      <form class="shop-bar" method="get">
+        {% if category %}<input type="hidden" name="category" value="{{ category.slug }}">{% endif %}
+        {% if age %}<input type="hidden" name="age" value="{{ age }}">{% endif %}
+        {% if need %}<input type="hidden" name="need" value="{{ need.slug }}">{% endif %}
+        {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+        {% if max_price %}<input type="hidden" name="max" value="{{ max_price }}">{% endif %}
+        {% if on_sale %}<input type="hidden" name="sale" value="1">{% endif %}
+        {% if picks %}<input type="hidden" name="pick" value="1">{% endif %}
+        <div class="active-filters">
+          <button class="chip filters-toggle" type="button" id="filters-btn" aria-controls="filters" aria-expanded="false">{% icon 'filter' 16 2.4 %} Filters</button>
+          <span class="muted" style="font-weight:700;align-self:center">{{ page.paginator.count }} toy{{ page.paginator.count|pluralize }}</span>
+          {% if category or need or age or q or max_price or on_sale or picks %}<a class="chip chip-x" href="{% url 'store:shop' %}">Clear filters</a>{% endif %}
+        </div>
+        <label class="small" style="display:flex;align-items:center;gap:8px;font-weight:800">Sort
+          <select name="sort" onchange="this.form.submit()">
+            {% for key, s in sorts.items %}<option value="{{ key }}" {% if sort == key %}selected{% endif %}>{{ s.0 }}</option>{% endfor %}
+          </select>
+        </label>
+        <noscript><button class="btn btn-ghost" type="submit">Apply</button></noscript>
+      </form>
+
+      {% if page.object_list %}
+      <div class="grid">{% for p in page.object_list %}{% include "store/_card.html" %}{% endfor %}</div>
+      {% if page.has_other_pages %}
+      <nav class="pager" aria-label="Pages">
+        {% if page.has_previous %}<a class="chip" href="?{{ querystring }}&page={{ page.previous_page_number }}">Previous</a>{% endif %}
+        <span class="chip" aria-current="true">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+        {% if page.has_next %}<a class="chip" href="?{{ querystring }}&page={{ page.next_page_number }}">Next</a>{% endif %}
+      </nav>
+      {% endif %}
+      {% else %}
+      <div class="empty">
+        <h3>No toys match these filters</h3>
+        <p>Try another age or skill, or ask us on WhatsApp — we may have it at the clinic.</p>
+        <a class="btn" href="{% url 'store:shop' %}">Show all toys</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  (function () {
+    var b = document.getElementById("filters-btn"), f = document.getElementById("filters");
+    if (b) b.addEventListener("click", function () {
+      var open = f.classList.toggle("open");
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+  })();
+</script>
+{% endblock %}
