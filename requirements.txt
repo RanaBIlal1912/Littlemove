@@ -6,4 +6,6 @@ gunicorn==26.2.0
 django-unfold==0.108.0
 anthropic==1.12.1
 psycopg[binary]==3.3.4
+cloudinary==1.46.3
+django-cloudinary-storage==0.3.0
 tzdata==2026.5

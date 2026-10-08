@@ -99,6 +99,9 @@ class Command(BaseCommand):
     help = "Add starter categories and sample toys to an empty shop."
 
     def handle(self, *args, **opts):
+        if Product.objects.exists():
+            self.stdout.write("Products already exist — skipping seed.")
+            return
         StoreSettings.load()
         cats = {}
         for i, (name, short, color) in enumerate(CATEGORIES):
