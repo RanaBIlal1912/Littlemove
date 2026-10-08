@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="h2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3CCB9A"/>
+      <stop offset="100%" stop-color="#0E7F54"/>
+    </linearGradient>
+    <radialGradient id="h2g" cx="25%" cy="70%" r="55%">
+      <stop offset="0%" stop-color="#FFC93C" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="transparent"/>
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#h2)"/>
+  <rect width="1600" height="900" fill="url(#h2g)"/>
+  <!-- Abstract blocks toy -->
+  <rect x="1050" y="350" width="80" height="80" rx="12" fill="#FFC93C" opacity="0.9"/>
+  <rect x="1150" y="310" width="80" height="120" rx="12" fill="#FF7272" opacity="0.85"/>
+  <rect x="1250" y="380" width="80" height="50" rx="12" fill="#3BA4E6" opacity="0.9"/>
+  <rect x="1050" y="440" width="280" height="16" rx="8" fill="rgba(0,0,0,0.15)"/>
+  <!-- Circles -->
+  <circle cx="900" cy="180" r="120" fill="rgba(255,255,255,0.08)"/>
+  <circle cx="1450" cy="720" r="90" fill="rgba(255,255,255,0.06)"/>
+  <circle cx="200" cy="750" r="150" fill="rgba(255,201,60,0.12)"/>
+  <text x="140" y="820" font-family="sans-serif" font-size="18" fill="rgba(255,255,255,0.35)" letter-spacing="2">PLACEHOLDER — replace with lifestyle photo in admin</text>
+</svg>

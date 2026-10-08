@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="h3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF7272"/>
+      <stop offset="100%" stop-color="#FF4F8B"/>
+    </linearGradient>
+    <radialGradient id="h3g" cx="80%" cy="20%" r="50%">
+      <stop offset="0%" stop-color="#FFC93C" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="transparent"/>
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#h3)"/>
+  <rect width="1600" height="900" fill="url(#h3g)"/>
+  <!-- Puzzle toy pieces -->
+  <rect x="1100" y="300" width="300" height="300" rx="30" fill="rgba(255,255,255,0.1)"/>
+  <circle cx="1100" cy="450" r="30" fill="rgba(255,255,255,0.2)"/>
+  <circle cx="1400" cy="450" r="30" fill="rgba(255,255,255,0.2)"/>
+  <circle cx="1250" cy="300" r="30" fill="rgba(255,255,255,0.2)"/>
+  <circle cx="1250" cy="600" r="30" fill="rgba(255,255,255,0.2)"/>
+  <!-- Dots -->
+  <circle cx="300" cy="200" r="8" fill="rgba(255,255,255,0.5)"/>
+  <circle cx="450" cy="150" r="5" fill="rgba(255,201,60,0.8)"/>
+  <circle cx="180" cy="700" r="10" fill="rgba(255,255,255,0.4)"/>
+  <text x="140" y="820" font-family="sans-serif" font-size="18" fill="rgba(255,255,255,0.35)" letter-spacing="2">PLACEHOLDER — replace with lifestyle photo in admin</text>
+</svg>

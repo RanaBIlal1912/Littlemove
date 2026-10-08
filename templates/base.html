@@ -20,7 +20,7 @@
 </head>
 <body class="{% block body_class %}{% endblock %}"{% block body_attrs %}{% endblock %}>
   <div id="loader-overlay" class="loader-overlay" aria-hidden="true"><img src="{% static 'img/littlemove-logo.png' %}" alt="" width="120"></div>
-  <div id="bg-wrap" aria-hidden="true"><canvas id="bg-cv"></canvas></div>
+  <div id="bg-wrap" aria-hidden="true" data-anim="{{ shop.animated_bg|yesno:'1,0' }}"><canvas id="bg-cv"></canvas></div>
   <a class="sr-only" href="#main">Skip to content</a>
 
   {% with msgs=shop.announcements %}{% if msgs %}
@@ -38,7 +38,7 @@
   </div>
   {% endif %}{% endwith %}
 
-  <header class="header">
+  <header class="header" id="site-header">
     <div class="wrap header-main">
       <button class="menu-btn" type="button" data-open-drawer aria-label="Open menu">{% icon 'menu' 22 2.2 %}</button>
       <a class="brand" href="{% url 'store:home' %}" aria-label="{{ shop.store_name }} home">
@@ -286,20 +286,22 @@
   {% block scripts %}{% endblock %}
 
   <script>
-  /* 3-D animated background */
+  /* 3-D animated background — brand pastel orbs */
   (function () {
+    var bgWrap = document.getElementById('bg-wrap');
+    if (!bgWrap || bgWrap.dataset.anim === '0') return;
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     var cv = document.getElementById('bg-cv');
     if (!cv) return;
     var ctx = cv.getContext('2d');
     var W, H, mx = 0, my = 0;
     var ORBS = [
-      {x:.12, y:.12, r:200, c:'91,63,214',   sp:.00018, ph:0  },
-      {x:.85, y:.18, r:160, c:'255,79,139',  sp:.00023, ph:2.1},
-      {x:.22, y:.78, r:170, c:'255,200,61',  sp:.00020, ph:4.2},
-      {x:.72, y:.72, r:130, c:'24,169,113',  sp:.00028, ph:1.0},
-      {x:.52, y:.42, r:220, c:'47,123,245',  sp:.00015, ph:3.3},
-      {x:.38, y:.55, r:110, c:'255,122,61',  sp:.00026, ph:5.5}
+      {x:.12, y:.12, r:240, c:'59,164,230',   sp:.00018, ph:0  },
+      {x:.85, y:.18, r:180, c:'255,114,114',   sp:.00023, ph:2.1},
+      {x:.22, y:.78, r:200, c:'255,201,60',    sp:.00020, ph:4.2},
+      {x:.72, y:.72, r:160, c:'60,203,154',    sp:.00028, ph:1.0},
+      {x:.52, y:.42, r:260, c:'255,183,197',   sp:.00015, ph:3.3},
+      {x:.38, y:.55, r:140, c:'59,164,230',    sp:.00026, ph:5.5}
     ];
     function resize() { W = cv.width = cv.offsetWidth; H = cv.height = cv.offsetHeight; }
     window.addEventListener('resize', resize);
@@ -314,7 +316,7 @@
         var px = (o.x + Math.sin(t * o.sp + o.ph) * .07) * W + mx * W * depth * .18;
         var py = (o.y + Math.cos(t * o.sp * .9 + o.ph) * .06) * H + my * H * depth * .15;
         var g = ctx.createRadialGradient(px, py, 0, px, py, o.r);
-        g.addColorStop(0, 'rgba(' + o.c + ',.13)');
+        g.addColorStop(0, 'rgba(' + o.c + ',.18)');
         g.addColorStop(1, 'rgba(' + o.c + ',0)');
         ctx.fillStyle = g;
         ctx.beginPath();

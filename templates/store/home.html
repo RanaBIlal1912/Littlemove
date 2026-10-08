@@ -1,90 +1,128 @@
-{% extends "base.html" %}{% load store_tags %}
+{% extends "base.html" %}{% load static store_tags %}
 {% comment %}
+  Home page — full-image animated redesign.
   Sections are rendered in the order defined in HomeSection admin.
-  Disabled sections are skipped. section_order is a list of type keys.
+  Disabled sections are skipped.
 {% endcomment %}
+{% block body_class %}has-hero{% endblock %}
 {% block content %}
 
-{% for section_type in section_order %}{% with sec=sections|default_if_none:'' %}
+{% for section_type in section_order %}
 
-{# hero_slider #}
+{# ── HERO SLIDER (full-bleed 100vh) ──────────────────────────────── #}
 {% if section_type == "hero_slider" %}{% with s=sections.hero_slider %}{% if not s or s.enabled %}
-<section class="hero section-cream">
-  <div class="hero-blobs" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
-  <div class="wrap hero-grid">
-    <div class="swiper hero-swiper slider" aria-roledescription="carousel" aria-label="Offers">
-      <div class="swiper-wrapper slides" id="slides">
-        {% for b in banners %}
-          {% if b.image %}
-          <div class="swiper-slide">
+<section class="hero hero-fullbleed{% if shop.hero_height == 'medium' %} hero-medium{% endif %}">
+  <div class="swiper hero-swiper" aria-roledescription="carousel" aria-label="Offers">
+    <div class="swiper-wrapper slides" id="slides">
+      {% for b in banners %}
+        {% if b.video %}
+        <div class="swiper-slide">
+          <div class="slide has-video">
+            <div class="hero-video-wrap">
+              <video autoplay muted loop playsinline {% if b.image %}poster="{{ b.image.url }}"{% endif %}>
+                <source src="{{ b.video.url }}" type="video/mp4">
+              </video>
+            </div>
+            {% if not b.image_has_text %}
+            <div class="slide-text">
+              <h1 class="hero-headline">{{ b.title }}</h1>
+              {% if b.subtitle %}<p class="hero-sub">{{ b.subtitle }}</p>{% endif %}
+              <a class="btn btn-white" href="{{ b.link }}" style="align-self:start">{{ b.button_text }} {% icon 'arrow-r' 18 2.4 %}</a>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        {% elif b.image %}
+        <div class="swiper-slide">
           <a class="slide has-photo" href="{{ b.link }}" aria-label="{{ b.title }}">
             <picture>
               {% if b.mobile_image %}<source media="(max-width: 760px)" srcset="{{ b.mobile_image.url }}">{% endif %}
-              <img src="{{ b.image.url }}" alt="{% if b.image_has_text %}{{ b.title }}{% endif %}" {% if not forloop.first %}loading="lazy"{% endif %}>
+              <img src="{{ b.image.url }}" alt="{% if b.image_has_text %}{{ b.title }}{% endif %}" {% if not forloop.first %}loading="lazy"{% else %}fetchpriority="high"{% endif %}>
             </picture>
             {% if not b.image_has_text %}
             <div class="slide-text">
-              <h2>{{ b.title }}</h2>
-              {% if b.subtitle %}<p>{{ b.subtitle }}</p>{% endif %}
+              <h1 class="hero-headline">{{ b.title }}</h1>
+              {% if b.subtitle %}<p class="hero-sub">{{ b.subtitle }}</p>{% endif %}
               <span class="btn btn-white" style="align-self:start">{{ b.button_text }} {% icon 'arrow-r' 18 2.4 %}</span>
             </div>
             {% endif %}
           </a>
-          </div>
-          {% else %}
-          <div class="swiper-slide">
+        </div>
+        {% else %}
+        <div class="swiper-slide">
           <a class="slide s-{{ b.style }}" href="{{ b.link }}">
             <span class="confetti c1"></span><span class="confetti c2"></span><span class="confetti c3"></span><span class="confetti c4"></span>
             <div>
-              <h2>{{ b.title }}</h2>
-              {% if b.subtitle %}<p>{{ b.subtitle }}</p>{% endif %}
+              <h1 class="hero-headline">{{ b.title }}</h1>
+              {% if b.subtitle %}<p class="hero-sub">{{ b.subtitle }}</p>{% endif %}
               <span class="btn btn-white">{{ b.button_text }} {% icon 'arrow-r' 18 2.4 %}</span>
             </div>
             <div class="slide-art">{% illus b.illustration %}</div>
           </a>
-          </div>
-          {% endif %}
-        {% empty %}
-          <div class="swiper-slide">
-          <a class="slide s-sky" href="{% url 'store:shop' %}">
+        </div>
+        {% endif %}
+      {% empty %}
+        {# Default gradient hero with stock illustration #}
+        <div class="swiper-slide">
+          <a class="slide hero-default s-sky" href="{% url 'store:shop' %}">
             <span class="confetti c1"></span><span class="confetti c2"></span><span class="confetti c3"></span><span class="confetti c4"></span>
             <div>
-              <h2>Toys that help little ones grow</h2>
-              <p>Sensory, motor and speech toys chosen with therapists. Cash on delivery across Pakistan.</p>
+              <h1 class="hero-headline">Toys that help<br>little ones grow</h1>
+              <p class="hero-sub">Sensory, motor and speech toys chosen with therapists.<br>Cash on delivery across Pakistan.</p>
               <span class="btn btn-white">Shop all toys {% icon 'arrow-r' 18 2.4 %}</span>
             </div>
             <div class="slide-art">{% illus 'rings' %}</div>
           </a>
-          </div>
-        {% endfor %}
-      </div>
-      <div class="swiper-pagination slider-nav"></div>
-      {% if banners|length > 1 %}
-      <button class="swiper-button-prev slider-arrow prev" type="button" aria-label="Previous banner"></button>
-      <button class="swiper-button-next slider-arrow next" type="button" aria-label="Next banner"></button>
-      {% endif %}
+        </div>
+      {% endfor %}
     </div>
+    <div class="swiper-pagination slider-nav"></div>
+    {% if banners|length > 1 %}
+    <button class="swiper-button-prev slider-arrow prev" type="button" aria-label="Previous banner"></button>
+    <button class="swiper-button-next slider-arrow next" type="button" aria-label="Next banner"></button>
+    {% endif %}
+  </div>
 
-    <div class="side-promos">
-      <a class="promo promo-yellow" href="{% url 'store:shop' %}?max=1000">
-        <h3>Toys under Rs 1,000</h3>
-        <p>Small gifts that still teach something</p>
-        <span class="go">Shop now {% icon 'arrow-r' 16 2.4 %}</span>
-        {% illus 'cards' %}
-      </a>
-      <a class="promo promo-mint" href="{% url 'store:shop' %}?pick=1">
-        <h3>Therapist picks</h3>
-        <p>Used in sessions, made for home</p>
-        <span class="go">See the picks {% icon 'arrow-r' 16 2.4 %}</span>
-        {% illus 'balls' %}
-      </a>
-    </div>
+  {# Rotating circular badge #}
+  <div class="spin-badge" aria-hidden="true">
+    <svg viewBox="0 0 100 100" width="110" height="110" role="img">
+      <title>Play Learn Grow</title>
+      <defs><path id="sp-path" d="M 50,50 m -37,0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" fill="none"/></defs>
+      <circle cx="50" cy="50" r="42" fill="rgba(255,255,255,0.18)"/>
+      <text font-size="11.5" fill="#fff" font-weight="700" letter-spacing="1">
+        <textPath href="#sp-path">Play • Learn • Grow • Play • Learn • Grow •</textPath>
+      </text>
+    </svg>
+  </div>
+
+  {# Scroll cue #}
+  <div class="scroll-cue" aria-hidden="true">
+    <span>Scroll</span>
+    <div class="scroll-cue-dot"></div>
   </div>
 {% endif %}{% endwith %}{% endif %}
 
-{# trust_badges #}
+{# ── TRUST BADGES (closes hero section) ─────────────────────────── #}
 {% if section_type == "trust_badges" %}{% with s=sections.trust_badges %}{% if not s or s.enabled %}
-  <div class="wrap">
+  <div class="hero-promos-wrap" aria-label="Quick shop links">
+    <div class="wrap">
+      <div class="side-promos side-promos-strip">
+        <a class="promo promo-yellow" href="{% url 'store:shop' %}?max=1000">
+          <h3>Toys under Rs 1,000</h3>
+          <p>Small gifts that still teach something</p>
+          <span class="go">Shop now {% icon 'arrow-r' 16 2.4 %}</span>
+          {% illus 'cards' %}
+        </a>
+        <a class="promo promo-mint" href="{% url 'store:shop' %}?pick=1">
+          <h3>Therapist picks</h3>
+          <p>Used in sessions, made for home</p>
+          <span class="go">See the picks {% icon 'arrow-r' 16 2.4 %}</span>
+          {% illus 'balls' %}
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="trust-wrap wrap">
     <div class="trust">
       <div style="--accent:var(--green)"><span class="ti">{% icon 'cash' 22 2.2 %}</span><p><b>Cash on delivery</b><span>Pay when the parcel arrives</span></p></div>
       <div style="--accent:var(--sky)"><span class="ti">{% icon 'truck' 22 2.2 %}</span><p><b>All over Pakistan</b><span>{% if shop.free_delivery_over %}Free over {{ shop.free_delivery_over|rs }}{% else %}Fast courier delivery{% endif %}</span></p></div>
@@ -95,23 +133,29 @@
 </section>{# end hero #}
 {% endif %}{% endwith %}{% endif %}
 
-{# shop_by_skill #}
+{# ── SHOP BY SKILL — big image tiles ────────────────────────────── #}
 {% if section_type == "shop_by_skill" %}{% with s=sections.shop_by_skill %}{% if not s or s.enabled %}
-<section class="section section-blue">
+<div class="wave-divider wavy-top" aria-hidden="true"><svg viewBox="0 0 1440 60" preserveAspectRatio="none"><path fill="var(--brand-soft)" d="M0,20 C360,60 720,0 1080,30 C1260,45 1380,50 1440,40 L1440,60 L0,60 Z"></path></svg></div>
+<section class="section section-blue" {% if s and s.bg_image %}style="background-image:url('{{ s.bg_image.url }}');background-size:cover;background-position:center"{% endif %}>
   <div class="wrap">
     <div class="section-head reveal">
       <div>
-        <h2><span class="title-dot" style="background:var(--brand)"></span>{% if s and s.title %}{{ s.title }}{% else %}Shop by skill{% endif %}</h2>
+        <h2 class="reveal-words"><span class="title-dot" style="background:var(--brand)"></span>{% if s and s.title %}{{ s.title }}{% else %}Shop by skill{% endif %}</h2>
         <p>{% if s and s.subtitle %}{{ s.subtitle }}{% else %}Pick what your child is working on right now.{% endif %}</p>
       </div>
       <a class="link" href="{% url 'store:shop' %}">All toys</a>
     </div>
-    <div class="cat-row">
+    <div class="skill-tiles">
       {% for c in categories %}
-      <a class="cat t-{{ c.color }}" href="{{ c.get_absolute_url }}">
-        <span class="circle">{% if c.image %}<img src="{{ c.image.url }}" alt="" loading="lazy">{% else %}{% with first=c.products.first %}{% illus first.illustration|default:'blocks' %}{% endwith %}{% endif %}</span>
-        <b>{{ c.name }}</b>
-        {% if c.short %}<span>{{ c.short }}</span>{% endif %}
+      <a class="skill-tile t-{{ c.color }}" href="{{ c.get_absolute_url }}">
+        <div class="skill-tile-img">
+          {% if c.image %}<img src="{{ c.image.url }}" alt="" loading="lazy">
+          {% else %}{% with first=c.products.first %}{% illus first.illustration|default:'blocks' %}{% endwith %}{% endif %}
+        </div>
+        <div class="skill-tile-label">
+          <b>{{ c.name }}</b>
+          {% if c.short %}<span>{{ c.short }}</span>{% endif %}
+        </div>
       </a>
       {% endfor %}
     </div>
@@ -119,7 +163,7 @@
 </section>
 {% endif %}{% endwith %}{% endif %}
 
-{# shop_by_need #}
+{# ── SHOP BY NEED ────────────────────────────────────────────────── #}
 {% if section_type == "shop_by_need" %}{% with s=sections.shop_by_need %}{% if not s or s.enabled %}
 {% if needs %}
 <section class="section section-mint">
@@ -144,17 +188,20 @@
 {% endif %}
 {% endif %}{% endwith %}{% endif %}
 
-{# featured_products #}
+{# ── FEATURED PRODUCTS ───────────────────────────────────────────── #}
 {% if section_type == "featured_products" %}{% with s=sections.featured_products %}{% if not s or s.enabled %}
-<div class="marquee" aria-hidden="true"><div class="marquee-track">
-  {% for i in "123456" %}<span>Play.</span><span>Learn.</span><span>Grow.</span>{% endfor %}
+<div class="marquee marquee-brand" aria-hidden="true"><div class="marquee-track">
+  {% for i in "12345678" %}<span>Play.</span><span>Learn.</span><span>Grow.</span>{% endfor %}
 </div></div>
 {% with title=s.title|default:"Parents' favourites" sub=s.subtitle|default:"The toys families order again and again." %}
 {% include "store/_row.html" with items=featured title=title sub=sub link="/shop/" rid="row-fav" soft=True %}
 {% endwith %}
+<div class="marquee marquee-coral marquee-reverse" aria-hidden="true"><div class="marquee-track">
+  {% for i in "12345678" %}<span>Sensory.</span><span>Motor.</span><span>Speech.</span>{% endfor %}
+</div></div>
 {% endif %}{% endwith %}{% endif %}
 
-{# shop_by_age #}
+{# ── SHOP BY AGE ─────────────────────────────────────────────────── #}
 {% if section_type == "shop_by_age" %}{% with s=sections.shop_by_age %}{% if not s or s.enabled %}
 <section class="section section-coral">
   <div class="wrap">
@@ -178,14 +225,14 @@
 </section>
 {% endif %}{% endwith %}{% endif %}
 
-{# sale_products #}
+{# ── SALE PRODUCTS ───────────────────────────────────────────────── #}
 {% if section_type == "sale_products" %}{% with s=sections.sale_products %}{% if not s or s.enabled %}
 {% with title=s.title|default:"On sale now" sub=s.subtitle|default:"Limited stock at these prices." %}
 {% include "store/_row.html" with items=on_sale title=title sub=sub link="/shop/?sale=1" rid="row-sale" soft=True %}
 {% endwith %}
 {% endif %}{% endwith %}{% endif %}
 
-{# promo_banners #}
+{# ── PROMO BANNERS ───────────────────────────────────────────────── #}
 {% if section_type == "promo_banners" %}{% with s=sections.promo_banners %}{% if not s or s.enabled %}
 <section class="section">
   <div class="wrap split">
@@ -205,14 +252,14 @@
 </section>
 {% endif %}{% endwith %}{% endif %}
 
-{# new_arrivals #}
+{# ── NEW ARRIVALS ────────────────────────────────────────────────── #}
 {% if section_type == "new_arrivals" %}{% with s=sections.new_arrivals %}{% if not s or s.enabled %}
 {% with title=s.title|default:"New arrivals" %}
 {% include "store/_row.html" with items=new_arrivals title=title link="/shop/?sort=new" rid="row-new" dot="var(--yellow)" %}
 {% endwith %}
 {% endif %}{% endwith %}{% endif %}
 
-{# shop_by_budget #}
+{# ── SHOP BY BUDGET ──────────────────────────────────────────────── #}
 {% if section_type == "shop_by_budget" %}{% with s=sections.shop_by_budget %}{% if not s or s.enabled %}
 <section class="section section-yellow">
   <div class="wrap">
@@ -234,14 +281,62 @@
 </section>
 {% endif %}{% endwith %}{% endif %}
 
-{# therapist_picks #}
+{# ── THERAPIST PICKS ─────────────────────────────────────────────── #}
 {% if section_type == "therapist_picks" %}{% with s=sections.therapist_picks %}{% if not s or s.enabled %}
 {% with title=s.title|default:"Therapist picks" sub=s.subtitle|default:"What our therapists suggest most for practice at home." %}
 {% include "store/_row.html" with items=picks title=title sub=sub link="/shop/?pick=1" rid="row-picks" dot="var(--green)" %}
 {% endwith %}
 {% endif %}{% endwith %}{% endif %}
 
-{# testimonials #}
+{# ── GALLERY — #LittleMoveKids lifestyle grid ────────────────────── #}
+{% if section_type == "gallery" %}{% with s=sections.gallery %}{% if not s or s.enabled %}
+<section class="section section-soft">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <h2><span class="title-dot" style="background:var(--pink)"></span>{% if s and s.title %}{{ s.title }}{% else %}#LittleMoveKids{% endif %}</h2>
+        <p>{% if s and s.subtitle %}{{ s.subtitle }}{% else %}Moments from our customers. Share yours and tag us!{% endif %}</p>
+      </div>
+    </div>
+    <div class="lifestyle-grid">
+      {% if media_items %}
+        {% for item in media_items %}
+        <figure class="lifestyle-item" onclick="openLightbox('{{ item.image.url|default:'' }}')">
+          {% if item.image %}<img src="{{ item.image.url }}" alt="{{ item.caption|default:'' }}" loading="lazy">
+          {% elif item.video_url %}<div class="lifestyle-video-placeholder">▶</div>
+          {% else %}<div class="lifestyle-placeholder"></div>{% endif %}
+          {% if item.caption %}<figcaption>{{ item.caption }}</figcaption>{% endif %}
+        </figure>
+        {% endfor %}
+      {% else %}
+        {# Stock photo placeholders until real photos are uploaded #}
+        <figure class="lifestyle-item lifestyle-placeholder-fig">
+          <img src="{% static 'img/stock/life-1.svg' %}" alt="Placeholder" loading="lazy">
+          <figcaption>Add your own photos in admin → Gallery &amp; media</figcaption>
+        </figure>
+        <figure class="lifestyle-item lifestyle-placeholder-fig">
+          <img src="{% static 'img/stock/life-2.svg' %}" alt="Placeholder" loading="lazy">
+          <figcaption>Add your own photos in admin → Gallery &amp; media</figcaption>
+        </figure>
+        <figure class="lifestyle-item lifestyle-placeholder-fig">
+          <img src="{% static 'img/stock/life-3.svg' %}" alt="Placeholder" loading="lazy">
+          <figcaption>Add your own photos in admin → Gallery &amp; media</figcaption>
+        </figure>
+        <figure class="lifestyle-item lifestyle-placeholder-fig">
+          <img src="{% static 'img/stock/life-4.svg' %}" alt="Placeholder" loading="lazy">
+          <figcaption>Add your own photos in admin → Gallery &amp; media</figcaption>
+        </figure>
+      {% endif %}
+    </div>
+    <div id="lifestyle-lightbox" class="lifestyle-lightbox" role="dialog" aria-label="Photo" aria-hidden="true" onclick="closeLightbox()">
+      <button class="lb-close" onclick="closeLightbox()" aria-label="Close">&#x2715;</button>
+      <img id="lb-img" src="" alt="">
+    </div>
+  </div>
+</section>
+{% endif %}{% endwith %}{% endif %}
+
+{# ── TESTIMONIALS ────────────────────────────────────────────────── #}
 {% if section_type == "testimonials" %}{% with s=sections.testimonials %}{% if not s or s.enabled %}
 {% if testimonials %}
 <section class="section section-blue">
@@ -266,7 +361,7 @@
 {% endif %}
 {% endif %}{% endwith %}{% endif %}
 
-{# whatsapp_help #}
+{# ── WHATSAPP HELP ───────────────────────────────────────────────── #}
 {% if section_type == "whatsapp_help" %}{% with s=sections.whatsapp_help %}{% if not s or s.enabled %}
 <section class="section">
   <div class="wrap">
@@ -282,7 +377,7 @@
 </section>
 {% endif %}{% endwith %}{% endif %}
 
-{# faq #}
+{# ── FAQ ─────────────────────────────────────────────────────────── #}
 {% if section_type == "faq" %}{% with s=sections.faq %}{% if not s or s.enabled %}
 <div class="wave-divider wavy-top" aria-hidden="true"><svg viewBox="0 0 1440 60" preserveAspectRatio="none"><path fill="var(--brand-soft)" d="M0,30 C240,60 480,0 720,20 C960,40 1200,60 1440,30 L1440,60 L0,60 Z"></path></svg></div>
 <section class="section section-cream" id="faq" style="padding-top:0">
@@ -300,7 +395,7 @@
 </section>
 {% endif %}{% endwith %}{% endif %}
 
-{# save_with_bundles #}
+{# ── SAVE WITH BUNDLES ───────────────────────────────────────────── #}
 {% if section_type == "save_with_bundles" %}{% with s=sections.save_with_bundles %}{% if not s or s.enabled %}
 {% if bundles %}
 <section class="section section-mint">
@@ -334,31 +429,52 @@
 {% endif %}
 {% endif %}{% endwith %}{% endif %}
 
-{# our_story #}
+{# ── OUR STORY — editorial split with parallax ──────────────────── #}
 {% if section_type == "our_story" %}{% with s=sections.our_story %}{% if not s or s.enabled %}
 {% if our_story and our_story.active %}
-<section class="section section-cream">
+<section class="section section-cream our-story-section">
   <div class="wrap">
     <div class="our-story">
       <div class="our-story-text reveal">
         <h2><span class="title-dot" style="background:var(--coral)"></span>{% if s and s.title %}{{ s.title }}{% else %}{{ our_story.title }}{% endif %}</h2>
         <div class="prose" style="margin-top:14px">{{ our_story.body|linebreaks }}</div>
       </div>
-      {% if our_story.photo %}
-      <div class="our-story-photo">
-        <img src="{{ our_story.photo.url }}" alt="{{ our_story.title }}" loading="lazy">
+      <div class="our-story-photo{% if our_story.photo %} has-photo{% endif %}">
+        {% if our_story.photo %}
+        <img src="{{ our_story.photo.url }}" alt="{{ our_story.title }}" loading="lazy" data-parallax>
+        {% else %}
+        <div class="our-story-placeholder">
+          <div class="osp-inner">{% illus 'rings' %}{% illus 'blocks' %}{% illus 'balls' %}</div>
+          <p>Upload a photo in admin → Our story section</p>
+        </div>
+        {% endif %}
       </div>
-      {% endif %}
     </div>
   </div>
 </section>
 {% endif %}
 {% endif %}{% endwith %}{% endif %}
 
-{% endwith %}{% endfor %}{# end section_order loop #}
+{% endfor %}{# end section_order loop #}
 
 {% endblock %}
 
 {% block scripts %}
-{# The hero carousel is now driven by Swiper, initialised in app.js. #}
+<script>
+/* Lifestyle grid lightbox */
+function openLightbox(src) {
+  if (!src) return;
+  var lb = document.getElementById('lifestyle-lightbox');
+  var img = document.getElementById('lb-img');
+  if (!lb || !img) return;
+  img.src = src;
+  lb.setAttribute('aria-hidden', 'false');
+  lb.style.display = 'flex';
+}
+function closeLightbox() {
+  var lb = document.getElementById('lifestyle-lightbox');
+  if (lb) { lb.setAttribute('aria-hidden', 'true'); lb.style.display = 'none'; }
+}
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLightbox(); });
+</script>
 {% endblock %}

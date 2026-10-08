@@ -94,9 +94,10 @@ def home(request):
         "age_bands": AGE_BANDS,
         "price_caps": PRICE_CAPS,
         "sections": sections,
-        "section_order": list(HomeSection.objects.values_list("type", flat=True)),
+        "section_order": list(HomeSection.objects.order_by("order").values_list("type", flat=True)),
         "bundles": bundles,
         "our_story": our_story,
+        "media_items": MediaItem.objects.filter(show_in_gallery=True).order_by("order", "id")[:12],
     })
 
 

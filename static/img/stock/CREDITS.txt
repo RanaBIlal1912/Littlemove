@@ -1,0 +1,32 @@
+LittleMove Stock Photo Placeholders
+=====================================
+
+The SVG files in this directory are placeholder illustrations used until real
+lifestyle photos are uploaded via the admin panel.
+
+To replace them, upload your own photos in:
+  Admin → Website → Gallery & media  (for the #LittleMoveKids grid)
+  Admin → Website → Slides / Banners  (for the hero)
+
+Suggested free-license stock photos (Unsplash — free for commercial use):
+  https://unsplash.com/collections/9463506/wooden-sensory-toys
+  https://unsplash.com/s/photos/toddler-wooden-toys
+  https://unsplash.com/s/photos/sensory-play-kids
+  https://unsplash.com/s/photos/baby-learning-toys
+  https://unsplash.com/s/photos/children-playing-colorful
+
+Suggested free-license stock photos (Pexels — free for commercial use):
+  https://www.pexels.com/search/wooden%20toys%20children/
+  https://www.pexels.com/search/baby%20sensory%20play/
+  https://www.pexels.com/search/toddler%20learning/
+
+Guidelines for hero photos:
+  - Minimum size: 1920×1080 px
+  - Bright, cheerful, natural light
+  - Children's faces ideally not shown (parental consent issue)
+  - Horizontal format for desktop; upload a separate square crop as Mobile image
+
+Guidelines for gallery photos (#LittleMoveKids):
+  - Customer photos shared with permission
+  - Square or portrait format
+  - Bright and colourful

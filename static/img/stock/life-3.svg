@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" preserveAspectRatio="xMidYMid slice">
+  <rect width="600" height="800" fill="#FFF3CE"/>
+  <circle cx="300" cy="300" r="170" fill="rgba(255,201,60,0.2)"/>
+  <!-- Threading beads -->
+  <circle cx="220" cy="300" r="35" fill="#FF7272" opacity="0.8"/>
+  <circle cx="300" cy="300" r="35" fill="#3BA4E6" opacity="0.8"/>
+  <circle cx="380" cy="300" r="35" fill="#3CCB9A" opacity="0.8"/>
+  <line x1="150" y1="300" x2="450" y2="300" stroke="rgba(0,0,0,0.15)" stroke-width="6"/>
+  <text x="60" y="760" font-family="sans-serif" font-size="14" fill="rgba(200,160,0,0.5)">#LittleMoveKids — add your photo here</text>
+</svg>

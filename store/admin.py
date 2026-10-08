@@ -16,6 +16,7 @@ from .models import (
 class StoreSettingsAdmin(ModelAdmin):
     fieldsets = [
         ("Shop", {"fields": ["store_name", "tagline", "announcement", "city"]}),
+        ("Homepage design", {"fields": ["animated_bg", "hero_height"]}),
         ("Branding & colours", {"fields": [
             "logo", "white_logo", "favicon",
             ("primary_color", "secondary_color"),
@@ -142,8 +143,8 @@ class BannerAdmin(ModelAdmin):
     search_fields = ["title"]
     fieldsets = [
         (None, {"fields": ["title", "subtitle", ("button_text", "link")]}),
-        ("Picture", {
-            "fields": ["image", "mobile_image", "image_has_text"],
+        ("Picture / Video", {
+            "fields": ["image", "mobile_image", "image_has_text", "video"],
             "description": "Make banners in Canva (1600×600). Without a picture, a coloured banner "
                            "with a toy drawing is shown.",
         }),
@@ -182,7 +183,7 @@ class HomeSectionAdmin(ModelAdmin):
     list_display = ["get_type_display", "title", "enabled", "order"]
     list_editable = ["enabled", "order"]
     list_display_links = ["get_type_display"]
-    fields = ["type", "title", "subtitle", "enabled", "order"]
+    fields = ["type", "title", "subtitle", "enabled", "order", "bg_image"]
     readonly_fields = ["type"]
 
     def has_add_permission(self, request):

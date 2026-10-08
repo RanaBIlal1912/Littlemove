@@ -269,6 +269,8 @@
         updateBadges(data.cart_count);
         renderDrawer(data);
         openDrawer(true);
+        var btn = form.querySelector("button[type=submit]");
+        document.dispatchEvent(new CustomEvent("lm:cart-added", { detail: { btn: btn } }));
       }).catch(function () { form.submit(); });
     });
   }
@@ -519,6 +521,65 @@
     }
   }
 
+  /* ---------------- 13. Transparent header on hero pages ----------- */
+  function initHeaderScroll() {
+    var hdr = document.getElementById("site-header");
+    if (!hdr) return;
+    var ticking = false;
+    function update() {
+      hdr.classList.toggle("is-scrolled", window.scrollY > 60);
+      ticking = false;
+    }
+    window.addEventListener("scroll", function () {
+      if (!ticking) { requestAnimationFrame(update); ticking = true; }
+    }, { passive: true });
+    update();
+  }
+
+  /* ---------------- 14. Viewport-fixed confetti burst on cart add -- */
+  function triggerConfetti(cx, cy) {
+    if (REDUCED) return;
+    var colors = ["#3BA4E6","#FF7272","#3CCB9A","#FFC93C","#FFB7C5"];
+    for (var i = 0; i < 26; i++) {
+      (function (i) {
+        var p = document.createElement("span");
+        p.className = "confetti-piece";
+        var dx = (Math.random() - .5) * 220;
+        var dy = -(60 + Math.random() * 160);
+        p.style.cssText =
+          "left:" + cx + "px;top:" + cy + "px;" +
+          "background:" + colors[i % colors.length] + ";" +
+          "--dx:" + dx + ";--dy:" + dy + ";";
+        document.body.appendChild(p);
+        setTimeout(function () { p.remove(); }, 1000);
+      })(i);
+    }
+  }
+
+  /* ---- hook confetti into cart ajax success ---- */
+  var _origInitCartForms = initCartForms;
+  function initCartFormsWithConfetti() {
+    document.addEventListener("submit", function (e) {
+      var form = e.target;
+      if (!form.matches || !form.matches("form[data-ajax]")) return;
+      if (e.submitter && e.submitter.name === "buy_now") return;
+      // fire confetti from the button position
+      var btn = form.querySelector("button[type=submit]");
+      if (btn) {
+        var r = btn.getBoundingClientRect();
+        var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+        // confetti fires after fetch succeeds — we piggyback via custom event
+        btn._confettiXY = [cx, cy];
+      }
+    });
+    document.addEventListener("lm:cart-added", function (e) {
+      var detail = e.detail || {};
+      if (detail.btn && detail.btn._confettiXY) {
+        triggerConfetti(detail.btn._confettiXY[0], detail.btn._confettiXY[1]);
+      }
+    });
+  }
+
   /* ---------------- init ---------------- */
   function boot() {
     document.documentElement.classList.remove("js-off");
@@ -535,6 +596,8 @@
     initSearchSuggest();
     initBottomNav();
     initRecentlyViewed();
+    initHeaderScroll();
+    initCartFormsWithConfetti();
   }
 
   if (document.readyState === "loading") {

@@ -71,6 +71,16 @@ class StoreSettings(models.Model):
         help_text="Extra paragraph shown in the website footer.",
     )
 
+    animated_bg = models.BooleanField(
+        "Animated background", default=True,
+        help_text="Slow-moving colour gradient mesh in the page background. Turn off for a plain look.",
+    )
+    hero_height = models.CharField(
+        "Hero banner height", max_length=8, default="full",
+        choices=[("full", "Full screen (100vh)"), ("medium", "Medium (55vh)")],
+        help_text="Height of the home page hero banner.",
+    )
+
     # SEO
     seo_title = models.CharField(
         max_length=120, blank=True,
@@ -316,6 +326,10 @@ class Banner(models.Model):
     style = models.CharField(max_length=10, choices=STYLE_CHOICES, default="purple",
                              help_text="Background colour when there is no picture")
     illustration = models.CharField(max_length=12, choices=Product.ILLUSTRATIONS, default="rings")
+    video = models.FileField(
+        upload_to="banners/video/", blank=True,
+        help_text="Optional video background (mp4 or webm, max 15 MB). On phones the poster image is shown instead.",
+    )
     order = models.PositiveSmallIntegerField(default=0)
     is_active = models.BooleanField(default=True)
 
@@ -324,6 +338,16 @@ class Banner(models.Model):
 
     def __str__(self):
         return self.title
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.video:
+            name = getattr(self.video, 'name', '') or ''
+            if name and not any(name.lower().endswith(ext) for ext in ('.mp4', '.webm', '.mov')):
+                raise ValidationError({"video": "Only mp4, webm or mov video files are accepted."})
+            size = getattr(self.video.file, 'size', None) if hasattr(self.video, 'file') else None
+            if size and size > 15 * 1024 * 1024:
+                raise ValidationError({"video": "Video file must be under 15 MB."})
 
 
 class Testimonial(models.Model):
@@ -399,6 +423,10 @@ class HomeSection(models.Model):
     )
     order = models.PositiveSmallIntegerField(
         default=0, help_text="Lower numbers appear higher on the page."
+    )
+    bg_image = models.ImageField(
+        upload_to="sections/", blank=True,
+        help_text="Optional full-width background photo for this section.",
     )
 
     class Meta:

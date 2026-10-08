@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="h1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3BA4E6"/>
+      <stop offset="100%" stop-color="#1E57C8"/>
+    </linearGradient>
+    <radialGradient id="h1g" cx="75%" cy="30%" r="50%">
+      <stop offset="0%" stop-color="#8EC2FF" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="transparent"/>
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#h1)"/>
+  <rect width="1600" height="900" fill="url(#h1g)"/>
+  <!-- Abstract toy illustration: stacking rings -->
+  <ellipse cx="1200" cy="520" rx="220" ry="40" fill="rgba(255,255,255,0.12)"/>
+  <ellipse cx="1200" cy="490" rx="180" ry="34" fill="#FFB7C5" opacity="0.7"/>
+  <ellipse cx="1200" cy="455" rx="140" ry="28" fill="#FFC93C" opacity="0.8"/>
+  <ellipse cx="1200" cy="424" rx="100" ry="22" fill="#3CCB9A" opacity="0.85"/>
+  <ellipse cx="1200" cy="398" rx="60" ry="16" fill="#FF7272" opacity="0.9"/>
+  <rect x="1186" y="300" width="28" height="130" rx="14" fill="rgba(255,255,255,0.5)"/>
+  <!-- Star shapes -->
+  <circle cx="200" cy="120" r="6" fill="rgba(255,255,255,0.4)"/>
+  <circle cx="350" cy="80" r="4" fill="rgba(255,201,60,0.7)"/>
+  <circle cx="500" cy="150" r="7" fill="rgba(255,255,255,0.3)"/>
+  <circle cx="1400" cy="200" r="5" fill="rgba(255,183,197,0.6)"/>
+  <circle cx="1500" cy="100" r="8" fill="rgba(255,255,255,0.35)"/>
+  <!-- Placeholder label -->
+  <text x="140" y="820" font-family="sans-serif" font-size="18" fill="rgba(255,255,255,0.35)" letter-spacing="2">PLACEHOLDER — replace with lifestyle photo in admin</text>
+</svg>
