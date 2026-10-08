@@ -135,7 +135,9 @@
         list.innerHTML = data.items.map(function (it) {
           var img = it.image
             ? '<img src="' + escapeHtml(it.image) + '" alt="">'
-            : '<span class="ph"></span>';
+            : (it.illustration_svg
+              ? '<div class="ph illus-ph">' + it.illustration_svg + '</div>'
+              : '<span class="ph"></span>');
           var itemUrl = escapeHtml(it.url || '#');
           return (
             '<div class="cart-drawer-item" data-pid="' + it.pid + '">' +

@@ -7,7 +7,7 @@
     <button class="quick-view-btn" data-slug="{{ p.slug }}" type="button">Quick view</button>
     <div class="badges">
       <span>{% if p.on_sale and p.in_stock %}<span class="badge badge-sale">-{{ p.discount_percent }}%</span>{% endif %}</span>
-      {% if p.therapist_pick %}<span class="badge badge-pick">{% icon 'star' 13 2.4 %} Therapist pick</span>{% endif %}
+      {% if p.therapist_pick %}<span class="badge badge-pick">{% icon 'star' 13 2.4 %}<span class="pick-text"> Therapist pick</span></span>{% endif %}
     </div>
     {% if not p.in_stock %}<div class="sold-veil"><span>Sold out</span></div>{% endif %}
   </div>

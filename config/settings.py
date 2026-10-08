@@ -203,20 +203,20 @@ UNFOLD = {
     # Dashboard context callback
     "DASHBOARD_CALLBACK": "store.admin_callbacks.dashboard_callback",
 
-    # Brand colours (using unfold's primary palette, purple to match LittleMove)
+    # Brand colours (blue #3BA4E6 palette to match LittleMove primary)
     "COLORS": {
         "primary": {
-            "50":  "oklch(97.7% .014 298)",
-            "100": "oklch(94.6% .033 298)",
-            "200": "oklch(90.2% .063 298)",
-            "300": "oklch(82.7% .119 298)",
-            "400": "oklch(71.4% .203 298)",
-            "500": "oklch(59% .238 298)",
-            "600": "oklch(50.8% .248 298)",
-            "700": "oklch(44.6% .228 298)",
-            "800": "oklch(38.8% .188 298)",
-            "900": "oklch(33.1% .156 298)",
-            "950": "oklch(24.1% .129 298)",
+            "50":  "oklch(97.5% .012 240)",
+            "100": "oklch(94.2% .030 240)",
+            "200": "oklch(89.8% .058 240)",
+            "300": "oklch(82.5% .107 240)",
+            "400": "oklch(71.0% .155 240)",
+            "500": "oklch(61% .175 240)",
+            "600": "oklch(52% .180 240)",
+            "700": "oklch(43.5% .165 240)",
+            "800": "oklch(37% .140 240)",
+            "900": "oklch(30% .110 240)",
+            "950": "oklch(22% .085 240)",
         },
     },
 

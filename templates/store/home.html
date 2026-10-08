@@ -300,6 +300,61 @@
 </section>
 {% endif %}{% endwith %}{% endif %}
 
+{# save_with_bundles #}
+{% if section_type == "save_with_bundles" %}{% with s=sections.save_with_bundles %}{% if not s or s.enabled %}
+{% if bundles %}
+<section class="section section-mint">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <h2><span class="title-dot" style="background:var(--mint)"></span>{% if s and s.title %}{{ s.title }}{% else %}Save with bundles{% endif %}</h2>
+        <p>{% if s and s.subtitle %}{{ s.subtitle }}{% else %}Complete toy sets at a better price.{% endif %}</p>
+      </div>
+    </div>
+    <div class="bundle-row">
+      {% for bundle in bundles %}
+      <a class="bundle-card" href="{{ bundle.get_absolute_url }}">
+        {% if bundle.image %}<img src="{{ bundle.image.url }}" alt="{{ bundle.name }}" class="bundle-img">
+        {% else %}<div class="bundle-img-placeholder">{% for p in bundle.products.all|slice:":3" %}{% illus p.illustration %}{% endfor %}</div>{% endif %}
+        <div class="bundle-info">
+          <h3>{{ bundle.name }}</h3>
+          {% if bundle.description %}<p>{{ bundle.description }}</p>{% endif %}
+          <div class="price-row" style="margin-top:6px">
+            <span class="price price-sale">{{ bundle.bundle_price|rs }}</span>
+            {% if bundle.savings > 0 %}<span class="price-old">{{ bundle.regular_price|rs }}</span>{% endif %}
+          </div>
+          {% if bundle.savings > 0 %}<span class="save" style="font-size:.8rem;font-weight:800;color:var(--green)">Save {{ bundle.savings|rs }}</span>{% endif %}
+          <span class="btn btn-block" style="margin-top:12px;pointer-events:none">View bundle</span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endif %}{% endwith %}{% endif %}
+
+{# our_story #}
+{% if section_type == "our_story" %}{% with s=sections.our_story %}{% if not s or s.enabled %}
+{% if our_story and our_story.active %}
+<section class="section section-cream">
+  <div class="wrap">
+    <div class="our-story">
+      <div class="our-story-text reveal">
+        <h2><span class="title-dot" style="background:var(--coral)"></span>{% if s and s.title %}{{ s.title }}{% else %}{{ our_story.title }}{% endif %}</h2>
+        <div class="prose" style="margin-top:14px">{{ our_story.body|linebreaks }}</div>
+      </div>
+      {% if our_story.photo %}
+      <div class="our-story-photo">
+        <img src="{{ our_story.photo.url }}" alt="{{ our_story.title }}" loading="lazy">
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endif %}{% endwith %}{% endif %}
+
 {% endwith %}{% endfor %}{# end section_order loop #}
 
 {% endblock %}

@@ -10,8 +10,25 @@ from django.views.decorators.http import require_POST
 
 from .cart import Cart
 from .models import (
-    Banner, Category, HomeSection, MediaItem, Need, Product, Testimonial,
+    Banner, Bundle, Category, HomeSection, MediaItem, Need, OurStory,
+    Product, Testimonial,
 )
+from .templatetags.store_tags import illus as _illus
+
+
+def _item_json(line):
+    """Serialise one cart line for the AJAX drawer JSON."""
+    has_img = bool(line.product.image)
+    return {
+        "pid": line.product.pk,
+        "name": line.product.name,
+        "qty": line.qty,
+        "price": float(line.product.price),
+        "line_total": float(line.line_total),
+        "url": line.product.get_absolute_url(),
+        "image": line.product.image.url if has_img else None,
+        "illustration_svg": str(_illus(line.product.illustration)) if not has_img else None,
+    }
 
 SORTS = {
     "new": ("Newest", "-created_at"),
@@ -30,22 +47,56 @@ PRICE_CAPS = [1000, 2000, 3000, 5000]
 
 def home(request):
     live = Product.objects.live().select_related("category")
-    featured = live.filter(is_featured=True)[:8] or live[:8]
-    on_sale = [p for p in live.filter(compare_at_price__isnull=False, stock__gt=0) if p.on_sale][:8]
+    total_live = live.count()
+    # Cap at 3 product rows when the shop has fewer than 30 products.
+    MAX_ROWS = 3 if total_live < 30 else 10
+
+    shown = set()
+    rows_shown = [0]
+
+    def pick_row(candidates, cap=8):
+        """Return up to *cap* items not already shown; return [] if fewer than 4 remain."""
+        if rows_shown[0] >= MAX_ROWS:
+            return []
+        items = [p for p in candidates if p.pk not in shown][:cap]
+        if len(items) >= 4:
+            shown.update(p.pk for p in items)
+            rows_shown[0] += 1
+            return items
+        return []
+
+    feat_qs = list(live.filter(is_featured=True)[:8]) or list(live[:8])
+    featured = pick_row(feat_qs)
+
+    on_sale_all = [p for p in live.filter(compare_at_price__isnull=False, stock__gt=0) if p.on_sale]
+    on_sale = pick_row(on_sale_all)
+
+    # Fetch a bit more than 8 so deduplication still yields a full row
+    new_all = list(live.order_by("-created_at")[:len(shown) + 9])
+    new_arrivals = pick_row(new_all)
+
+    picks_all = list(live.filter(therapist_pick=True)[:len(shown) + 9])
+    picks = pick_row(picks_all)
+
     sections = {s.type: s for s in HomeSection.objects.all()}
+    bundles = Bundle.objects.filter(active=True).prefetch_related("products")
+    our_story = OurStory.load()
+
     return render(request, "store/home.html", {
         "banners": Banner.objects.filter(is_active=True),
         "categories": Category.objects.filter(is_active=True),
         "needs": Need.objects.filter(is_active=True),
         "featured": featured,
         "on_sale": on_sale,
-        "new_arrivals": live.order_by("-created_at")[:8],
-        "picks": live.filter(therapist_pick=True)[:8],
+        "new_arrivals": new_arrivals,
+        "picks": picks,
         "testimonials": Testimonial.objects.filter(is_active=True)[:6],
         "age_bands": AGE_BANDS,
         "price_caps": PRICE_CAPS,
         "sections": sections,
         "section_order": list(HomeSection.objects.values_list("type", flat=True)),
+        "bundles": bundles,
+        "our_story": our_story,
     })
 
 
@@ -224,15 +275,7 @@ def cart_add(request, product_id):
             "ok": True,
             "cart_count": cart.count,
             "message": f"Added {product.name} to cart",
-            "items": [{
-                "pid": line.product.pk,
-                "name": line.product.name,
-                "qty": line.qty,
-                "price": float(line.product.price),
-                "line_total": float(line.line_total),
-                "url": line.product.get_absolute_url(),
-                "image": line.product.image.url if line.product.image else None,
-            } for line in summary["lines"]],
+            "items": [_item_json(line) for line in summary["lines"]],
             "subtotal": summary["subtotal"],
             "delivery": summary["delivery"],
             "total": summary["total"],
@@ -265,15 +308,7 @@ def cart_update(request, product_id):
         return JsonResponse({
             "ok": True,
             "cart_count": cart.count,
-            "items": [{
-                "pid": line.product.pk,
-                "name": line.product.name,
-                "qty": line.qty,
-                "price": float(line.product.price),
-                "line_total": float(line.line_total),
-                "url": line.product.get_absolute_url(),
-                "image": line.product.image.url if line.product.image else None,
-            } for line in summary["lines"]],
+            "items": [_item_json(line) for line in summary["lines"]],
             "subtotal": summary["subtotal"],
             "delivery": summary["delivery"],
             "total": summary["total"],
@@ -296,15 +331,7 @@ def cart_remove(request, product_id):
         return JsonResponse({
             "ok": True,
             "cart_count": cart.count,
-            "items": [{
-                "pid": line.product.pk,
-                "name": line.product.name,
-                "qty": line.qty,
-                "price": float(line.product.price),
-                "line_total": float(line.line_total),
-                "url": line.product.get_absolute_url(),
-                "image": line.product.image.url if line.product.image else None,
-            } for line in summary["lines"]],
+            "items": [_item_json(line) for line in summary["lines"]],
             "subtotal": summary["subtotal"],
             "delivery": summary["delivery"],
             "total": summary["total"],
@@ -319,6 +346,45 @@ def cart_view(request):
 
 def delivery_info(request):
     return render(request, "store/delivery.html")
+
+
+def bundle_detail(request, slug):
+    bundle = get_object_or_404(Bundle, slug=slug, active=True)
+    products = bundle.products.filter(is_active=True, category__is_active=True).select_related("category")
+    return render(request, "store/bundle.html", {
+        "bundle": bundle,
+        "products": products,
+    })
+
+
+@require_POST
+def bundle_add_to_cart(request, bundle_id):
+    bundle = get_object_or_404(Bundle, pk=bundle_id, active=True)
+    cart = Cart(request)
+    added = []
+    for product in bundle.products.filter(is_active=True, category__is_active=True, stock__gt=0):
+        cart.add(product, 1)
+        added.append(product.name)
+    if added:
+        messages.success(request, f"Added {bundle.name} to your cart ({len(added)} items).")
+    else:
+        messages.warning(request, f"All items in {bundle.name} are currently out of stock.")
+    wants_json = (
+        "application/json" in request.headers.get("Accept", "")
+        or request.headers.get("X-Requested-With") == "XMLHttpRequest"
+    )
+    if wants_json:
+        summary = cart.summary()
+        return JsonResponse({
+            "ok": True,
+            "cart_count": cart.count,
+            "items": [_item_json(line) for line in summary["lines"]],
+            "subtotal": summary["subtotal"],
+            "delivery": summary["delivery"],
+            "total": summary["total"],
+            "to_free_delivery": summary["to_free_delivery"],
+        })
+    return redirect("store:bundle_detail", slug=bundle.slug)
 
 
 @require_POST

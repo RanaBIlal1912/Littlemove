@@ -1,0 +1,47 @@
+{% extends "base.html" %}{% load store_tags %}
+{% block title %}{{ bundle.name }} — {{ shop.store_name }}{% endblock %}
+{% block content %}
+<section class="section section-mint">
+  <div class="wrap">
+    <p class="crumbs"><a href="{% url 'store:home' %}">Home</a><span> / </span>{{ bundle.name }}</p>
+    <div class="bundle-detail">
+      <div class="bundle-detail-media">
+        {% if bundle.image %}
+        <img src="{{ bundle.image.url }}" alt="{{ bundle.name }}" class="bundle-detail-img">
+        {% else %}
+        <div class="bundle-detail-placeholder">
+          {% for p in products|slice:":3" %}{% illus p.illustration %}{% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      <div class="bundle-detail-info">
+        <h1>{{ bundle.name }}</h1>
+        {% if bundle.description %}<p class="lede">{{ bundle.description }}</p>{% endif %}
+        <div class="price-row bundle-price-row">
+          <span class="price price-sale">{{ bundle.bundle_price|rs }}</span>
+          {% if bundle.savings > 0 %}<span class="price-old">{{ bundle.regular_price|rs }}</span>{% endif %}
+        </div>
+        {% if bundle.savings > 0 %}<p class="bundle-save">You save {{ bundle.savings|rs }} vs buying separately!</p>{% endif %}
+        <ul class="ticks bundle-ticks">
+          {% for p in products %}<li>{{ p.name }}<span class="bundle-item-price"> — {{ p.price|rs }}</span></li>{% endfor %}
+        </ul>
+        <form method="post" action="{% url 'store:bundle_add_to_cart' bundle.pk %}">
+          {% csrf_token %}
+          <button class="btn btn-block" type="submit">{% icon 'cart' 18 2.2 %} Add bundle to cart</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-soft">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div><h2><span class="title-dot" style="background:var(--mint)"></span>Products in this bundle</h2></div>
+    </div>
+    <div class="grid">
+      {% for p in products %}{% include "store/_card.html" %}{% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

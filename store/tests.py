@@ -17,8 +17,8 @@ from django.urls import reverse
 from django.utils import timezone
 
 from store.models import (
-    BotAnswer, BotSettings, Category, ChatLog, FAQ, HomeSection,
-    MediaItem, Popup, Product, StoreSettings,
+    BotAnswer, BotSettings, Bundle, Category, ChatLog, FAQ, HomeSection,
+    MediaItem, OurStory, Popup, Product, StoreSettings,
 )
 
 
@@ -408,7 +408,96 @@ class AdminDashboardTests(TestCase):
             reverse("admin:store_botanswer_changelist"),
             reverse("admin:store_chatlog_changelist"),
             reverse("admin:orders_order_changelist"),
+            reverse("admin:store_bundle_changelist"),
+            reverse("admin:store_ourstory_changelist"),
         ]
         for url in urls:
             with self.subTest(url=url):
                 self.assertEqual(self.client.get(url).status_code, 200)
+
+
+# ── Bundle tests ──────────────────────────────────────────────────────────────
+
+class BundleTests(TestCase):
+    """Bundle model, detail page, and add-to-cart endpoint."""
+
+    def setUp(self):
+        self.cat = make_category("Motor")
+        self.p1 = make_product(self.cat, "Rings", 1000, stock=5)
+        self.p2 = make_product(self.cat, "Beads", 1500, stock=5)
+        self.bundle = Bundle.objects.create(
+            name="Starter Bundle",
+            bundle_price=2000,
+            active=True,
+        )
+        self.bundle.products.set([self.p1, self.p2])
+
+    def test_bundle_model_str(self):
+        self.assertEqual(str(self.bundle), "Starter Bundle")
+
+    def test_bundle_slug_auto_generated(self):
+        self.assertEqual(self.bundle.slug, "starter-bundle")
+
+    def test_bundle_regular_price(self):
+        self.assertEqual(self.bundle.regular_price, 2500)
+
+    def test_bundle_savings(self):
+        self.assertEqual(self.bundle.savings, 500)
+
+    def test_bundle_detail_page_loads(self):
+        resp = self.client.get(reverse("store:bundle_detail", args=[self.bundle.slug]))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Starter Bundle")
+
+    def test_bundle_detail_404_for_inactive(self):
+        self.bundle.active = False
+        self.bundle.save()
+        resp = self.client.get(reverse("store:bundle_detail", args=[self.bundle.slug]))
+        self.assertEqual(resp.status_code, 404)
+
+    def test_bundle_add_to_cart_adds_all_products(self):
+        resp = self.client.post(
+            reverse("store:bundle_add_to_cart", args=[self.bundle.pk]),
+            HTTP_ACCEPT="application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertTrue(data["ok"])
+        cart_pids = [item["pid"] for item in data["items"]]
+        self.assertIn(self.p1.pk, cart_pids)
+        self.assertIn(self.p2.pk, cart_pids)
+
+    def test_bundle_add_to_cart_cart_count(self):
+        resp = self.client.post(
+            reverse("store:bundle_add_to_cart", args=[self.bundle.pk]),
+            HTTP_ACCEPT="application/json",
+        )
+        data = resp.json()
+        self.assertEqual(data["cart_count"], 2)
+
+
+# ── OurStory tests ────────────────────────────────────────────────────────────
+
+class OurStoryTests(TestCase):
+    """OurStory singleton appears on the home page when the section is enabled."""
+
+    def setUp(self):
+        HomeSection.objects.all().delete()
+
+    def test_our_story_section_shows_body_text(self):
+        HomeSection.objects.create(type="our_story", order=15, enabled=True)
+        OurStory.objects.update_or_create(pk=1, defaults={"title": "Our story", "body": "We started in Bahawalpur.", "active": True})
+        resp = self.client.get("/")
+        self.assertContains(resp, "We started in Bahawalpur.")
+
+    def test_our_story_hidden_when_inactive(self):
+        HomeSection.objects.create(type="our_story", order=15, enabled=True)
+        OurStory.objects.update_or_create(pk=1, defaults={"title": "Our story", "body": "We started in Bahawalpur.", "active": False})
+        resp = self.client.get("/")
+        self.assertNotContains(resp, "We started in Bahawalpur.")
+
+    def test_our_story_load_creates_singleton(self):
+        OurStory.objects.all().delete()
+        obj = OurStory.load()
+        self.assertEqual(obj.pk, 1)
+        self.assertEqual(OurStory.objects.count(), 1)

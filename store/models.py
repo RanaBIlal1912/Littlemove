@@ -29,7 +29,7 @@ class StoreSettings(models.Model):
     )
     announcement = models.CharField(
         max_length=300, blank=True,
-        default="Free delivery on orders over Rs 5,000 | Cash on delivery all over Pakistan | Toys chosen with therapists",
+        default="Free delivery on orders of Rs 5,000 or more",
         help_text="Top bar messages. Separate several with | and they rotate.",
     )
     instagram_url = models.URLField(blank=True)
@@ -364,24 +364,28 @@ class HomeSection(models.Model):
     TESTIMONIALS = "testimonials"
     WHATSAPP_HELP = "whatsapp_help"
     FAQ_SECTION = "faq"
+    SAVE_WITH_BUNDLES = "save_with_bundles"
+    OUR_STORY = "our_story"
 
     SECTION_TYPES = [
-        (HERO_SLIDER,      "Hero slider (banners)"),
-        (TRUST_BADGES,     "Trust badges"),
-        (SHOP_BY_SKILL,    "Shop by skill"),
-        (SHOP_BY_NEED,     "Shop by need"),
-        (FEATURED_PRODUCTS,"Featured products"),
-        (SHOP_BY_AGE,      "Shop by age"),
-        (SALE_PRODUCTS,    "Sale products"),
-        (PROMO_BANNERS,    "Promo banners"),
-        (NEW_ARRIVALS,     "New arrivals"),
-        (SHOP_BY_BUDGET,   "Shop by budget"),
-        (THERAPIST_PICKS,  "Therapist picks"),
-        (VIDEO,            "Video section"),
-        (GALLERY,          "Gallery"),
-        (TESTIMONIALS,     "What parents say (testimonials)"),
-        (WHATSAPP_HELP,    "WhatsApp help band"),
-        (FAQ_SECTION,      "FAQ / Questions parents ask"),
+        (HERO_SLIDER,        "Hero slider (banners)"),
+        (TRUST_BADGES,       "Trust badges"),
+        (SHOP_BY_SKILL,      "Shop by skill"),
+        (SHOP_BY_NEED,       "Shop by need"),
+        (FEATURED_PRODUCTS,  "Featured products"),
+        (SHOP_BY_AGE,        "Shop by age"),
+        (SALE_PRODUCTS,      "Sale products"),
+        (PROMO_BANNERS,      "Promo banners"),
+        (NEW_ARRIVALS,       "New arrivals"),
+        (SHOP_BY_BUDGET,     "Shop by budget"),
+        (THERAPIST_PICKS,    "Therapist picks"),
+        (VIDEO,              "Video section"),
+        (GALLERY,            "Gallery"),
+        (TESTIMONIALS,       "What parents say (testimonials)"),
+        (WHATSAPP_HELP,      "WhatsApp help band"),
+        (FAQ_SECTION,        "FAQ / Questions parents ask"),
+        (SAVE_WITH_BUNDLES,  "Save with bundles"),
+        (OUR_STORY,          "Our story"),
     ]
 
     type = models.CharField(max_length=30, choices=SECTION_TYPES, unique=True,
@@ -404,6 +408,98 @@ class HomeSection(models.Model):
 
     def __str__(self):
         return self.get_type_display()
+
+
+class Bundle(models.Model):
+    """A curated set of products sold together at a lower combined price."""
+
+    name = models.CharField(max_length=120)
+    slug = models.SlugField(max_length=140, unique=True, blank=True)
+    description = models.TextField(blank=True)
+    products = models.ManyToManyField(
+        "Product", related_name="bundles",
+        help_text="Choose 2 or more products to include in this bundle.",
+    )
+    bundle_price = models.PositiveIntegerField(
+        help_text="Total price for the whole bundle (Rs). Should be lower than the sum of individual prices.",
+        validators=[MinValueValidator(1)],
+    )
+    image = models.ImageField(
+        upload_to="bundles/", blank=True,
+        help_text="Optional banner image for the bundle (1200×500 recommended).",
+    )
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Bundle"
+        verbose_name_plural = "Bundles"
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base = slugify(self.name)[:120] or "bundle"
+            slug, n = base, 2
+            while Bundle.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug, n = f"{base}-{n}", n + 1
+            self.slug = slug
+        super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse("store:bundle_detail", args=[self.slug])
+
+    @property
+    def regular_price(self):
+        return sum(p.price for p in self.products.all())
+
+    @property
+    def savings(self):
+        reg = self.regular_price
+        return max(0, reg - self.bundle_price) if reg else 0
+
+
+class OurStory(models.Model):
+    """Singleton: the 'Our story' home page section, editable from admin."""
+
+    title = models.CharField(max_length=120, default="Our story")
+    body = models.TextField(
+        default=(
+            "LittleMove was born at Wellness Rehabilitation Clinic in Bahawalpur. "
+            "Our therapists work with children every day and kept meeting the same challenge: "
+            "parents wanted to continue the therapy exercises at home, but couldn't find the "
+            "right toys in Pakistan.\n\n"
+            "So we started selecting the toys we use in our own sessions — sensory, motor and "
+            "speech toys that are safe, age-right and actually work. Every toy we sell is one "
+            "our therapists have used themselves."
+        ),
+    )
+    photo = models.ImageField(
+        upload_to="our_story/", blank=True,
+        help_text="A photo of the clinic, team or children playing.",
+    )
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "Our story section"
+        verbose_name_plural = "Our story section"
+
+    def __str__(self):
+        return "Our story"
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        pass
+
+    @classmethod
+    def load(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
 
 
 class Popup(models.Model):

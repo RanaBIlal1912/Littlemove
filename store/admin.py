@@ -4,8 +4,8 @@ from unfold.admin import ModelAdmin, TabularInline
 from unfold.decorators import action, display
 
 from .models import (
-    Banner, BotAnswer, BotSettings, Category, ChatLog, FAQ,
-    HomeSection, MediaItem, Need, Popup, Product, ProductPhoto,
+    Banner, BotAnswer, BotSettings, Bundle, Category, ChatLog, FAQ,
+    HomeSection, MediaItem, Need, OurStory, Popup, Product, ProductPhoto,
     StoreSettings, Testimonial,
 )
 
@@ -253,6 +253,39 @@ class FAQAdmin(ModelAdmin):
     list_editable = ["active", "order"]
     search_fields = ["question", "answer"]
     fields = ["question", "answer", "order", "active"]
+
+
+# ── Bundles ────────────────────────────────────────────────────────────────────
+
+@admin.register(Bundle)
+class BundleAdmin(ModelAdmin):
+    list_display = ["name", "bundle_price_display", "product_count", "active", "created_at"]
+    list_editable = ["active"]
+    filter_horizontal = ["products"]
+    prepopulated_fields = {"slug": ["name"]}
+    search_fields = ["name", "description"]
+    fields = ["name", "slug", "description", "products", "bundle_price", "image", "active"]
+
+    @display(description="Bundle price")
+    def bundle_price_display(self, obj):
+        return f"Rs {obj.bundle_price:,}"
+
+    @display(description="Products")
+    def product_count(self, obj):
+        return obj.products.count()
+
+
+# ── Our story ──────────────────────────────────────────────────────────────────
+
+@admin.register(OurStory)
+class OurStoryAdmin(ModelAdmin):
+    fields = ["title", "body", "photo", "active"]
+
+    def has_add_permission(self, request):
+        return not OurStory.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 # ── Chatbot ────────────────────────────────────────────────────────────────────
