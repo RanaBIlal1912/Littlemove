@@ -48,6 +48,7 @@ ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", "localhost,127.0.0.1" if DEBUG else ""
 CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS")
 
 INSTALLED_APPS = [
+    "jazzmin",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -163,6 +164,91 @@ if not DEBUG:
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
     X_FRAME_OPTIONS = "DENY"
+
+JAZZMIN_SETTINGS = {
+    "site_title": "LittleMove Admin",
+    "site_header": "LittleMove",
+    "site_brand": "LittleMove",
+    "site_logo": None,
+    "login_logo": None,
+    "site_logo_classes": None,
+    "site_icon": None,
+    "welcome_sign": "Welcome to LittleMove Store Manager",
+    "copyright": "LittleMove, Bahawalpur",
+    "search_model": ["store.Product", "orders.Order"],
+    "user_avatar": None,
+    "topmenu_links": [
+        {"name": "Visit Shop", "url": "/", "new_window": True},
+        {"app": "orders"},
+    ],
+    "usermenu_links": [
+        {"name": "Visit Shop", "url": "/", "new_window": True},
+    ],
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "hide_apps": [],
+    "hide_models": [],
+    "order_with_respect_to": ["store", "orders", "auth"],
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
+        "auth.group": "fas fa-users",
+        "store": "fas fa-store",
+        "store.product": "fas fa-box-open",
+        "store.category": "fas fa-tags",
+        "store.need": "fas fa-heart",
+        "store.banner": "fas fa-image",
+        "store.storesettings": "fas fa-cog",
+        "store.testimonial": "fas fa-star",
+        "orders": "fas fa-shopping-cart",
+        "orders.order": "fas fa-receipt",
+        "orders.orderitem": "fas fa-list",
+    },
+    "default_icon_parents": "fas fa-chevron-circle-right",
+    "default_icon_children": "fas fa-dot-circle",
+    "related_modal_active": True,
+    "custom_css": None,
+    "custom_js": None,
+    "use_google_fonts_cdn": True,
+    "show_ui_builder": False,
+    "changeform_format": "horizontal_tabs",
+    "changeform_format_overrides": {
+        "auth.user": "collapsible",
+    },
+    "language_chooser": False,
+}
+
+JAZZMIN_UI_TWEAKS = {
+    "navbar_small_text": False,
+    "footer_small_text": True,
+    "body_small_text": False,
+    "brand_small_text": False,
+    "brand_colour": "navbar-primary",
+    "accent": "accent-primary",
+    "navbar": "navbar-white navbar-light",
+    "no_navbar_border": False,
+    "navbar_fixed": True,
+    "layout_boxed": False,
+    "footer_fixed": False,
+    "sidebar_fixed": True,
+    "sidebar": "sidebar-dark-primary",
+    "sidebar_nav_small_text": False,
+    "sidebar_disable_expand": False,
+    "sidebar_nav_child_indent": True,
+    "sidebar_nav_compact_style": True,
+    "sidebar_nav_legacy_style": False,
+    "sidebar_nav_flat_style": False,
+    "theme": "default",
+    "dark_mode_theme": None,
+    "button_classes": {
+        "primary": "btn-primary",
+        "secondary": "btn-secondary",
+        "info": "btn-info",
+        "warning": "btn-warning",
+        "danger": "btn-danger",
+        "success": "btn-success",
+    },
+}
 
 LOGGING = {
     "version": 1,

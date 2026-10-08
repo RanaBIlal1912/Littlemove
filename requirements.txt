@@ -3,5 +3,6 @@ whitenoise>=6.9
 Pillow>=11
 dj-database-url>=2.3
 gunicorn>=23
+django-jazzmin>=3.0
 # Uncomment for PostgreSQL:
 # psycopg[binary]>=3.2

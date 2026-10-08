@@ -16,6 +16,7 @@
   {% block head %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
+  <div id="bg-wrap" aria-hidden="true"><canvas id="bg-cv"></canvas></div>
   <a class="sr-only" href="#main">Skip to content</a>
 
   {% with msgs=shop.announcements %}{% if msgs %}
@@ -181,6 +182,19 @@
   </nav>
   {% endwith %}
 
+  <div id="mila-bot" class="mila-bot">
+    <button class="mila-toggle" id="mila-toggle" type="button" aria-label="Ask Mila, your toy guide" aria-expanded="false">🤖</button>
+    <div class="mila-window" id="mila-window" role="dialog" aria-label="Mila toy guide" aria-hidden="true">
+      <div class="mila-head">
+        <div class="mila-av">🤖</div>
+        <div><strong>Mila</strong><small>Your toy guide</small></div>
+        <button class="mila-x" id="mila-x" type="button" aria-label="Close chat">&#x2715;</button>
+      </div>
+      <div class="mila-msgs" id="mila-msgs"></div>
+      <div class="mila-opts" id="mila-opts"></div>
+    </div>
+  </div>
+
   <a class="wa-float" href="https://wa.me/{{ shop.whatsapp_number }}" target="_blank" rel="noopener" aria-label="Chat with us on WhatsApp">{% whatsapp_icon %}</a>
 
   <script>
@@ -225,5 +239,163 @@
     })();
   </script>
   {% block scripts %}{% endblock %}
+
+  <script>
+  /* 3-D animated background */
+  (function () {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var cv = document.getElementById('bg-cv');
+    if (!cv) return;
+    var ctx = cv.getContext('2d');
+    var W, H, mx = 0, my = 0;
+    var ORBS = [
+      {x:.12, y:.12, r:200, c:'91,63,214',   sp:.00018, ph:0  },
+      {x:.85, y:.18, r:160, c:'255,79,139',  sp:.00023, ph:2.1},
+      {x:.22, y:.78, r:170, c:'255,200,61',  sp:.00020, ph:4.2},
+      {x:.72, y:.72, r:130, c:'24,169,113',  sp:.00028, ph:1.0},
+      {x:.52, y:.42, r:220, c:'47,123,245',  sp:.00015, ph:3.3},
+      {x:.38, y:.55, r:110, c:'255,122,61',  sp:.00026, ph:5.5}
+    ];
+    function resize() { W = cv.width = cv.offsetWidth; H = cv.height = cv.offsetHeight; }
+    window.addEventListener('resize', resize);
+    resize();
+    document.addEventListener('mousemove', function (e) { mx = e.clientX / W - .5; my = e.clientY / H - .5; });
+    var t = 0;
+    function draw() {
+      t += 16;
+      ctx.clearRect(0, 0, W, H);
+      ORBS.forEach(function (o) {
+        var depth = 0.25 + o.ph * 0.04;
+        var px = (o.x + Math.sin(t * o.sp + o.ph) * .07) * W + mx * W * depth * .18;
+        var py = (o.y + Math.cos(t * o.sp * .9 + o.ph) * .06) * H + my * H * depth * .15;
+        var g = ctx.createRadialGradient(px, py, 0, px, py, o.r);
+        g.addColorStop(0, 'rgba(' + o.c + ',.13)');
+        g.addColorStop(1, 'rgba(' + o.c + ',0)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(px, py, o.r, 0, 6.283);
+        ctx.fill();
+      });
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+  </script>
+
+  <script>
+  /* Mila chat assistant */
+  (function () {
+    var FEE  = '{{ shop.delivery_fee|default:"" }}';
+    var FREE = '{{ shop.free_delivery_over|default:"" }}';
+    var WA   = '{{ shop.whatsapp_number|default:"" }}';
+
+    var TREE = {
+      start: {
+        msg: "Hi, I’m Mila! 🌟 I help you find the right toy for your child.\n\nWhat can I help you with?",
+        opts: [
+          {t: "🧸 Find a toy",          n: "age"     },
+          {t: "🚚 Delivery & shipping",  n: "delivery"},
+          {t: "💳 Payment methods",      n: "payment" },
+          {t: "📦 Track my order",       n: "track"   },
+          {t: "💬 Talk to our team",     n: "wa"      }
+        ]
+      },
+      age: {
+        msg: "How old is your child?",
+        opts: [
+          {t: "👶 0–2 years (Baby)",      n: "link:/shop/?age=0-2"  },
+          {t: "🐣 2–4 years (Toddler)",   n: "link:/shop/?age=2-4"  },
+          {t: "🌱 4–6 years (Preschool)", n: "link:/shop/?age=4-6"  },
+          {t: "⭐ 6+ years",                         n: "link:/shop/?age=6%2B" },
+          {t: "← Back",                             n: "start"                }
+        ]
+      },
+      delivery: {
+        get msg() {
+          var m = "We deliver all over Pakistan! 🚚\n\n";
+          if (FEE)  m += "• Delivery fee: Rs " + FEE + "\n";
+          if (FREE && FREE !== "0") m += "• Free delivery on orders over Rs " + parseInt(FREE, 10).toLocaleString() + "\n";
+          m += "• Cash on delivery ✅\n• Bahawalpur: 1–2 days\n• Other cities: 3–5 days";
+          return m;
+        },
+        opts: [
+          {t: "🏙 Which cities do you deliver to?", n: "cities"  },
+          {t: "← Back",                                  n: "start"   }
+        ]
+      },
+      cities: {
+        msg: "We deliver to all major cities:\n\nKarachi, Lahore, Islamabad, Rawalpindi, Faisalabad, Multan, Peshawar, Quetta, Sialkot, Gujranwala, Bahawalpur and many more!\n\nNot sure about your city? Message us.",
+        opts: [
+          {t: "💬 Ask on WhatsApp", n: "wa"      },
+          {t: "← Back",                 n: "delivery" }
+        ]
+      },
+      payment: {
+        msg: "We accept:\n\n• 💵 Cash on delivery (most popular)\n• 📱 JazzCash\n• 📱 EasyPaisa\n• 🏦 Bank transfer\n\nAll payments are safe and secure.",
+        opts: [{t: "← Back", n: "start"}]
+      },
+      track: {
+        msg: "Track your order using your phone number or order number.",
+        opts: [
+          {t: "📦 Track order →", n: "link:/track/" },
+          {t: "← Back",                     n: "start"        }
+        ]
+      },
+      wa: {
+        msg: "Our team is happy to help on WhatsApp! 😊\n\nWe usually reply within a few minutes.",
+        opts: [
+          {t: "💬 Open WhatsApp", n: "link:https://wa.me/" + WA },
+          {t: "← Back",               n: "start"                     }
+        ]
+      }
+    };
+
+    var bot    = document.getElementById('mila-bot');
+    var toggle = document.getElementById('mila-toggle');
+    var xbtn   = document.getElementById('mila-x');
+    var msgs   = document.getElementById('mila-msgs');
+    var opts   = document.getElementById('mila-opts');
+    if (!bot) return;
+
+    function openBot(yes) {
+      bot.classList.toggle('open', yes);
+      toggle.setAttribute('aria-expanded', yes ? 'true' : 'false');
+      document.getElementById('mila-window').setAttribute('aria-hidden', yes ? 'false' : 'true');
+      if (yes && !msgs.children.length) showNode('start');
+    }
+    toggle.addEventListener('click', function () { openBot(!bot.classList.contains('open')); });
+    xbtn.addEventListener('click', function () { openBot(false); });
+
+    function showNode(key) {
+      var node = TREE[key];
+      if (!node) return;
+      opts.innerHTML = '';
+      var typing = document.createElement('div');
+      typing.className = 'mila-typing';
+      typing.innerHTML = '<span></span><span></span><span></span>';
+      msgs.appendChild(typing);
+      msgs.scrollTop = msgs.scrollHeight;
+      setTimeout(function () {
+        msgs.removeChild(typing);
+        var bubble = document.createElement('div');
+        bubble.className = 'mila-msg';
+        bubble.textContent = node.msg;
+        msgs.appendChild(bubble);
+        msgs.scrollTop = msgs.scrollHeight;
+        node.opts.forEach(function (o) {
+          var btn = document.createElement('button');
+          btn.className = 'mila-opt';
+          btn.type = 'button';
+          btn.textContent = o.t;
+          btn.addEventListener('click', function () {
+            if (o.n.indexOf('link:') === 0) { window.location.href = o.n.slice(5); }
+            else { showNode(o.n); }
+          });
+          opts.appendChild(btn);
+        });
+      }, 700);
+    }
+  })();
+  </script>
 </body>
 </html>
