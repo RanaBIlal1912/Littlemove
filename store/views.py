@@ -1,12 +1,15 @@
+import json
+
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import F, Q
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from .cart import Cart
-from .models import Banner, Category, Need, Product, Testimonial
+from .models import Banner, Category, HomeSection, Need, Product, Testimonial
 
 SORTS = {
     "new": ("Newest", "-created_at"),
@@ -27,6 +30,7 @@ def home(request):
     live = Product.objects.live().select_related("category")
     featured = live.filter(is_featured=True)[:8] or live[:8]
     on_sale = [p for p in live.filter(compare_at_price__isnull=False, stock__gt=0) if p.on_sale][:8]
+    sections = {s.type: s for s in HomeSection.objects.all()}
     return render(request, "store/home.html", {
         "banners": Banner.objects.filter(is_active=True),
         "categories": Category.objects.filter(is_active=True),
@@ -38,6 +42,8 @@ def home(request):
         "testimonials": Testimonial.objects.filter(is_active=True)[:6],
         "age_bands": AGE_BANDS,
         "price_caps": PRICE_CAPS,
+        "sections": sections,
+        "section_order": list(HomeSection.objects.values_list("type", flat=True)),
     })
 
 
@@ -181,3 +187,20 @@ def cart_view(request):
 
 def delivery_info(request):
     return render(request, "store/delivery.html")
+
+
+@require_POST
+def chat_api(request):
+    """Handle chatbot messages from the Mila widget."""
+    try:
+        data = json.loads(request.body)
+        user_message = str(data.get("message", "")).strip()[:500]
+    except (json.JSONDecodeError, ValueError):
+        return JsonResponse({"error": "Invalid request"}, status=400)
+
+    if not user_message:
+        return JsonResponse({"error": "Empty message"}, status=400)
+
+    from .chatbot import get_bot_response
+    result = get_bot_response(request, user_message)
+    return JsonResponse(result)

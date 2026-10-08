@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.urls import reverse
@@ -33,6 +34,56 @@ class StoreSettings(models.Model):
     )
     instagram_url = models.URLField(blank=True)
     facebook_url = models.URLField(blank=True)
+    tiktok_url = models.URLField("TikTok URL", blank=True)
+    youtube_url = models.URLField("YouTube URL", blank=True)
+
+    # Branding
+    logo = models.ImageField(
+        upload_to="settings/", blank=True,
+        help_text="Square logo, 200×200 px or bigger. Shown in admin header.",
+    )
+    white_logo = models.ImageField(
+        upload_to="settings/", blank=True,
+        help_text="White/light version of the logo for dark backgrounds.",
+    )
+    favicon = models.ImageField(
+        upload_to="settings/", blank=True,
+        help_text="Browser tab icon, 32×32 or 64×64 px.",
+    )
+    primary_color = models.CharField(
+        max_length=20, default="#5B3FD6",
+        help_text="Main brand colour (hex, e.g. #5B3FD6). Used for buttons and headings.",
+    )
+    secondary_color = models.CharField(
+        max_length=20, default="#FF4F8B",
+        help_text="Secondary brand colour (hex). Used for accents and sale badges.",
+    )
+    accent_color = models.CharField(
+        max_length=20, default="#FFC83D",
+        help_text="Highlight colour (hex). Used for stars, badges, etc.",
+    )
+    background_color = models.CharField(
+        max_length=20, default="#F6F3FF",
+        help_text="Page background colour (hex).",
+    )
+    footer_text = models.TextField(
+        blank=True,
+        help_text="Extra paragraph shown in the website footer.",
+    )
+
+    # SEO
+    seo_title = models.CharField(
+        max_length=120, blank=True,
+        help_text="Browser tab title for the home page. Leave blank to use the store name.",
+    )
+    seo_description = models.CharField(
+        max_length=200, blank=True,
+        help_text="Meta description shown in Google search results.",
+    )
+    share_image = models.ImageField(
+        upload_to="settings/", blank=True,
+        help_text="Image shown when sharing on WhatsApp / social media. Best size: 1200×630.",
+    )
 
     class Meta:
         verbose_name = "Store settings"
@@ -290,3 +341,307 @@ class Testimonial(models.Model):
 
     def __str__(self):
         return f"{self.name}: {self.text[:40]}"
+
+
+# ── New models ────────────────────────────────────────────────────────────────
+
+class HomeSection(models.Model):
+    """Controls which home-page sections are shown and in what order."""
+
+    HERO_SLIDER = "hero_slider"
+    TRUST_BADGES = "trust_badges"
+    SHOP_BY_SKILL = "shop_by_skill"
+    SHOP_BY_NEED = "shop_by_need"
+    FEATURED_PRODUCTS = "featured_products"
+    SHOP_BY_AGE = "shop_by_age"
+    SALE_PRODUCTS = "sale_products"
+    PROMO_BANNERS = "promo_banners"
+    NEW_ARRIVALS = "new_arrivals"
+    SHOP_BY_BUDGET = "shop_by_budget"
+    THERAPIST_PICKS = "therapist_picks"
+    VIDEO = "video"
+    GALLERY = "gallery"
+    TESTIMONIALS = "testimonials"
+    WHATSAPP_HELP = "whatsapp_help"
+    FAQ_SECTION = "faq"
+
+    SECTION_TYPES = [
+        (HERO_SLIDER,      "Hero slider (banners)"),
+        (TRUST_BADGES,     "Trust badges"),
+        (SHOP_BY_SKILL,    "Shop by skill"),
+        (SHOP_BY_NEED,     "Shop by need"),
+        (FEATURED_PRODUCTS,"Featured products"),
+        (SHOP_BY_AGE,      "Shop by age"),
+        (SALE_PRODUCTS,    "Sale products"),
+        (PROMO_BANNERS,    "Promo banners"),
+        (NEW_ARRIVALS,     "New arrivals"),
+        (SHOP_BY_BUDGET,   "Shop by budget"),
+        (THERAPIST_PICKS,  "Therapist picks"),
+        (VIDEO,            "Video section"),
+        (GALLERY,          "Gallery"),
+        (TESTIMONIALS,     "What parents say (testimonials)"),
+        (WHATSAPP_HELP,    "WhatsApp help band"),
+        (FAQ_SECTION,      "FAQ / Questions parents ask"),
+    ]
+
+    type = models.CharField(max_length=30, choices=SECTION_TYPES, unique=True,
+                            help_text="Each section type can only appear once.")
+    title = models.CharField(max_length=120, blank=True,
+                             help_text="Custom heading — leave blank to use the default.")
+    subtitle = models.CharField(max_length=200, blank=True)
+    enabled = models.BooleanField(
+        default=True,
+        help_text="Untick to hide this section from the home page.",
+    )
+    order = models.PositiveSmallIntegerField(
+        default=0, help_text="Lower numbers appear higher on the page."
+    )
+
+    class Meta:
+        ordering = ["order"]
+        verbose_name = "Home page section"
+        verbose_name_plural = "Home page sections"
+
+    def __str__(self):
+        return self.get_type_display()
+
+
+class Popup(models.Model):
+    """Sale or offer popup shown to visitors."""
+
+    WHERE_ALL = "all"
+    WHERE_HOME = "home"
+    WHERE_CHOICES = [
+        (WHERE_ALL,  "All pages"),
+        (WHERE_HOME, "Home page only"),
+    ]
+
+    name = models.CharField(max_length=80, help_text="Internal label — not shown to visitors.")
+    title = models.CharField(max_length=120, help_text="Big heading inside the popup.")
+    text = models.TextField(blank=True, help_text="Body text below the heading.")
+    image = models.ImageField(upload_to="popups/", blank=True,
+                              help_text="Optional image for the popup.")
+    button_text = models.CharField(max_length=40, default="Shop now")
+    button_link = models.CharField(max_length=200, default="/shop/",
+                                   help_text="URL the button goes to, e.g. /shop/?sale=1")
+    coupon_code = models.CharField(max_length=40, blank=True,
+                                   help_text="Optional promo code to display (visitors copy it manually).")
+    start_at = models.DateTimeField(null=True, blank=True,
+                                    help_text="Leave empty to start showing immediately.")
+    end_at = models.DateTimeField(null=True, blank=True,
+                                  help_text="Leave empty to show indefinitely.")
+    where = models.CharField(max_length=10, choices=WHERE_CHOICES, default=WHERE_ALL)
+    delay_seconds = models.PositiveSmallIntegerField(
+        default=3, help_text="Seconds after the page loads before the popup appears."
+    )
+    show_again_days = models.PositiveSmallIntegerField(
+        default=7,
+        help_text="After a visitor dismisses it, show again after this many days.",
+    )
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["-active", "name"]
+        verbose_name = "Popup / offer"
+        verbose_name_plural = "Popups & offers"
+
+    def __str__(self):
+        return self.name
+
+    @classmethod
+    def get_active(cls):
+        from django.db.models import Q
+        from django.utils import timezone
+        now = timezone.now()
+        return (
+            cls.objects.filter(active=True)
+            .filter(Q(start_at__isnull=True) | Q(start_at__lte=now))
+            .filter(Q(end_at__isnull=True) | Q(end_at__gte=now))
+            .first()
+        )
+
+
+class MediaItem(models.Model):
+    """Gallery and media library."""
+
+    TYPE_IMAGE = "image"
+    TYPE_VIDEO = "video"
+    TYPE_YOUTUBE = "youtube"
+    TYPE_CHOICES = [
+        (TYPE_IMAGE,   "Image (jpg / png / webp)"),
+        (TYPE_VIDEO,   "Video file (mp4 / webm)"),
+        (TYPE_YOUTUBE, "YouTube video"),
+    ]
+
+    title = models.CharField(max_length=120)
+    type = models.CharField(max_length=10, choices=TYPE_CHOICES, default=TYPE_IMAGE)
+    file = models.FileField(
+        upload_to="media_library/", blank=True,
+        help_text="Image: jpg/png/webp up to 5 MB. Video: mp4/webm up to 50 MB.",
+    )
+    youtube_url = models.URLField("YouTube URL", blank=True,
+                                  help_text="Paste the full YouTube video URL.")
+    alt_text = models.CharField(max_length=200, blank=True,
+                                help_text="Describe the image for screen readers.")
+    show_in_gallery = models.BooleanField(
+        default=True, help_text="Tick to show this item in the gallery section."
+    )
+    order = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ["order", "id"]
+        verbose_name = "Media item"
+        verbose_name_plural = "Media library"
+
+    def __str__(self):
+        return self.title
+
+    def clean(self):
+        if self.file and self.file.name:
+            name = self.file.name.lower()
+            size = self.file.size if hasattr(self.file, "size") else 0
+            if self.type == self.TYPE_IMAGE:
+                if not any(name.endswith(ext) for ext in (".jpg", ".jpeg", ".png", ".webp")):
+                    raise ValidationError({"file": "Images must be jpg, png or webp."})
+                if size > 5 * 1024 * 1024:
+                    raise ValidationError({"file": "Images must be smaller than 5 MB."})
+            elif self.type == self.TYPE_VIDEO:
+                if not any(name.endswith(ext) for ext in (".mp4", ".webm")):
+                    raise ValidationError({"file": "Videos must be mp4 or webm."})
+                if size > 50 * 1024 * 1024:
+                    raise ValidationError({"file": "Videos must be smaller than 50 MB."})
+
+
+class FAQ(models.Model):
+    """Frequently asked question for the FAQ section and chatbot."""
+
+    question = models.CharField(max_length=200)
+    answer = models.TextField()
+    order = models.PositiveSmallIntegerField(default=0)
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["order"]
+        verbose_name = "FAQ"
+        verbose_name_plural = "FAQs"
+
+    def __str__(self):
+        return self.question
+
+
+# ── Chatbot models ────────────────────────────────────────────────────────────
+
+class BotSettings(models.Model):
+    """Singleton: settings for the Mila chat widget."""
+
+    enabled = models.BooleanField(
+        default=True, help_text="Show the chat widget on the website."
+    )
+    bot_name = models.CharField(
+        max_length=40, default="Mila",
+        help_text="Name shown in the chat header.",
+    )
+    welcome_message = models.CharField(
+        max_length=300,
+        default="Hi, I'm Mila! 🌟 I help you find the right toy for your child.\n\nWhat can I help you with?",
+        help_text="First message the bot sends when a visitor opens the chat.",
+    )
+    quick_reply_1 = models.CharField(max_length=60, blank=True, default="🧸 Find a toy")
+    quick_reply_2 = models.CharField(max_length=60, blank=True, default="🚚 Delivery & shipping")
+    quick_reply_3 = models.CharField(max_length=60, blank=True, default="💳 Payment methods")
+    quick_reply_4 = models.CharField(max_length=60, blank=True, default="📦 Track my order")
+    quick_reply_5 = models.CharField(max_length=60, blank=True, default="💬 Talk to our team")
+    quick_reply_6 = models.CharField(max_length=60, blank=True,
+                                     help_text="Optional 6th quick-reply button.")
+    fallback_message = models.CharField(
+        max_length=300,
+        default="I'm not sure about that 🤔 Would you like to ask our team on WhatsApp? They reply within minutes.",
+        help_text="Reply sent when the bot can't find an answer.",
+    )
+    use_ai = models.BooleanField(
+        "Use AI answers (needs ANTHROPIC_API_KEY)", default=False,
+        help_text="If on and the ANTHROPIC_API_KEY env var is set, the bot will use Claude AI for unknown questions.",
+    )
+
+    class Meta:
+        verbose_name = "Bot settings"
+        verbose_name_plural = "Bot settings"
+
+    def __str__(self):
+        return "Bot settings"
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        pass
+
+    @classmethod
+    def load(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+    def quick_replies(self):
+        return [r for r in [
+            self.quick_reply_1, self.quick_reply_2, self.quick_reply_3,
+            self.quick_reply_4, self.quick_reply_5, self.quick_reply_6,
+        ] if r.strip()]
+
+
+class BotAnswer(models.Model):
+    """Pre-written Q&A pairs for the chatbot keyword engine."""
+
+    question = models.CharField(
+        max_length=200,
+        help_text="Main question this answer covers, e.g. 'How do I pay?'",
+    )
+    keywords = models.TextField(
+        help_text=(
+            "Words or phrases that trigger this answer, one per line.\n"
+            "Include key words from the question itself, e.g.:\n"
+            "payment\ncod\ncash\npay\nhow to pay"
+        ),
+    )
+    answer = models.TextField(help_text="The reply the bot will send.")
+    product = models.ForeignKey(
+        Product, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="+", help_text="Optional: link to a product mentioned in the answer.",
+    )
+    category = models.ForeignKey(
+        Category, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="+", help_text="Optional: link to a category mentioned in the answer.",
+    )
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "Bot answer"
+        verbose_name_plural = "Questions & answers"
+        ordering = ["question"]
+
+    def __str__(self):
+        return self.question
+
+    def keyword_list(self):
+        return [k.strip().lower() for k in self.keywords.splitlines() if k.strip()]
+
+
+class ChatLog(models.Model):
+    """Read-only log of chatbot conversations."""
+
+    session_key = models.CharField(max_length=40, blank=True)
+    question = models.TextField()
+    answer = models.TextField()
+    matched = models.BooleanField(
+        default=False,
+        help_text="True if a matching answer was found; False if the bot used the fallback.",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Chat log entry"
+        verbose_name_plural = "Chat history"
+
+    def __str__(self):
+        return f"{self.question[:60]} ({self.created_at:%Y-%m-%d %H:%M})"

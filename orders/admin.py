@@ -1,10 +1,12 @@
 from django.contrib import admin, messages
 from django.utils.html import format_html
+from unfold.admin import ModelAdmin, TabularInline
+from unfold.decorators import action, display
 
 from .models import Order, OrderItem
 
 
-class OrderItemInline(admin.TabularInline):
+class OrderItemInline(TabularInline):
     model = OrderItem
     extra = 0
     can_delete = False
@@ -16,13 +18,17 @@ class OrderItemInline(admin.TabularInline):
 
 
 STATUS_COLORS = {
-    "pending": "#b54708", "confirmed": "#1d4ed8", "packed": "#6941c6",
-    "shipped": "#0e7490", "delivered": "#067647", "cancelled": "#667085",
+    "pending":   "#b54708",
+    "confirmed": "#1d4ed8",
+    "packed":    "#6941c6",
+    "shipped":   "#0e7490",
+    "delivered": "#067647",
+    "cancelled": "#667085",
 }
 
 
 @admin.register(Order)
-class OrderAdmin(admin.ModelAdmin):
+class OrderAdmin(ModelAdmin):
     list_display = ["number", "created_at", "full_name", "phone", "total_rs",
                     "payment_badge", "status_badge"]
     list_filter = ["status", "payment_method", "payment_status", "created_at", "city"]
@@ -43,28 +49,37 @@ class OrderAdmin(admin.ModelAdmin):
         ("Private", {"fields": ["internal_note"]}),
     ]
 
-    @admin.display(description="Total", ordering="total")
+    @display(description="Total", ordering="total")
     def total_rs(self, obj):
         return f"Rs {obj.total:,}"
 
-    @admin.display(description="Status", ordering="status")
+    @display(description="Status", ordering="status")
     def status_badge(self, obj):
-        return format_html('<b style="color:{}">{}</b>', STATUS_COLORS.get(obj.status, "#000"),
-                           obj.get_status_display())
+        return format_html(
+            '<b style="color:{}">{}</b>',
+            STATUS_COLORS.get(obj.status, "#000"),
+            obj.get_status_display(),
+        )
 
-    @admin.display(description="Payment", ordering="payment_status")
+    @display(description="Payment", ordering="payment_status")
     def payment_badge(self, obj):
         color = {"paid": "#067647", "checking": "#b54708"}.get(obj.payment_status, "#667085")
-        return format_html('{}<br><span style="color:{}">{}</span>', obj.get_payment_method_display(),
-                           color, obj.get_payment_status_display())
+        return format_html(
+            '{}<br><span style="color:{}">{}</span>',
+            obj.get_payment_method_display(),
+            color,
+            obj.get_payment_status_display(),
+        )
 
-    @admin.display(description="Message customer")
+    @display(description="Message customer")
     def whatsapp_customer(self, obj):
         if not obj.phone:
             return "—"
         number = "92" + obj.phone[1:]
-        return format_html('<a href="https://wa.me/{}" target="_blank" rel="noopener">Open WhatsApp chat</a>',
-                           number)
+        return format_html(
+            '<a href="https://wa.me/{}" target="_blank" rel="noopener">Open WhatsApp chat</a>',
+            number,
+        )
 
     def _set_status(self, request, queryset, status):
         updated = queryset.exclude(status=Order.Status.CANCELLED).update(status=status)

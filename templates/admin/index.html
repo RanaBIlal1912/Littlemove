@@ -1,0 +1,201 @@
+{% extends 'admin/base.html' %}
+{% load i18n static %}
+
+{% block title %}Dashboard | LittleMove{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  .lm-kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin-bottom:24px; }
+  .lm-kpi { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:20px; display:flex; flex-direction:column; gap:6px; }
+  .dark .lm-kpi { background:#1e1e2e; border-color:#2d2d3f; }
+  .lm-kpi-icon { font-size:1.6rem; line-height:1; }
+  .lm-kpi-value { font-size:1.75rem; font-weight:700; line-height:1; color:#111827; }
+  .dark .lm-kpi-value { color:#f3f4f6; }
+  .lm-kpi-label { font-size:.82rem; color:#6b7280; text-transform:uppercase; letter-spacing:.04em; }
+  .lm-card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:20px; margin-bottom:24px; }
+  .dark .lm-card { background:#1e1e2e; border-color:#2d2d3f; }
+  .lm-card-title { font-size:1rem; font-weight:600; margin:0 0 16px; color:#111827; }
+  .dark .lm-card-title { color:#f3f4f6; }
+  .lm-table { width:100%; border-collapse:collapse; font-size:.875rem; }
+  .lm-table th { text-align:left; padding:8px 10px; border-bottom:2px solid #e5e7eb; color:#6b7280; font-weight:600; font-size:.78rem; text-transform:uppercase; }
+  .lm-table td { padding:8px 10px; border-bottom:1px solid #f3f4f6; }
+  .dark .lm-table th { border-color:#2d2d3f; color:#9ca3af; }
+  .dark .lm-table td { border-color:#2d2d3f; color:#d1d5db; }
+  .lm-badge { display:inline-block; padding:2px 8px; border-radius:99px; font-size:.75rem; font-weight:600; }
+  .lm-badge-pending  { background:#fef3c7; color:#92400e; }
+  .lm-badge-confirmed{ background:#dbeafe; color:#1e40af; }
+  .lm-badge-packed   { background:#ede9fe; color:#5b21b6; }
+  .lm-badge-shipped  { background:#cffafe; color:#0c4a6e; }
+  .lm-badge-delivered{ background:#dcfce7; color:#166534; }
+  .lm-badge-cancelled{ background:#f3f4f6; color:#374151; }
+  .lm-quick { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:24px; }
+  .lm-quick a { display:inline-flex; align-items:center; gap:6px; padding:9px 16px; border-radius:8px;
+    background:#5b3fd6; color:#fff; font-size:.875rem; font-weight:500; text-decoration:none; transition:opacity .15s; }
+  .lm-quick a:hover { opacity:.85; }
+  .lm-stock-list { display:flex; flex-direction:column; gap:6px; }
+  .lm-stock-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0;
+    border-bottom:1px solid #f3f4f6; font-size:.875rem; }
+  .dark .lm-stock-row { border-color:#2d2d3f; }
+  .lm-stock-count { font-weight:700; }
+  .lm-stock-zero { color:#b42318; }
+  .lm-stock-low  { color:#b54708; }
+  .lm-chart-wrap { position:relative; height:220px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="padding:4px 0 20px">
+  <h1 style="font-size:1.4rem;font-weight:700;margin:0 0 4px;color:#111827" class="dark:text-gray-100">
+    Welcome back 👋
+  </h1>
+  <p style="color:#6b7280;font-size:.875rem;margin:0">Here's what's happening with your LittleMove store today.</p>
+</div>
+
+{# ── Quick action buttons ──────────────────────────────────────────────────── #}
+<div class="lm-quick">
+  <a href="{% url 'admin:store_product_add' %}">➕ Add product</a>
+  <a href="{% url 'admin:store_banner_add' %}">🖼 Add slide</a>
+  <a href="{% url 'admin:store_mediaitem_add' %}">📁 Upload media</a>
+  <a href="{% url 'admin:store_popup_add' %}">🎉 Edit popup</a>
+  <a href="{% url 'admin:store_storesettings_changelist' %}">⚙️ Site settings</a>
+</div>
+
+{# ── KPI cards ─────────────────────────────────────────────────────────────── #}
+<div class="lm-kpi-grid">
+  <div class="lm-kpi">
+    <span class="lm-kpi-icon">📦</span>
+    <span class="lm-kpi-value">{{ kpi_orders_today }}</span>
+    <span class="lm-kpi-label">Orders today</span>
+  </div>
+  <div class="lm-kpi">
+    <span class="lm-kpi-icon">💰</span>
+    <span class="lm-kpi-value">Rs {{ kpi_revenue_month|floatformat:0 }}</span>
+    <span class="lm-kpi-label">Revenue this month</span>
+  </div>
+  <div class="lm-kpi">
+    <span class="lm-kpi-icon">⏳</span>
+    <span class="lm-kpi-value" style="color:{% if kpi_pending %}#b54708{% else %}#067647{% endif %}">
+      {{ kpi_pending }}
+    </span>
+    <span class="lm-kpi-label">Waiting to confirm</span>
+  </div>
+  <div class="lm-kpi">
+    <span class="lm-kpi-icon">⚠️</span>
+    <span class="lm-kpi-value" style="color:{% if kpi_low_stock %}#b42318{% else %}#067647{% endif %}">
+      {{ kpi_low_stock }}
+    </span>
+    <span class="lm-kpi-label">Low / sold-out products</span>
+  </div>
+</div>
+
+{# ── 30-day chart ─────────────────────────────────────────────────────────── #}
+<div class="lm-card">
+  <h2 class="lm-card-title">Orders &amp; revenue — last 30 days</h2>
+  <div class="lm-chart-wrap">
+    <canvas id="lm-chart"></canvas>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+{# ── Latest orders ─────────────────────────────────────────────────────────── #}
+<div class="lm-card">
+  <h2 class="lm-card-title">Latest 10 orders
+    <a href="{% url 'admin:orders_order_changelist' %}" style="font-size:.8rem;font-weight:400;color:#5b3fd6;float:right">See all →</a>
+  </h2>
+  <table class="lm-table">
+    <thead><tr>
+      <th>#</th><th>Customer</th><th>Total</th><th>Status</th>
+    </tr></thead>
+    <tbody>
+    {% for o in latest_orders %}
+    <tr>
+      <td><a href="{% url 'admin:orders_order_change' o.pk %}" style="color:#5b3fd6;font-weight:600">{{ o.number }}</a></td>
+      <td>{{ o.full_name }}</td>
+      <td>Rs {{ o.total|floatformat:0 }}</td>
+      <td><span class="lm-badge lm-badge-{{ o.status }}">{{ o.get_status_display }}</span></td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="4" style="color:#9ca3af;text-align:center;padding:20px">No orders yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{# ── Low stock ─────────────────────────────────────────────────────────────── #}
+<div class="lm-card">
+  <h2 class="lm-card-title">Low / sold-out products
+    <a href="{% url 'admin:store_product_changelist' %}?stock=low" style="font-size:.8rem;font-weight:400;color:#5b3fd6;float:right">See all →</a>
+  </h2>
+  <div class="lm-stock-list">
+    {% for p in low_stock_products %}
+    <div class="lm-stock-row">
+      <a href="{% url 'admin:store_product_change' p.pk %}" style="color:#111827;text-decoration:none">{{ p.name }}</a>
+      <span class="lm-stock-count {% if p.stock == 0 %}lm-stock-zero{% else %}lm-stock-low{% endif %}">
+        {% if p.stock == 0 %}Sold out{% else %}{{ p.stock }} left{% endif %}
+      </span>
+    </div>
+    {% empty %}
+    <p style="color:#9ca3af;font-size:.875rem;margin:8px 0">All products are in stock.</p>
+    {% endfor %}
+  </div>
+</div>
+
+</div>{# end grid #}
+
+<script>
+(function () {
+  var ctx = document.getElementById('lm-chart');
+  if (!ctx) return;
+  var labels  = {{ chart_labels|safe }};
+  var orders  = {{ chart_orders|safe }};
+  var revenue = {{ chart_revenue|safe }};
+  var dark = document.documentElement.classList.contains('dark');
+  var gridColor = dark ? 'rgba(255,255,255,.07)' : 'rgba(0,0,0,.07)';
+  var textColor = dark ? '#9ca3af' : '#6b7280';
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Orders',
+          data: orders,
+          borderColor: '#5b3fd6',
+          backgroundColor: 'rgba(91,63,214,.08)',
+          tension: .4,
+          fill: true,
+          yAxisID: 'y',
+          pointRadius: 0,
+          pointHoverRadius: 5,
+        },
+        {
+          label: 'Revenue (Rs)',
+          data: revenue,
+          borderColor: '#ff4f8b',
+          backgroundColor: 'rgba(255,79,139,.06)',
+          tension: .4,
+          fill: true,
+          yAxisID: 'y1',
+          pointRadius: 0,
+          pointHoverRadius: 5,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { labels: { color: textColor, font: { size: 12 } } } },
+      scales: {
+        x:  { ticks: { color: textColor, maxTicksLimit: 8, maxRotation: 0 }, grid: { color: gridColor } },
+        y:  { position: 'left',  ticks: { color: textColor }, grid: { color: gridColor }, title: { display: true, text: 'Orders', color: textColor } },
+        y1: { position: 'right', ticks: { color: textColor }, grid: { drawOnChartArea: false }, title: { display: true, text: 'Revenue (Rs)', color: textColor } },
+      },
+    },
+  });
+})();
+</script>
+{% endblock %}

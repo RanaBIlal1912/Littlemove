@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 
 import dj_database_url
+from django.urls import reverse_lazy
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -48,7 +49,11 @@ ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", "localhost,127.0.0.1" if DEBUG else ""
 CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS")
 
 INSTALLED_APPS = [
-    "jazzmin",
+    # unfold must be before django.contrib.admin
+    "unfold",
+    "unfold.contrib.filters",
+    "unfold.contrib.forms",
+    "unfold.contrib.inlines",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -165,88 +170,185 @@ if not DEBUG:
     SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
     X_FRAME_OPTIONS = "DENY"
 
-JAZZMIN_SETTINGS = {
-    "site_title": "LittleMove Admin",
-    "site_header": "LittleMove",
-    "site_brand": "LittleMove",
-    "site_logo": None,
-    "login_logo": None,
-    "site_logo_classes": None,
-    "site_icon": None,
-    "welcome_sign": "Welcome to LittleMove Store Manager",
-    "copyright": "LittleMove, Bahawalpur",
-    "search_model": ["store.Product", "orders.Order"],
-    "user_avatar": None,
-    "topmenu_links": [
-        {"name": "Visit Shop", "url": "/", "new_window": True},
-        {"app": "orders"},
-    ],
-    "usermenu_links": [
-        {"name": "Visit Shop", "url": "/", "new_window": True},
-    ],
-    "show_sidebar": True,
-    "navigation_expanded": True,
-    "hide_apps": [],
-    "hide_models": [],
-    "order_with_respect_to": ["store", "orders", "auth"],
-    "icons": {
-        "auth": "fas fa-users-cog",
-        "auth.user": "fas fa-user",
-        "auth.group": "fas fa-users",
-        "store": "fas fa-store",
-        "store.product": "fas fa-box-open",
-        "store.category": "fas fa-tags",
-        "store.need": "fas fa-heart",
-        "store.banner": "fas fa-image",
-        "store.storesettings": "fas fa-cog",
-        "store.testimonial": "fas fa-star",
-        "orders": "fas fa-shopping-cart",
-        "orders.order": "fas fa-receipt",
-        "orders.orderitem": "fas fa-list",
-    },
-    "default_icon_parents": "fas fa-chevron-circle-right",
-    "default_icon_children": "fas fa-dot-circle",
-    "related_modal_active": True,
-    "custom_css": None,
-    "custom_js": None,
-    "use_google_fonts_cdn": True,
-    "show_ui_builder": False,
-    "changeform_format": "horizontal_tabs",
-    "changeform_format_overrides": {
-        "auth.user": "collapsible",
-    },
-    "language_chooser": False,
-}
+# ── django-unfold admin configuration ─────────────────────────────────────────
 
-JAZZMIN_UI_TWEAKS = {
-    "navbar_small_text": False,
-    "footer_small_text": True,
-    "body_small_text": False,
-    "brand_small_text": False,
-    "brand_colour": "navbar-primary",
-    "accent": "accent-primary",
-    "navbar": "navbar-white navbar-light",
-    "no_navbar_border": False,
-    "navbar_fixed": True,
-    "layout_boxed": False,
-    "footer_fixed": False,
-    "sidebar_fixed": True,
-    "sidebar": "sidebar-dark-primary",
-    "sidebar_nav_small_text": False,
-    "sidebar_disable_expand": False,
-    "sidebar_nav_child_indent": True,
-    "sidebar_nav_compact_style": True,
-    "sidebar_nav_legacy_style": False,
-    "sidebar_nav_flat_style": False,
-    "theme": "default",
-    "dark_mode_theme": None,
-    "button_classes": {
-        "primary": "btn-primary",
-        "secondary": "btn-secondary",
-        "info": "btn-info",
-        "warning": "btn-warning",
-        "danger": "btn-danger",
-        "success": "btn-success",
+UNFOLD = {
+    "SITE_TITLE": "LittleMove",
+    "SITE_HEADER": "LittleMove",
+    "SITE_SUBHEADER": "Store Manager",
+    "SITE_URL": "/",
+    "SHOW_HISTORY": True,
+    "SHOW_VIEW_ON_SITE": True,
+    "SHOW_BACK_BUTTON": True,
+
+    # Dashboard context callback
+    "DASHBOARD_CALLBACK": "store.admin_callbacks.dashboard_callback",
+
+    # Brand colours (using unfold's primary palette, purple to match LittleMove)
+    "COLORS": {
+        "primary": {
+            "50":  "oklch(97.7% .014 298)",
+            "100": "oklch(94.6% .033 298)",
+            "200": "oklch(90.2% .063 298)",
+            "300": "oklch(82.7% .119 298)",
+            "400": "oklch(71.4% .203 298)",
+            "500": "oklch(59% .238 298)",
+            "600": "oklch(50.8% .248 298)",
+            "700": "oklch(44.6% .228 298)",
+            "800": "oklch(38.8% .188 298)",
+            "900": "oklch(33.1% .156 298)",
+            "950": "oklch(24.1% .129 298)",
+        },
+    },
+
+    # Sidebar navigation
+    "SIDEBAR": {
+        "show_search": True,
+        "show_all_applications": False,
+        "navigation": [
+            {
+                "title": "Dashboard",
+                "items": [
+                    {
+                        "title": "Dashboard",
+                        "icon": "dashboard",
+                        "link": reverse_lazy("admin:index"),
+                    },
+                ],
+            },
+            {
+                "title": "Orders",
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": "All orders",
+                        "icon": "shopping_cart",
+                        "link": reverse_lazy("admin:orders_order_changelist"),
+                    },
+                    {
+                        "title": "New (pending)",
+                        "icon": "fiber_new",
+                        "link": lambda request: reverse_lazy("admin:orders_order_changelist").__str__() + "?status=pending",
+                        "badge": "store.admin_callbacks.badge_pending_orders",
+                    },
+                    {
+                        "title": "Shipped",
+                        "icon": "local_shipping",
+                        "link": lambda request: reverse_lazy("admin:orders_order_changelist").__str__() + "?status=shipped",
+                    },
+                    {
+                        "title": "Cancelled",
+                        "icon": "cancel",
+                        "link": lambda request: reverse_lazy("admin:orders_order_changelist").__str__() + "?status=cancelled",
+                    },
+                ],
+            },
+            {
+                "title": "Catalog",
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": "Products",
+                        "icon": "inventory_2",
+                        "link": reverse_lazy("admin:store_product_changelist"),
+                    },
+                    {
+                        "title": "Categories",
+                        "icon": "category",
+                        "link": reverse_lazy("admin:store_category_changelist"),
+                    },
+                    {
+                        "title": "Shop by need",
+                        "icon": "favorite",
+                        "link": reverse_lazy("admin:store_need_changelist"),
+                    },
+                    {
+                        "title": "Low stock",
+                        "icon": "warning",
+                        "link": lambda request: reverse_lazy("admin:store_product_changelist").__str__() + "?stock=low",
+                        "badge": "store.admin_callbacks.badge_low_stock",
+                    },
+                ],
+            },
+            {
+                "title": "Website",
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": "Home page sections",
+                        "icon": "home",
+                        "link": reverse_lazy("admin:store_homesection_changelist"),
+                    },
+                    {
+                        "title": "Slides / Banners",
+                        "icon": "image",
+                        "link": reverse_lazy("admin:store_banner_changelist"),
+                    },
+                    {
+                        "title": "Popups & offers",
+                        "icon": "campaign",
+                        "link": reverse_lazy("admin:store_popup_changelist"),
+                    },
+                    {
+                        "title": "Gallery & media",
+                        "icon": "photo_library",
+                        "link": reverse_lazy("admin:store_mediaitem_changelist"),
+                    },
+                    {
+                        "title": "Testimonials",
+                        "icon": "star",
+                        "link": reverse_lazy("admin:store_testimonial_changelist"),
+                    },
+                    {
+                        "title": "FAQ",
+                        "icon": "quiz",
+                        "link": reverse_lazy("admin:store_faq_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": "Chatbot",
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": "Bot settings",
+                        "icon": "smart_toy",
+                        "link": reverse_lazy("admin:store_botsettings_changelist"),
+                    },
+                    {
+                        "title": "Questions & answers",
+                        "icon": "question_answer",
+                        "link": reverse_lazy("admin:store_botanswer_changelist"),
+                    },
+                    {
+                        "title": "Chat history",
+                        "icon": "history",
+                        "link": reverse_lazy("admin:store_chatlog_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": "Settings",
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": "Site settings",
+                        "icon": "settings",
+                        "link": reverse_lazy("admin:store_storesettings_changelist"),
+                    },
+                    {
+                        "title": "Admin users",
+                        "icon": "manage_accounts",
+                        "link": reverse_lazy("admin:auth_user_changelist"),
+                    },
+                ],
+            },
+        ],
     },
 }
 

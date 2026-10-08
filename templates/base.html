@@ -3,16 +3,26 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>{% block title %}{{ shop.store_name }} — {{ shop.tagline }} | Kids learning toys in Pakistan{% endblock %}</title>
-  <meta name="description" content="{% block description %}Developmental, sensory and speech toys for babies and kids, chosen with therapists at Wellness Rehabilitation Clinic, Bahawalpur. Cash on delivery across Pakistan.{% endblock %}">
-  <meta name="theme-color" content="#5B3FD6">
+  <title>{% block title %}{% if shop.seo_title %}{{ shop.seo_title }}{% else %}{{ shop.store_name }} — {{ shop.tagline }} | Kids learning toys in Pakistan{% endif %}{% endblock %}</title>
+  <meta name="description" content="{% block description %}{% if shop.seo_description %}{{ shop.seo_description }}{% else %}Developmental, sensory and speech toys for babies and kids, chosen with therapists at Wellness Rehabilitation Clinic, Bahawalpur. Cash on delivery across Pakistan.{% endif %}{% endblock %}">
+  <meta name="theme-color" content="{{ shop.primary_color|default:'#5B3FD6' }}">
   <link rel="preload" href="{% static 'fonts/fredoka-latin-600-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="{% static 'fonts/nunito-sans-latin-400-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{% static 'css/site.css' %}">
-  <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
+  {% if shop.favicon %}<link rel="icon" href="{{ shop.favicon.url }}" type="image/x-icon">{% else %}<link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">{% endif %}
+  {% if shop.share_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ shop.share_image.url }}">{% endif %}
   <meta property="og:site_name" content="{{ shop.store_name }}">
   <meta property="og:title" content="{% block og_title %}{{ shop.store_name }} — {{ shop.tagline }}{% endblock %}">
   <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+  {# Brand CSS variables driven by StoreSettings — change colours without touching code #}
+  <style>
+    :root {
+      --brand:  {{ shop.primary_color|default:'#5B3FD6' }};
+      --pink:   {{ shop.secondary_color|default:'#FF4F8B' }};
+      --yellow: {{ shop.accent_color|default:'#FFC83D' }};
+      --bg:     {{ shop.background_color|default:'#F6F3FF' }};
+    }
+  </style>
   {% block head %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">

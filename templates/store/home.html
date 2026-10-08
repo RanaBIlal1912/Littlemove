@@ -1,6 +1,14 @@
 {% extends "base.html" %}{% load store_tags %}
+{% comment %}
+  Sections are rendered in the order defined in HomeSection admin.
+  Disabled sections are skipped. section_order is a list of type keys.
+{% endcomment %}
 {% block content %}
 
+{% for section_type in section_order %}{% with sec=sections|default_if_none:'' %}
+
+{# hero_slider #}
+{% if section_type == "hero_slider" %}{% with s=sections.hero_slider %}{% if not s or s.enabled %}
 <section class="hero">
   <div class="wrap hero-grid">
     <div class="slider" aria-roledescription="carousel" aria-label="Offers">
@@ -67,7 +75,10 @@
       </a>
     </div>
   </div>
+{% endif %}{% endwith %}{% endif %}
 
+{# trust_badges #}
+{% if section_type == "trust_badges" %}{% with s=sections.trust_badges %}{% if not s or s.enabled %}
   <div class="wrap">
     <div class="trust">
       <div style="--accent:var(--green)"><span class="ti">{% icon 'cash' 22 2.2 %}</span><p><b>Cash on delivery</b><span>Pay when the parcel arrives</span></p></div>
@@ -76,14 +87,17 @@
       <div style="--accent:var(--brand)"><span class="ti">{% icon 'shield' 22 2.2 %}</span><p><b>Therapist chosen</b><span>Safe, age-right toys</span></p></div>
     </div>
   </div>
-</section>
+</section>{# end hero #}
+{% endif %}{% endwith %}{% endif %}
 
+{# shop_by_skill #}
+{% if section_type == "shop_by_skill" %}{% with s=sections.shop_by_skill %}{% if not s or s.enabled %}
 <section class="section">
   <div class="wrap">
     <div class="section-head">
       <div>
-        <h2><span class="title-dot" style="background:var(--brand)"></span>Shop by skill</h2>
-        <p>Pick what your child is working on right now.</p>
+        <h2><span class="title-dot" style="background:var(--brand)"></span>{% if s and s.title %}{{ s.title }}{% else %}Shop by skill{% endif %}</h2>
+        <p>{% if s and s.subtitle %}{{ s.subtitle }}{% else %}Pick what your child is working on right now.{% endif %}</p>
       </div>
       <a class="link" href="{% url 'store:shop' %}">All toys</a>
     </div>
@@ -98,14 +112,17 @@
     </div>
   </div>
 </section>
+{% endif %}{% endwith %}{% endif %}
 
+{# shop_by_need #}
+{% if section_type == "shop_by_need" %}{% with s=sections.shop_by_need %}{% if not s or s.enabled %}
 {% if needs %}
 <section class="section" style="padding-top:0">
   <div class="wrap">
     <div class="section-head">
       <div>
-        <h2><span class="title-dot" style="background:var(--orange)"></span>Shop by need</h2>
-        <p>Start from what your child needs help with — we'll show the toys parents choose for it.</p>
+        <h2><span class="title-dot" style="background:var(--orange)"></span>{% if s and s.title %}{{ s.title }}{% else %}Shop by need{% endif %}</h2>
+        <p>{% if s and s.subtitle %}{{ s.subtitle }}{% else %}Start from what your child needs help with — we'll show the toys parents choose for it.{% endif %}</p>
       </div>
     </div>
     <div class="need-grid">
@@ -120,19 +137,26 @@
   </div>
 </section>
 {% endif %}
+{% endif %}{% endwith %}{% endif %}
 
+{# featured_products #}
+{% if section_type == "featured_products" %}{% with s=sections.featured_products %}{% if not s or s.enabled %}
 <div class="marquee" aria-hidden="true"><div class="marquee-track">
   {% for i in "123456" %}<span>Play.</span><span>Learn.</span><span>Grow.</span>{% endfor %}
 </div></div>
+{% with title=s.title|default:"Parents' favourites" sub=s.subtitle|default:"The toys families order again and again." %}
+{% include "store/_row.html" with items=featured title=title sub=sub link="/shop/" rid="row-fav" soft=True %}
+{% endwith %}
+{% endif %}{% endwith %}{% endif %}
 
-{% include "store/_row.html" with items=featured title="Parents' favourites" sub="The toys families order again and again." link="/shop/" rid="row-fav" soft=True %}
-
+{# shop_by_age #}
+{% if section_type == "shop_by_age" %}{% with s=sections.shop_by_age %}{% if not s or s.enabled %}
 <section class="section">
   <div class="wrap">
     <div class="section-head">
       <div>
-        <h2><span class="title-dot" style="background:var(--sky)"></span>Shop by age</h2>
-        <p>Every toy is marked with the ages it suits best.</p>
+        <h2><span class="title-dot" style="background:var(--sky)"></span>{% if s and s.title %}{{ s.title }}{% else %}Shop by age{% endif %}</h2>
+        <p>{% if s and s.subtitle %}{{ s.subtitle }}{% else %}Every toy is marked with the ages it suits best.{% endif %}</p>
       </div>
     </div>
     <div class="age-row">
@@ -147,9 +171,17 @@
     </div>
   </div>
 </section>
+{% endif %}{% endwith %}{% endif %}
 
-{% include "store/_row.html" with items=on_sale title="On sale now" sub="Limited stock at these prices." link="/shop/?sale=1" rid="row-sale" soft=True %}
+{# sale_products #}
+{% if section_type == "sale_products" %}{% with s=sections.sale_products %}{% if not s or s.enabled %}
+{% with title=s.title|default:"On sale now" sub=s.subtitle|default:"Limited stock at these prices." %}
+{% include "store/_row.html" with items=on_sale title=title sub=sub link="/shop/?sale=1" rid="row-sale" soft=True %}
+{% endwith %}
+{% endif %}{% endwith %}{% endif %}
 
+{# promo_banners #}
+{% if section_type == "promo_banners" %}{% with s=sections.promo_banners %}{% if not s or s.enabled %}
 <section class="section">
   <div class="wrap split">
     <a class="split-a" href="{% url 'store:shop' %}?category=speech-language">
@@ -166,15 +198,23 @@
     </a>
   </div>
 </section>
+{% endif %}{% endwith %}{% endif %}
 
-{% include "store/_row.html" with items=new_arrivals title="New arrivals" link="/shop/?sort=new" rid="row-new" dot="var(--yellow)" %}
+{# new_arrivals #}
+{% if section_type == "new_arrivals" %}{% with s=sections.new_arrivals %}{% if not s or s.enabled %}
+{% with title=s.title|default:"New arrivals" %}
+{% include "store/_row.html" with items=new_arrivals title=title link="/shop/?sort=new" rid="row-new" dot="var(--yellow)" %}
+{% endwith %}
+{% endif %}{% endwith %}{% endif %}
 
+{# shop_by_budget #}
+{% if section_type == "shop_by_budget" %}{% with s=sections.shop_by_budget %}{% if not s or s.enabled %}
 <section class="section section-soft">
   <div class="wrap">
     <div class="section-head">
       <div>
-        <h2><span class="title-dot" style="background:var(--green)"></span>Shop by budget</h2>
-        <p>Great learning toys at every price.</p>
+        <h2><span class="title-dot" style="background:var(--green)"></span>{% if s and s.title %}{{ s.title }}{% else %}Shop by budget{% endif %}</h2>
+        <p>{% if s and s.subtitle %}{{ s.subtitle }}{% else %}Great learning toys at every price.{% endif %}</p>
       </div>
     </div>
     <div class="price-row-tiles">
@@ -187,13 +227,21 @@
     </div>
   </div>
 </section>
+{% endif %}{% endwith %}{% endif %}
 
-{% include "store/_row.html" with items=picks title="Therapist picks" sub="What our therapists suggest most for practice at home." link="/shop/?pick=1" rid="row-picks" dot="var(--green)" %}
+{# therapist_picks #}
+{% if section_type == "therapist_picks" %}{% with s=sections.therapist_picks %}{% if not s or s.enabled %}
+{% with title=s.title|default:"Therapist picks" sub=s.subtitle|default:"What our therapists suggest most for practice at home." %}
+{% include "store/_row.html" with items=picks title=title sub=sub link="/shop/?pick=1" rid="row-picks" dot="var(--green)" %}
+{% endwith %}
+{% endif %}{% endwith %}{% endif %}
 
+{# testimonials #}
+{% if section_type == "testimonials" %}{% with s=sections.testimonials %}{% if not s or s.enabled %}
 {% if testimonials %}
 <section class="section section-soft">
   <div class="wrap">
-    <div class="section-head"><h2><span class="title-dot" style="background:var(--yellow)"></span>What parents say</h2></div>
+    <div class="section-head"><h2><span class="title-dot" style="background:var(--yellow)"></span>{% if s and s.title %}{{ s.title }}{% else %}What parents say{% endif %}</h2></div>
     <div class="quotes">
       {% for t in testimonials %}
       <blockquote class="quote" style="margin:0">
@@ -206,23 +254,29 @@
   </div>
 </section>
 {% endif %}
+{% endif %}{% endwith %}{% endif %}
 
+{# whatsapp_help #}
+{% if section_type == "whatsapp_help" %}{% with s=sections.whatsapp_help %}{% if not s or s.enabled %}
 <section class="section">
   <div class="wrap">
     <div class="wa-band">
       <span class="wa-ico">{% whatsapp_icon 34 %}</span>
       <div>
-        <h3>Not sure which toy fits your child?</h3>
-        <p>Tell us your child's age and what they're working on. We'll suggest toys on WhatsApp.</p>
+        <h3>{% if s and s.title %}{{ s.title }}{% else %}Not sure which toy fits your child?{% endif %}</h3>
+        <p>{% if s and s.subtitle %}{{ s.subtitle }}{% else %}Tell us your child's age and what they're working on. We'll suggest toys on WhatsApp.{% endif %}</p>
       </div>
       <a class="btn btn-wa" href="https://wa.me/{{ shop.whatsapp_number }}?text={{ 'Assalam o Alaikum! Please suggest toys for my child. Age: '|urlencode }}" target="_blank" rel="noopener">Ask on WhatsApp</a>
     </div>
   </div>
 </section>
+{% endif %}{% endwith %}{% endif %}
 
+{# faq #}
+{% if section_type == "faq" %}{% with s=sections.faq %}{% if not s or s.enabled %}
 <section class="section" id="faq" style="padding-top:0">
   <div class="wrap">
-    <div class="section-head"><h2><span class="title-dot" style="background:var(--brand)"></span>Questions parents ask</h2></div>
+    <div class="section-head"><h2><span class="title-dot" style="background:var(--brand)"></span>{% if s and s.title %}{{ s.title }}{% else %}Questions parents ask{% endif %}</h2></div>
     <div class="faq">
       <details><summary>How do I pay?</summary><p>Pay cash to the rider when your parcel arrives. You can also pay in advance by {% if shop.jazzcash_number %}JazzCash{% endif %}{% if shop.jazzcash_number and shop.easypaisa_number %} or {% endif %}{% if shop.easypaisa_number %}EasyPaisa{% endif %} and enter the transaction ID at checkout.</p></details>
       <details><summary>How long does delivery take, and what does it cost?</summary><p>{{ shop.city }} orders usually arrive in 1–2 days, other cities in 3–5 working days. Delivery is {{ shop.delivery_fee|rs }}{% if shop.free_delivery_over %}, and free on orders of {{ shop.free_delivery_over|rs }} or more{% endif %}.</p></details>
@@ -233,6 +287,10 @@
     </div>
   </div>
 </section>
+{% endif %}{% endwith %}{% endif %}
+
+{% endwith %}{% endfor %}{# end section_order loop #}
+
 {% endblock %}
 
 {% block scripts %}
