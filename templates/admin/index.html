@@ -5,7 +5,7 @@
 
 {% block extrahead %}
 {{ block.super }}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="{% static 'vendor/chart.min.js' %}"></script>
 <style>
   .lm-kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin-bottom:24px; }
   .lm-kpi { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:20px; display:flex; flex-direction:column; gap:6px; }

@@ -225,10 +225,11 @@ def cart_add(request, product_id):
             "cart_count": cart.count,
             "message": f"Added {product.name} to cart",
             "items": [{
+                "pid": line.product.pk,
                 "name": line.product.name,
                 "qty": line.qty,
-                "price": line.product.price,
-                "line_total": line.line_total,
+                "price": float(line.product.price),
+                "line_total": float(line.line_total),
                 "url": line.product.get_absolute_url(),
                 "image": line.product.image.url if line.product.image else None,
             } for line in summary["lines"]],
@@ -249,12 +250,35 @@ def cart_update(request, product_id):
     product = Product.objects.live().filter(pk=product_id).first()
     if product is None:
         cart.remove(product_id)
-        return redirect("store:cart")
-    try:
-        qty = int(request.POST.get("qty", 1))
-    except ValueError:
-        qty = 1
-    cart.set(product, qty)
+    else:
+        try:
+            qty = int(request.POST.get("qty", 1))
+        except ValueError:
+            qty = 1
+        cart.set(product, qty)
+    wants_json = (
+        "application/json" in request.headers.get("Accept", "")
+        or request.headers.get("X-Requested-With") == "XMLHttpRequest"
+    )
+    if wants_json:
+        summary = cart.summary()
+        return JsonResponse({
+            "ok": True,
+            "cart_count": cart.count,
+            "items": [{
+                "pid": line.product.pk,
+                "name": line.product.name,
+                "qty": line.qty,
+                "price": float(line.product.price),
+                "line_total": float(line.line_total),
+                "url": line.product.get_absolute_url(),
+                "image": line.product.image.url if line.product.image else None,
+            } for line in summary["lines"]],
+            "subtotal": summary["subtotal"],
+            "delivery": summary["delivery"],
+            "total": summary["total"],
+            "to_free_delivery": summary["to_free_delivery"],
+        })
     return redirect("store:cart")
 
 
@@ -262,6 +286,30 @@ def cart_update(request, product_id):
 def cart_remove(request, product_id):
     Cart(request).remove(product_id)
     messages.info(request, "Removed from your cart.")
+    wants_json = (
+        "application/json" in request.headers.get("Accept", "")
+        or request.headers.get("X-Requested-With") == "XMLHttpRequest"
+    )
+    if wants_json:
+        cart = Cart(request)
+        summary = cart.summary()
+        return JsonResponse({
+            "ok": True,
+            "cart_count": cart.count,
+            "items": [{
+                "pid": line.product.pk,
+                "name": line.product.name,
+                "qty": line.qty,
+                "price": float(line.product.price),
+                "line_total": float(line.line_total),
+                "url": line.product.get_absolute_url(),
+                "image": line.product.image.url if line.product.image else None,
+            } for line in summary["lines"]],
+            "subtotal": summary["subtotal"],
+            "delivery": summary["delivery"],
+            "total": summary["total"],
+            "to_free_delivery": summary["to_free_delivery"],
+        })
     return redirect("store:cart")
 
 

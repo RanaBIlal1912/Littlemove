@@ -10,7 +10,6 @@ from store.sitemaps import ProductSitemap, StaticSitemap
 admin.site.site_header = "LittleMove — store manager"
 admin.site.site_title = "LittleMove admin"
 admin.site.index_title = "Orders, toys and settings"
-admin.site.enable_nav_sidebar = False
 
 
 def robots(request):

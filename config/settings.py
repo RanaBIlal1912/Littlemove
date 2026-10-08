@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 
 import dj_database_url
+from django.templatetags.static import static
 from django.urls import reverse_lazy
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -178,6 +179,8 @@ UNFOLD = {
     "SITE_HEADER": "LittleMove",
     "SITE_SUBHEADER": "Store Manager",
     "SITE_URL": "/",
+    "SITE_LOGO": lambda request: static("img/littlemove-logo.png"),
+    "SITE_ICON": lambda request: static("img/littlemove-logo.png"),
     "SHOW_HISTORY": True,
     "SHOW_VIEW_ON_SITE": True,
     "SHOW_BACK_BUTTON": True,

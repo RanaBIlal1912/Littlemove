@@ -134,12 +134,28 @@
       } else {
         list.innerHTML = data.items.map(function (it) {
           var img = it.image
-            ? '<img src="' + it.image + '" alt="">'
+            ? '<img src="' + escapeHtml(it.image) + '" alt="">'
             : '<span class="ph"></span>';
-          return '<div class="cart-drawer-item">' + img +
-            '<div><b>' + escapeHtml(it.name) + '</b>' +
-            '<small>' + it.qty + ' × ' + rs(it.price) + '</small></div></div>';
-        }).join("");
+          var itemUrl = escapeHtml(it.url || '#');
+          return (
+            '<div class="cart-drawer-item" data-pid="' + it.pid + '">' +
+            '<a href="' + itemUrl + '">' + img + '</a>' +
+            '<div class="cdi-info">' +
+              '<b>' + escapeHtml(it.name) + '</b>' +
+              '<div class="cdi-actions">' +
+                '<div class="cdi-qty">' +
+                  '<button class="cdi-minus" type="button" data-pid="' + it.pid + '" data-qty="' + (it.qty - 1) + '" aria-label="Remove one">−</button>' +
+                  '<span>' + it.qty + '</span>' +
+                  '<button class="cdi-plus" type="button" data-pid="' + it.pid + '" data-qty="' + (it.qty + 1) + '" aria-label="Add one">+</button>' +
+                '</div>' +
+                '<span class="cdi-price">' + rs(it.line_total || (it.price * it.qty)) + '</span>' +
+                '<button class="cdi-remove" type="button" data-pid="' + it.pid + '" aria-label="Remove from cart">&#x2715;</button>' +
+              '</div>' +
+            '</div>' +
+            '</div>'
+          );
+        }).join("") +
+        '<div class="cart-drawer-suggest"><a href="/shop/">Continue shopping &rarr;</a></div>';
       }
     }
     var totalEl = document.getElementById("cart-drawer-total");
@@ -157,6 +173,63 @@
         if (note) note.textContent = data.subtotal > 0 ? "You have free delivery!" : "";
       }
     }
+  }
+
+  function cartAjax(url, pid, qty) {
+    var fd = new FormData();
+    if (qty !== undefined) fd.append("qty", qty);
+    fd.append("csrfmiddlewaretoken", csrf());
+    fetch(url.replace("0", pid), {
+      method: "POST",
+      headers: { "Accept": "application/json", "X-Requested-With": "XMLHttpRequest" },
+      body: fd
+    }).then(function (r) { return r.json(); }).then(function (d) {
+      updateBadges(d.cart_count);
+      renderDrawer(d);
+    }).catch(function () {});
+  }
+
+  function initDrawerItemControls() {
+    var list = document.getElementById("cart-drawer-items");
+    if (!list) return;
+    list.addEventListener("click", function (e) {
+      var minusBtn = e.target.closest ? e.target.closest(".cdi-minus") : null;
+      var plusBtn  = e.target.closest ? e.target.closest(".cdi-plus")  : null;
+      var removeBtn = e.target.closest ? e.target.closest(".cdi-remove") : null;
+      if (minusBtn || plusBtn) {
+        var btn = minusBtn || plusBtn;
+        var pid = btn.dataset.pid;
+        var qty = parseInt(btn.dataset.qty, 10);
+        if (qty <= 0) {
+          cartAjax("/cart/remove/0/".replace("0", pid), pid, undefined);
+        } else {
+          var fd = new FormData();
+          fd.append("qty", qty);
+          fd.append("csrfmiddlewaretoken", csrf());
+          fetch("/cart/update/" + pid + "/", {
+            method: "POST",
+            headers: { "Accept": "application/json", "X-Requested-With": "XMLHttpRequest" },
+            body: fd
+          }).then(function (r) { return r.json(); }).then(function (d) {
+            updateBadges(d.cart_count);
+            renderDrawer(d);
+          }).catch(function () {});
+        }
+      }
+      if (removeBtn) {
+        var pid2 = removeBtn.dataset.pid;
+        var fd2 = new FormData();
+        fd2.append("csrfmiddlewaretoken", csrf());
+        fetch("/cart/remove/" + pid2 + "/", {
+          method: "POST",
+          headers: { "Accept": "application/json", "X-Requested-With": "XMLHttpRequest" },
+          body: fd2
+        }).then(function (r) { return r.json(); }).then(function (d) {
+          updateBadges(d.cart_count);
+          renderDrawer(d);
+        }).catch(function () {});
+      }
+    });
   }
 
   function escapeHtml(s) {
@@ -452,6 +525,7 @@
     initTilt();
     initCartForms();
     initDrawerControls();
+    initDrawerItemControls();
     initQuickView();
     initWishlist();
     initPopup();
