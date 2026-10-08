@@ -1,7 +1,7 @@
 {% load store_tags %}{% if items %}
 <section class="section{% if soft %} section-soft{% endif %}">
   <div class="wrap">
-    <div class="section-head">
+    <div class="section-head reveal">
       <div>
         <h2><span class="title-dot" style="background:{{ dot|default:'var(--pink)' }}"></span>{{ title }}</h2>
         {% if sub %}<p>{{ sub }}</p>{% endif %}

@@ -4,6 +4,7 @@
 {% block og_title %}{{ product.name }}{% endblock %}
 {% block og_type %}product{% endblock %}
 {% block body_class %}{% if product.in_stock %}has-sticky-buy{% endif %}{% endblock %}
+{% block body_attrs %} data-product-slug="{{ product.slug }}"{% endblock %}
 {% block head %}
 {% if product.image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ product.image.url }}">{% endif %}
 <script type="application/ld+json">
@@ -18,19 +19,30 @@
 
   <div class="pdp">
     <div class="pdp-media">
-      <div class="pdp-main">
-        {% if product.image %}<img class="photo" id="main-img" src="{{ product.image.url }}" alt="{{ product.name }}" width="800" height="800">
-        {% else %}{% illus product.illustration product.name %}{% endif %}
+      {% if product.image or photos %}
+      <div class="pdp-main" style="position:relative">
+        <div class="swiper pdp-swiper">
+          <div class="swiper-wrapper">
+            {% if product.image %}<div class="swiper-slide"><img src="{{ product.image.url }}" alt="{{ product.name }}" width="800" height="800"></div>{% endif %}
+            {% for ph in photos %}<div class="swiper-slide"><img src="{{ ph.image.url }}" alt="{{ ph.alt }}" loading="lazy" width="800" height="800"></div>{% endfor %}
+          </div>
+          <div class="swiper-pagination"></div>
+        </div>
         <div class="badges">
           <span>{% if product.on_sale and product.in_stock %}<span class="badge badge-sale">-{{ product.discount_percent }}%</span>{% endif %}</span>
           {% if product.therapist_pick %}<span class="badge badge-pick">{% icon 'star' 13 2.4 %} Therapist pick</span>{% endif %}
         </div>
       </div>
       {% if product.image and photos %}
-      <div class="thumbs">
-        <button type="button" aria-pressed="true" data-src="{{ product.image.url }}" aria-label="Photo 1"><img src="{{ product.image.url }}" alt=""></button>
-        {% for ph in photos %}<button type="button" aria-pressed="false" data-src="{{ ph.image.url }}" aria-label="Photo {{ forloop.counter|add:1 }}"><img src="{{ ph.image.url }}" alt="{{ ph.alt }}"></button>{% endfor %}
+      <div class="swiper pdp-thumbs thumbs">
+        <div class="swiper-wrapper">
+          {% if product.image %}<div class="swiper-slide"><img src="{{ product.image.url }}" alt=""></div>{% endif %}
+          {% for ph in photos %}<div class="swiper-slide"><img src="{{ ph.image.url }}" alt="{{ ph.alt }}"></div>{% endfor %}
+        </div>
       </div>
+      {% endif %}
+      {% else %}
+      <div class="pdp-main">{% illus product.illustration product.name %}</div>
       {% endif %}
     </div>
 
@@ -73,6 +85,13 @@
          href="https://wa.me/{{ shop.whatsapp_number }}?text={{ 'Assalam o Alaikum! When will this be back in stock: '|urlencode }}{{ product.name|urlencode }}">{% whatsapp_icon 20 %} Ask when it's back</a>
       {% endif %}
 
+      <div class="share-row">
+        <a class="share-btn wa" target="_blank" rel="noopener"
+           href="https://wa.me/?text={{ product.name|urlencode }}{{ ' — '|urlencode }}{{ request.scheme }}://{{ request.get_host }}{{ product.get_absolute_url|urlencode }}">{% whatsapp_icon 18 'currentColor' %} Share</a>
+        <button class="share-btn" type="button" data-copy-link
+                data-url="{{ request.scheme }}://{{ request.get_host }}{{ product.get_absolute_url }}">Copy link</button>
+      </div>
+
       <div class="assure">
         <div>{% icon 'cash' 20 2.2 %} Cash on delivery</div>
         <div>{% icon 'truck' 20 2.2 %} {% if shop.free_delivery_over %}Free delivery over {{ shop.free_delivery_over|rs }}{% else %}Delivery {{ shop.delivery_fee|rs }}{% endif %}</div>
@@ -87,29 +106,38 @@
       </div>
       {% endif %}{% endwith %}
 
-      {% if product.helps_with_list %}
-      <div class="panel">
-        <h2>Helps with</h2>
-        <ul class="ticks">{% for s in product.helps_with_list %}<li>{{ s }}</li>{% endfor %}</ul>
+      <div class="panel pdp-tabswrap">
+        <div class="pdp-tabs" role="tablist">
+          {% if product.description %}<button type="button" class="active" data-tab="about" role="tab">About</button>{% endif %}
+          {% if product.helps_with_list %}<button type="button" class="{% if not product.description %}active{% endif %}" data-tab="helps" role="tab">Helps with</button>{% endif %}
+          {% if product.in_the_box_list %}<button type="button" class="{% if not product.description and not product.helps_with_list %}active{% endif %}" data-tab="box" role="tab">In the box</button>{% endif %}
+          <button type="button" data-tab="delivery" role="tab">Delivery</button>
+        </div>
+        {% if product.description %}
+        <div class="pdp-tab-panel active" data-panel="about"><div class="prose">{{ product.description|linebreaks }}</div></div>
+        {% endif %}
+        {% if product.helps_with_list %}
+        <div class="pdp-tab-panel {% if not product.description %}active{% endif %}" data-panel="helps"><ul class="ticks">{% for s in product.helps_with_list %}<li>{{ s }}</li>{% endfor %}</ul></div>
+        {% endif %}
+        {% if product.in_the_box_list %}
+        <div class="pdp-tab-panel {% if not product.description and not product.helps_with_list %}active{% endif %}" data-panel="box"><ul class="ticks">{% for s in product.in_the_box_list %}<li>{{ s }}</li>{% endfor %}</ul></div>
+        {% endif %}
+        <div class="pdp-tab-panel" data-panel="delivery">
+          <p>{{ shop.city }} orders usually arrive in 1–2 days, other cities in 3–5 working days. Delivery is {{ shop.delivery_fee|rs }}{% if shop.free_delivery_over %}, and free on orders of {{ shop.free_delivery_over|rs }} or more{% endif %}. Pay cash on delivery or in advance by JazzCash/EasyPaisa.</p>
+        </div>
       </div>
-      {% endif %}
-      {% if product.description %}
-      <div class="panel">
-        <h2>About this toy</h2>
-        <div class="prose">{{ product.description|linebreaks }}</div>
-      </div>
-      {% endif %}
-      {% if product.in_the_box_list %}
-      <div class="panel">
-        <h2>In the box</h2>
-        <ul class="ticks">{% for s in product.in_the_box_list %}<li>{{ s }}</li>{% endfor %}</ul>
-      </div>
-      {% endif %}
     </div>
   </div>
 </div>
 
 {% include "store/_row.html" with items=related title="You may also like" link=product.category.get_absolute_url rid="row-related" soft=True %}
+
+<section class="section" id="recently-viewed" hidden>
+  <div class="wrap">
+    <div class="section-head"><div><h2><span class="title-dot" style="background:var(--mint)"></span>Recently viewed</h2></div></div>
+    <div class="row-scroll" id="recently-viewed-row"></div>
+  </div>
+</section>
 
 {% if product.in_stock %}
 <div class="sticky-buy" aria-label="Quick buy">
@@ -120,11 +148,27 @@
 {% endblock %}
 {% block scripts %}
 <script>
-  document.querySelectorAll(".thumbs button").forEach(function (b) {
-    b.addEventListener("click", function () {
-      document.getElementById("main-img").src = b.dataset.src;
-      document.querySelectorAll(".thumbs button").forEach(function (x) { x.setAttribute("aria-pressed", x === b); });
+  (function () {
+    // Product detail tabs
+    var tabs = document.querySelectorAll(".pdp-tabs button");
+    tabs.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var name = btn.dataset.tab;
+        tabs.forEach(function (b) { b.classList.toggle("active", b === btn); });
+        document.querySelectorAll(".pdp-tab-panel").forEach(function (p) {
+          p.classList.toggle("active", p.dataset.panel === name);
+        });
+      });
     });
-  });
+    // Copy share link
+    var copy = document.querySelector("[data-copy-link]");
+    if (copy) copy.addEventListener("click", function () {
+      var url = copy.dataset.url, prev = copy.textContent;
+      function done() { copy.textContent = "Copied!"; setTimeout(function () { copy.textContent = prev; }, 1600); }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done, done);
+      } else { done(); }
+    });
+  })();
 </script>
 {% endblock %}

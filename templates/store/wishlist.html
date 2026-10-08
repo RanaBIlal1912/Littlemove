@@ -1,0 +1,21 @@
+{% extends "base.html" %}{% load store_tags %}
+{% block title %}Your wishlist — {{ shop.store_name }}{% endblock %}
+{% block content %}
+<div class="wrap">
+  <div class="page-head">
+    <p class="crumbs"><a href="{% url 'store:home' %}">Home</a><span>/</span>Wishlist</p>
+    <h1 class="page-title">Your wishlist</h1>
+    <p class="lede">Toys you have saved for later. Add them to the cart whenever you're ready.</p>
+  </div>
+
+  {% if products %}
+  <div class="grid">{% for p in products %}{% include "store/_card.html" %}{% endfor %}</div>
+  {% else %}
+  <div class="empty">
+    <h3>Your wishlist is empty</h3>
+    <p>Tap the heart on any toy to save it here.</p>
+    <a class="btn" href="{% url 'store:shop' %}">Browse toys</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

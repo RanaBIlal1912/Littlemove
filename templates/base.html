@@ -1,31 +1,26 @@
 {% load static store_tags %}<!doctype html>
-<html lang="en">
+<html lang="en" class="js-off">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>{% block title %}{% if shop.seo_title %}{{ shop.seo_title }}{% else %}{{ shop.store_name }} — {{ shop.tagline }} | Kids learning toys in Pakistan{% endif %}{% endblock %}</title>
   <meta name="description" content="{% block description %}{% if shop.seo_description %}{{ shop.seo_description }}{% else %}Developmental, sensory and speech toys for babies and kids, chosen with therapists at Wellness Rehabilitation Clinic, Bahawalpur. Cash on delivery across Pakistan.{% endif %}{% endblock %}">
-  <meta name="theme-color" content="{{ shop.primary_color|default:'#5B3FD6' }}">
+  <meta name="theme-color" content="#3BA4E6">
   <link rel="preload" href="{% static 'fonts/fredoka-latin-600-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="{% static 'fonts/nunito-sans-latin-400-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{% static 'vendor/swiper.min.css' %}">
   <link rel="stylesheet" href="{% static 'css/site.css' %}">
   {% if shop.favicon %}<link rel="icon" href="{{ shop.favicon.url }}" type="image/x-icon">{% else %}<link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">{% endif %}
   {% if shop.share_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ shop.share_image.url }}">{% endif %}
   <meta property="og:site_name" content="{{ shop.store_name }}">
   <meta property="og:title" content="{% block og_title %}{{ shop.store_name }} — {{ shop.tagline }}{% endblock %}">
   <meta property="og:type" content="{% block og_type %}website{% endblock %}">
-  {# Brand CSS variables driven by StoreSettings — change colours without touching code #}
-  <style>
-    :root {
-      --brand:  {{ shop.primary_color|default:'#5B3FD6' }};
-      --pink:   {{ shop.secondary_color|default:'#FF4F8B' }};
-      --yellow: {{ shop.accent_color|default:'#FFC83D' }};
-      --bg:     {{ shop.background_color|default:'#F6F3FF' }};
-    }
-  </style>
+  {# The LittleMove colour palette now lives in site.css (:root). The brand
+     colours are sampled from the logo, so we no longer override them per-request. #}
   {% block head %}{% endblock %}
 </head>
-<body class="{% block body_class %}{% endblock %}">
+<body class="{% block body_class %}{% endblock %}"{% block body_attrs %}{% endblock %}>
+  <div id="loader-overlay" class="loader-overlay" aria-hidden="true"><img src="{% static 'img/littlemove logo.jpeg' %}" alt="" width="120"></div>
   <div id="bg-wrap" aria-hidden="true"><canvas id="bg-cv"></canvas></div>
   <a class="sr-only" href="#main">Skip to content</a>
 
@@ -65,7 +60,7 @@
           <span class="ico">{% icon 'truck' 22 %}</span>
           <span class="lbl"><small>Where is it?</small>Track order</span>
         </a>
-        <a class="icon-link" href="{% url 'store:cart' %}">
+        <a class="icon-link" href="{% url 'store:cart' %}" data-open-cart>
           <span class="ico">{% icon 'cart' 22 2.2 %}<span class="badge-count" aria-label="{{ cart_count }} items in cart">{{ cart_count }}</span></span>
           <span class="lbl hide-sm"><small>Your</small>Cart</span>
         </a>
@@ -192,11 +187,11 @@
   </nav>
   {% endwith %}
 
-  <div id="mila-bot" class="mila-bot">
-    <button class="mila-toggle" id="mila-toggle" type="button" aria-label="Ask Mila, your toy guide" aria-expanded="false">🤖</button>
+  <div id="mila-bot" class="mila-bot" data-chat-url="{% url 'store:chat_api' %}">
+    <button class="mila-toggle" id="mila-toggle" type="button" aria-label="Ask Mila, your toy guide" aria-expanded="false"><img src="{% static 'img/littlemove logo.jpeg' %}" alt="Mila" class="mila-av-img"></button>
     <div class="mila-window" id="mila-window" role="dialog" aria-label="Mila toy guide" aria-hidden="true">
       <div class="mila-head">
-        <div class="mila-av">🤖</div>
+        <div class="mila-av"><img src="{% static 'img/littlemove logo.jpeg' %}" alt="Mila" class="mila-av-img"></div>
         <div><strong>Mila</strong><small>Your toy guide</small></div>
         <button class="mila-x" id="mila-x" type="button" aria-label="Close chat">&#x2715;</button>
       </div>
@@ -206,6 +201,49 @@
   </div>
 
   <a class="wa-float" href="https://wa.me/{{ shop.whatsapp_number }}" target="_blank" rel="noopener" aria-label="Chat with us on WhatsApp">{% whatsapp_icon %}</a>
+
+  {# ── Cart drawer (populated by app.js after AJAX add-to-cart) ── #}
+  <div id="cart-drawer-bg" class="cart-drawer-bg" aria-hidden="true"></div>
+  <div id="cart-drawer" class="cart-drawer" role="dialog" aria-modal="true" aria-label="Your cart" aria-hidden="true">
+    <div class="cart-drawer-head">
+      <h2>Your cart</h2>
+      <button class="cart-drawer-close" type="button" data-close-cart aria-label="Close cart">&#x2715;</button>
+    </div>
+    <div class="cart-drawer-items" id="cart-drawer-items">
+      <p class="cart-drawer-empty">Your cart is empty.</p>
+    </div>
+    <div class="cart-drawer-foot">
+      <div class="free-bar"><span id="cart-free-bar"></span></div>
+      <p class="free-bar-note" id="cart-free-note"></p>
+      <div class="cart-drawer-total"><span>Total</span><span id="cart-drawer-total">Rs 0</span></div>
+      <a class="btn btn-block" href="{% url 'store:cart' %}">View cart &amp; checkout</a>
+    </div>
+  </div>
+
+  {# ── Quick-view modal ── #}
+  <div id="qv-modal" class="qv-modal" role="dialog" aria-modal="true" aria-label="Quick view" aria-hidden="true">
+    <div class="qv-dialog">
+      <button class="qv-close" type="button" data-close-qv aria-label="Close quick view">&#x2715;</button>
+      <div id="qv-content"></div>
+    </div>
+  </div>
+
+  {# ── Sale popup (driven by the active Popup) ── #}
+  {% if popup %}
+  <div id="sale-popup" class="popup-overlay" role="dialog" aria-modal="true" aria-label="{{ popup.title }}"
+       data-id="{{ popup.pk }}" data-delay="{{ popup.delay_seconds }}" data-days="{{ popup.show_again_days }}">
+    <div class="popup-box">
+      <button class="popup-close" type="button" data-close-popup aria-label="Close">&#x2715;</button>
+      {% if popup.image %}<img src="{{ popup.image.url }}" alt="">{% endif %}
+      <div class="popup-body">
+        <h2>{{ popup.title }}</h2>
+        {% if popup.text %}<p>{{ popup.text }}</p>{% endif %}
+        {% if popup.coupon_code %}<span class="popup-coupon">{{ popup.coupon_code }}</span>{% endif %}
+        <a class="btn" href="{{ popup.button_link }}" data-close-popup>{{ popup.button_text }}</a>
+      </div>
+    </div>
+  </div>
+  {% endif %}
 
   <script>
     (function () {
@@ -293,8 +331,12 @@
   </script>
 
   <script>
-  /* Mila chat assistant */
+  /* Mila chat assistant (fallback decision tree).
+     If app.js wired the bot to the /api/chat/ endpoint it sets
+     data-api-mode="1" on #mila-bot — in that case this tree stands down. */
   (function () {
+    var _botEl = document.getElementById('mila-bot');
+    if (_botEl && _botEl.dataset.apiMode === '1') return;
     var FEE  = '{{ shop.delivery_fee|default:"" }}';
     var FREE = '{{ shop.free_delivery_over|default:"" }}';
     var WA   = '{{ shop.whatsapp_number|default:"" }}';
@@ -407,5 +449,11 @@
     }
   })();
   </script>
+
+  {# ── Vendor libraries + storefront interactions ── #}
+  <script src="{% static 'vendor/swiper.min.js' %}" defer></script>
+  <script src="{% static 'vendor/gsap.min.js' %}" defer></script>
+  <script src="{% static 'vendor/ScrollTrigger.min.js' %}" defer></script>
+  <script src="{% static 'js/app.js' %}" defer></script>
 </body>
 </html>

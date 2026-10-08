@@ -9,7 +9,9 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from .cart import Cart
-from .models import Banner, Category, HomeSection, Need, Product, Testimonial
+from .models import (
+    Banner, Category, HomeSection, MediaItem, Need, Product, Testimonial,
+)
 
 SORTS = {
     "new": ("Newest", "-created_at"),
@@ -129,6 +131,63 @@ def product_detail(request, slug):
     })
 
 
+def product_quickview(request, slug):
+    """Minimal product card rendered inside the quick-view modal."""
+    product = get_object_or_404(Product.objects.live().select_related("category"), slug=slug)
+    return render(request, "store/_quickview.html", {
+        "product": product, "photos": product.photos.all(),
+    })
+
+
+def gallery(request):
+    items = MediaItem.objects.filter(show_in_gallery=True).order_by("order")
+    return render(request, "store/gallery.html", {"items": items})
+
+
+def search_suggest(request):
+    """JSON autocomplete used by the header search box."""
+    q = (request.GET.get("q") or "").strip()[:40]
+    if len(q) < 2:
+        return JsonResponse({"results": []})
+    products = (Product.objects.live()
+                .filter(Q(name__icontains=q) | Q(category__name__icontains=q))
+                .select_related("category")[:8])
+    results = [{
+        "name": p.name,
+        "price": p.price,
+        "url": p.get_absolute_url(),
+        "image": p.image.url if p.image else None,
+        "category": p.category.name,
+    } for p in products]
+    return JsonResponse({"results": results})
+
+
+def wishlist_toggle(request, product_id):
+    """Add/remove a product id in the session wishlist. Returns JSON."""
+    wl = request.session.get("wishlist", [])
+    try:
+        pid = int(product_id)
+    except (TypeError, ValueError):
+        return JsonResponse({"error": "bad id"}, status=400)
+    if not Product.objects.live().filter(pk=pid).exists():
+        return JsonResponse({"error": "not found"}, status=404)
+    if pid in wl:
+        wl.remove(pid)
+        added = False
+    else:
+        wl.append(pid)
+        added = True
+    request.session["wishlist"] = wl
+    request.session.modified = True
+    return JsonResponse({"added": added, "count": len(wl)})
+
+
+def wishlist_view(request):
+    pids = request.session.get("wishlist", [])
+    products = list(Product.objects.live().select_related("category").filter(pk__in=pids))
+    return render(request, "store/wishlist.html", {"products": products})
+
+
 def _back(request, fallback="store:cart"):
     nxt = request.POST.get("next")
     if nxt and url_has_allowed_host_and_scheme(nxt, {request.get_host()}, request.is_secure()):
@@ -154,6 +213,31 @@ def cart_add(request, product_id):
         messages.warning(request, f"Only {product.stock} of {product.name} available — your cart has {after}.")
     else:
         messages.success(request, f"Added {product.name} to your cart.")
+
+    wants_json = (
+        "application/json" in request.headers.get("Accept", "")
+        or request.headers.get("X-Requested-With") == "XMLHttpRequest"
+    )
+    if wants_json and not request.POST.get("buy_now"):
+        summary = cart.summary()
+        return JsonResponse({
+            "ok": True,
+            "cart_count": cart.count,
+            "message": f"Added {product.name} to cart",
+            "items": [{
+                "name": line.product.name,
+                "qty": line.qty,
+                "price": line.product.price,
+                "line_total": line.line_total,
+                "url": line.product.get_absolute_url(),
+                "image": line.product.image.url if line.product.image else None,
+            } for line in summary["lines"]],
+            "subtotal": summary["subtotal"],
+            "delivery": summary["delivery"],
+            "total": summary["total"],
+            "to_free_delivery": summary["to_free_delivery"],
+        })
+
     if request.POST.get("buy_now"):
         return redirect("orders:checkout")
     return _back(request, product.get_absolute_url())

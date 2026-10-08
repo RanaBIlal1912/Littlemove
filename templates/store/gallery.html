@@ -1,0 +1,45 @@
+{% extends "base.html" %}{% load static store_tags %}
+{% block title %}Gallery — {{ shop.store_name }}{% endblock %}
+{% block content %}
+<div class="wrap">
+  <div class="page-head">
+    <p class="crumbs"><a href="{% url 'store:home' %}">Home</a><span>/</span>Gallery</p>
+    <h1 class="page-title">Gallery</h1>
+    <p class="lede">Happy little ones, real packaging and moments from the LittleMove family.</p>
+  </div>
+
+  {% if items %}
+  <div class="gallery-masonry">
+    {% for m in items %}
+      {% if m.type == "youtube" and m.youtube_url %}
+      <figure>
+        <a href="{{ m.youtube_url }}" target="_blank" rel="noopener">
+          <img src="{% static 'img/All data.jpeg' %}" alt="{{ m.alt_text|default:m.title }}">
+        </a>
+        <figcaption class="small muted" style="padding:8px 10px">{{ m.title }}</figcaption>
+      </figure>
+      {% elif m.type == "video" and m.file %}
+      <figure>
+        <video src="{{ m.file.url }}" controls preload="metadata"></video>
+        <figcaption class="small muted" style="padding:8px 10px">{{ m.title }}</figcaption>
+      </figure>
+      {% elif m.file %}
+      <figure>
+        <a href="#lb-{{ m.pk }}"><img src="{{ m.file.url }}" alt="{{ m.alt_text|default:m.title }}" loading="lazy"></a>
+        <div id="lb-{{ m.pk }}" class="gallery-lightbox">
+          <a href="#" class="gl-close" aria-label="Close">&#x2715;</a>
+          <img src="{{ m.file.url }}" alt="{{ m.alt_text|default:m.title }}">
+        </div>
+      </figure>
+      {% endif %}
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty">
+    <h3>No gallery items yet</h3>
+    <p>Photos and videos added in the admin will appear here.</p>
+    <a class="btn" href="{% url 'store:shop' %}">Browse toys</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

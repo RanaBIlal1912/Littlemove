@@ -1,0 +1,26 @@
+{% load store_tags %}
+<div class="qv-grid t-{{ product.category.color }}">
+  <div class="qv-media">
+    {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}" width="500" height="500">
+    {% else %}{% illus product.illustration product.name %}{% endif %}
+  </div>
+  <div class="qv-body">
+    <span class="pcard-cat">{{ product.category.name }}</span>
+    <h2>{{ product.name }}</h2>
+    <span class="pcard-age">Ages {{ product.age_label }}</span>
+    <div class="price-box">
+      <span class="price{% if product.on_sale %} price-sale{% endif %}">{{ product.price|rs }}</span>
+      {% if product.on_sale %}<span class="price-old">{{ product.compare_at_price|rs }}</span>{% endif %}
+    </div>
+    <p class="summary">{{ product.summary }}</p>
+    {% if product.in_stock %}
+    <form method="post" action="{% url 'store:cart_add' product.pk %}" data-ajax data-pid="{{ product.pk }}">
+      {% csrf_token %}<input type="hidden" name="next" value="{{ product.get_absolute_url }}">
+      <button class="btn btn-block" type="submit">{% icon 'cart' 17 2.2 %} Add to cart</button>
+    </form>
+    {% else %}
+    <button class="btn btn-block" type="button" disabled>Sold out</button>
+    {% endif %}
+    <a class="link" href="{{ product.get_absolute_url }}">See full details &rarr;</a>
+  </div>
+</div>
