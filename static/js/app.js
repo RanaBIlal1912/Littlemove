@@ -418,6 +418,11 @@
       if (win) win.setAttribute("aria-hidden", yes ? "false" : "true");
       if (yes && !msgs.children.length) {
         bubble("Hi, I'm Mila! How can I help you find the right toy today?", "bot");
+        var disc = document.createElement("div");
+        disc.className = "mila-disclaimer";
+        disc.textContent = "General toy guidance, not medical advice.";
+        msgs.appendChild(disc);
+        msgs.scrollTop = msgs.scrollHeight;
       }
     }
     function bubble(text, who) {
@@ -580,6 +585,191 @@
     });
   }
 
+  /* ---------------- 15. Mila guided flow ----------------
+     Step 1: age chips  →  Step 2: goal chips  →  show products
+     Triggered by [data-mila-guide] buttons (hero + final CTA).
+  ---------------------------------------------------------------- */
+  function initMilaGuided() {
+    var bot = document.getElementById("mila-bot");
+    if (!bot) return;
+    var guideUrl = bot.dataset.guidedUrl;
+    if (!guideUrl) return;
+
+    var selAge = "";
+
+    function els() {
+      return {
+        msgs: document.getElementById("mila-msgs"),
+        opts: document.getElementById("mila-opts"),
+        win:  document.getElementById("mila-window"),
+        tog:  document.getElementById("mila-toggle"),
+      };
+    }
+
+    function openBot() {
+      var e = els();
+      if (!bot.classList.contains("open")) {
+        bot.classList.add("open");
+        if (e.tog) e.tog.setAttribute("aria-expanded", "true");
+        if (e.win) e.win.setAttribute("aria-hidden", "false");
+      }
+    }
+
+    function addBubble(text, who) {
+      var e = els();
+      if (!e.msgs) return;
+      var d = document.createElement("div");
+      d.className = who === "me" ? "mila-msg me" : "mila-msg";
+      d.textContent = text;
+      e.msgs.appendChild(d);
+      e.msgs.scrollTop = e.msgs.scrollHeight;
+    }
+
+    function showChips(items, onSelect) {
+      var e = els();
+      if (!e.opts) return;
+      e.opts.innerHTML = "";
+      var wrap = document.createElement("div");
+      wrap.className = "mila-chips";
+      items.forEach(function (item) {
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "mila-opt";
+        btn.textContent = item.label;
+        btn.addEventListener("click", function () { onSelect(item); });
+        wrap.appendChild(btn);
+      });
+      e.opts.appendChild(wrap);
+    }
+
+    function restoreInput() {
+      var e = els();
+      if (!e.opts) return;
+      e.opts.innerHTML = "";
+      var form = document.createElement("form");
+      form.className = "mila-input";
+      form.innerHTML = '<input type="text" placeholder="Ask me anything else…" aria-label="Your message">' +
+        '<button type="submit" aria-label="Send">→</button>';
+      e.opts.appendChild(form);
+      form.addEventListener("submit", function (ev) {
+        ev.preventDefault();
+        var inp = form.querySelector("input");
+        var v = (inp.value || "").trim();
+        if (!v) return;
+        inp.value = "";
+        addBubble(v, "me");
+        var chatUrl = bot.getAttribute("data-chat-url");
+        if (!chatUrl) return;
+        var e2 = els();
+        var typing = document.createElement("div");
+        typing.className = "mila-typing";
+        typing.innerHTML = "<span></span><span></span><span></span>";
+        if (e2.msgs) { e2.msgs.appendChild(typing); e2.msgs.scrollTop = e2.msgs.scrollHeight; }
+        fetch(chatUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-CSRFToken": csrf() },
+          body: JSON.stringify({ message: v })
+        }).then(function (r) { return r.json(); }).then(function (d) {
+          typing.remove();
+          addBubble(d.answer || "Sorry, please try again.", "bot");
+        }).catch(function () {
+          typing.remove();
+          addBubble("Sorry, couldn't reach the server. Try WhatsApp!", "bot");
+        });
+      });
+    }
+
+    function showGoalStep() {
+      addBubble("What is your child working on?", "bot");
+      showChips([
+        { label: "Speech & language", value: "speech" },
+        { label: "Fine motor",        value: "fine motor" },
+        { label: "Sensory",           value: "sensory" },
+        { label: "Movement",          value: "movement" },
+        { label: "Thinking & memory", value: "thinking" },
+        { label: "Calm & focus",      value: "calm" },
+      ], function (item) {
+        addBubble(item.label, "me");
+        fetchGuided(item.value);
+      });
+    }
+
+    function fetchGuided(goal) {
+      var e = els();
+      if (e.opts) e.opts.innerHTML = "";
+      var typing = document.createElement("div");
+      typing.className = "mila-typing";
+      typing.innerHTML = "<span></span><span></span><span></span>";
+      if (e.msgs) { e.msgs.appendChild(typing); e.msgs.scrollTop = e.msgs.scrollHeight; }
+
+      fetch(guideUrl + "?age=" + encodeURIComponent(selAge) + "&goal=" + encodeURIComponent(goal))
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          typing.remove();
+          var e2 = els();
+          if (data.products && data.products.length) {
+            addBubble("Here are some toys that might help:", "bot");
+            var wrap = document.createElement("div");
+            wrap.className = "mila-products";
+            data.products.forEach(function (p) {
+              var a = document.createElement("a");
+              a.href = p.url;
+              a.className = "mila-product-card";
+              var imgHtml = p.image
+                ? '<img src="' + escapeHtml(p.image) + '" alt="" loading="lazy">'
+                : '<div class="mpc-ph"></div>';
+              a.innerHTML = imgHtml +
+                '<div class="mpc-body"><b>' + escapeHtml(p.name) + '</b>' +
+                '<span>Ages ' + escapeHtml(p.age) + '</span>' +
+                '<span class="mpc-price">' + escapeHtml(p.price_display) + '</span></div>';
+              wrap.appendChild(a);
+            });
+            if (e2.msgs) { e2.msgs.appendChild(wrap); e2.msgs.scrollTop = e2.msgs.scrollHeight; }
+          } else {
+            addBubble("I couldn’t find exact matches right now. Try browsing or ask on WhatsApp!", "bot");
+          }
+          restoreInput();
+        })
+        .catch(function () {
+          typing.remove();
+          addBubble("Something went wrong. Please try WhatsApp!", "bot");
+          restoreInput();
+        });
+    }
+
+    function startGuide() {
+      var e = els();
+      if (!e.msgs) return;
+      // Only add welcome if msgs is empty (initChatApi may have already added it)
+      if (!e.msgs.children.length) {
+        addBubble("Hi! I’m Mila. I’ll help you find the right toy.", "bot");
+        var disc = document.createElement("div");
+        disc.className = "mila-disclaimer";
+        disc.textContent = "General toy guidance, not medical advice.";
+        e.msgs.appendChild(disc);
+      }
+      addBubble("How old is your child?", "bot");
+      showChips([
+        { label: "0–2 yrs", value: "0-2" },
+        { label: "2–4 yrs", value: "2-4" },
+        { label: "4–6 yrs", value: "4-6" },
+        { label: "6+ yrs",       value: "6+" },
+      ], function (item) {
+        selAge = item.value;
+        addBubble(item.label, "me");
+        showGoalStep();
+      });
+    }
+
+    document.addEventListener("click", function (e) {
+      var trigger = e.target.closest("[data-mila-guide]");
+      if (!trigger) return;
+      e.preventDefault();
+      openBot();
+      setTimeout(startGuide, 60);
+    });
+  }
+
   /* ---------------- init ---------------- */
   function boot() {
     document.documentElement.classList.remove("js-off");
@@ -593,6 +783,7 @@
     initWishlist();
     initPopup();
     initChatApi();
+    initMilaGuided();
     initSearchSuggest();
     initBottomNav();
     initRecentlyViewed();

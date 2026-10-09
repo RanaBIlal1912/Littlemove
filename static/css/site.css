@@ -1548,3 +1548,272 @@ body.has-hero .header:not(.is-scrolled) .header-logo svg rect { fill: #fff; }
   .lifestyle-item:hover { transform: none !important; }
   .header { transition: none !important; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   CONVERSION UPGRADE — appended
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── btn-white: high-contrast (white bg, dark navy text 14:1) ────── */
+.btn-white, a.btn-white, span.btn-white {
+  background: #fff !important;
+  color: var(--ink) !important;
+  border: none !important;
+}
+.btn-white:hover, a.btn-white:hover { background: #f0f8ff !important; color: var(--ink) !important; }
+
+/* ── hero ghost button (secondary CTA) ────────────────────────────── */
+.btn-hero-ghost {
+  background: rgba(255,255,255,.14) !important;
+  color: #fff !important;
+  border: 2px solid rgba(255,255,255,.65) !important;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+.btn-hero-ghost:hover { background: rgba(255,255,255,.25) !important; color: #fff !important; }
+
+/* ── hero: two-CTA layout ─────────────────────────────────────────── */
+.hero-cta-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+
+/* ── hero image slides: bg-link trick so div can hold multiple CTAs ─ */
+.slide-bg-link {
+  position: absolute; inset: 0; z-index: 0;
+  display: block;
+}
+.slide-text { position: relative; z-index: 1; }
+
+/* ── mobile gradient slides: illustration above text ─────────────── */
+@media (max-width: 760px) {
+  .hero-fullbleed .slide:not(.has-photo):not(.has-video) {
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: stretch;
+    padding: 0;
+  }
+  .hero-fullbleed .slide:not(.has-photo):not(.has-video) > div:first-child {
+    padding: 0 18px 72px;
+    order: 2;
+    position: relative; z-index: 1;
+  }
+  .hero-fullbleed .slide:not(.has-photo):not(.has-video) .slide-art {
+    display: flex !important;
+    order: 1;
+    flex: 0 0 auto;
+    max-height: 38vh;
+    overflow: hidden;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+  .hero-fullbleed .slide:not(.has-photo):not(.has-video) .slide-art .illus {
+    width: 180px; height: 180px;
+  }
+}
+
+/* ── skill tiles: 3/4 aspect-ratio + overlay label ───────────────── */
+.skill-tile-img { aspect-ratio: 3/4; }
+.skill-tile { overflow: hidden; position: relative; }
+.skill-tile-overlay {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: linear-gradient(transparent, rgba(10,20,40,.72) 70%);
+  color: #fff; padding: 36px 14px 14px;
+  display: flex; flex-direction: column; gap: 3px;
+}
+.skill-tile-overlay b { font-size: 1rem; font-weight: 700; text-shadow: 0 1px 4px rgba(0,0,0,.3); }
+.skill-tile-overlay span { font-size: .78rem; opacity: .85; }
+.skill-tile-label { display: none; }
+
+/* ── skill tiles: mobile horizontal scroll-snap ──────────────────── */
+@media (max-width: 760px) {
+  .skill-tiles {
+    display: flex !important;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 12px;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 10px;
+    scroll-padding-left: 16px;
+  }
+  .skill-tile {
+    flex: none !important;
+    width: 70vw;
+    scroll-snap-align: start;
+  }
+}
+
+/* ── need-cards: large visual cards ──────────────────────────────── */
+.need-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+.need-card {
+  display: flex; flex-direction: column;
+  border-radius: var(--r-xl); overflow: hidden;
+  text-decoration: none; color: var(--ink);
+  background: #fff; box-shadow: var(--sh-1);
+  transition: transform .22s, box-shadow .22s;
+}
+.need-card:hover { transform: translateY(-5px) scale(1.02); box-shadow: var(--sh-2); }
+.need-card-vis {
+  aspect-ratio: 4/3; overflow: hidden;
+  background: var(--tint, var(--bg-soft));
+  display: flex; align-items: center; justify-content: center;
+}
+.need-card-vis img { width: 100%; height: 100%; object-fit: cover; transition: transform .35s; }
+.need-card:hover .need-card-vis img { transform: scale(1.07); }
+.need-card-vis .illus { width: 75%; height: 75%; }
+.need-card-body {
+  padding: 12px 14px; display: flex; flex-direction: column; gap: 3px;
+  position: relative; flex: 1;
+}
+.need-card-body b { font-size: .95rem; font-weight: 700; }
+.need-card-body > span:not(.need-card-arrow) { font-size: .8rem; color: var(--ink-2); }
+.need-card-arrow {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  color: var(--brand); opacity: .7;
+}
+
+/* ── gallery: CSS grid 4 cols / 2 mobile, no gaps ────────────────── */
+.lifestyle-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 0 !important;
+  margin-top: 24px;
+}
+.lifestyle-item { break-inside: unset; border-radius: 0; margin-bottom: 0; cursor: default; }
+.lifestyle-item.lifestyle-clickable { cursor: pointer; }
+.lifestyle-item img { width: 100%; height: 200px; object-fit: cover; display: block; }
+.lifestyle-video { width: 100%; height: 200px; object-fit: cover; display: block; }
+@media (max-width: 900px) { .lifestyle-grid { grid-template-columns: repeat(3, 1fr) !important; } }
+@media (max-width: 640px) { .lifestyle-grid { grid-template-columns: repeat(2, 1fr) !important; } .lifestyle-item img { height: 140px; } }
+
+/* ── admin hint ───────────────────────────────────────────────────── */
+.admin-hint {
+  font-size: .82rem; color: #6c5ce7; background: #f0eeff;
+  border: 1px dashed #a29bfe; border-radius: var(--r-md);
+  padding: 10px 14px; margin: 8px 0;
+}
+
+/* ── our story: photo FIRST on mobile ────────────────────────────── */
+@media (max-width: 760px) {
+  .our-story { display: flex !important; flex-direction: column !important; }
+  .our-story-photo { order: -1; }
+  .our-story-photo img { max-height: 260px; object-fit: cover; width: 100%; border-radius: var(--r-xl) var(--r-xl) 0 0; }
+}
+
+/* ── product card: save badge ─────────────────────────────────────── */
+.badge-save {
+  background: var(--green); color: #fff;
+  font-size: .7rem; font-weight: 800;
+  padding: 2px 6px; border-radius: 10px;
+}
+
+/* ── product card: skill tags ─────────────────────────────────────── */
+.pcard-skills { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.skill-tag {
+  font-size: .7rem; color: var(--ink-2);
+  background: var(--bg-soft); border-radius: 10px;
+  padding: 2px 8px; line-height: 1.5;
+  border: 1px solid var(--line);
+  white-space: nowrap; max-width: 160px; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* ── why us 4-card grid ───────────────────────────────────────────── */
+.why-us-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-top: 28px;
+}
+.why-card {
+  background: #fff; border-radius: var(--r-xl); padding: 26px 20px;
+  display: flex; flex-direction: column; gap: 10px;
+  box-shadow: var(--sh-1);
+}
+.why-card-icon {
+  width: 50px; height: 50px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.why-card h3 { font-size: 1rem; margin: 0; }
+.why-card p { font-size: .86rem; color: var(--ink-2); margin: 0; line-height: 1.55; }
+@media (max-width: 900px) { .why-us-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 500px) { .why-us-grid { grid-template-columns: 1fr; gap: 12px; } }
+
+/* ── final CTA section ────────────────────────────────────────────── */
+.final-cta {
+  text-align: center; padding: 72px 20px;
+  background: linear-gradient(135deg, var(--brand) 0%, #1a7fc0 100%);
+  color: #fff;
+}
+.final-cta h2 { font-size: clamp(1.6rem, 4vw, 2.6rem); margin: 0 0 10px; color: #fff; }
+.final-cta p { font-size: 1.05rem; opacity: .9; margin: 0 0 28px; }
+.final-cta-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+.final-cta-btn-solid {
+  background: #fff; color: var(--ink); border: none;
+  font-weight: 700; padding: 14px 28px; border-radius: 50px;
+  text-decoration: none;
+}
+.final-cta-btn-solid:hover { background: #f0f8ff; color: var(--ink); }
+.final-cta-btn-ghost {
+  background: transparent; color: #fff;
+  border: 2px solid rgba(255,255,255,.7);
+  padding: 12px 28px; border-radius: 50px;
+  cursor: pointer;
+}
+.final-cta-btn-ghost:hover { background: rgba(255,255,255,.15); }
+
+/* ── floating WhatsApp button (mobile) ───────────────────────────── */
+.wa-float {
+  position: fixed; right: 16px; bottom: 76px; z-index: 50;
+  width: 52px; height: 52px; border-radius: 50%;
+  background: #25d366; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 20px rgba(37,211,102,.45);
+  text-decoration: none;
+  transition: transform .15s;
+}
+.wa-float:hover { transform: scale(1.1); }
+@media (min-width: 761px) { .wa-float { display: none !important; } }
+
+/* ── Mila: product cards in guided flow ──────────────────────────── */
+.mila-products { display: flex; flex-direction: column; gap: 8px; padding: 4px 8px 8px; }
+.mila-product-card {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--bg-soft); border-radius: var(--r-md);
+  padding: 8px; text-decoration: none; color: var(--ink);
+  transition: background .15s;
+}
+.mila-product-card:hover { background: var(--brand-soft); }
+.mila-product-card img, .mpc-ph {
+  width: 52px; height: 52px; border-radius: var(--r-sm);
+  object-fit: cover; flex-shrink: 0;
+}
+.mpc-ph { background: var(--bg); }
+.mpc-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.mpc-body b { font-size: .84rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mpc-body span { font-size: .74rem; color: var(--ink-2); }
+.mpc-price { font-weight: 700; color: var(--brand) !important; }
+
+/* ── Mila: disclaimer line ────────────────────────────────────────── */
+.mila-disclaimer {
+  font-size: .72rem; color: var(--ink-2); text-align: center;
+  padding: 4px 8px; border-top: 1px solid var(--line); margin-top: 4px;
+}
+
+/* ── Mila: chip rows (guided flow) ───────────────────────────────── */
+.mila-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 10px 14px; }
+
+/* ── product page: standalone how-this-helps block ───────────────── */
+.helps-block { margin: 0 0 16px; }
+.helps-block h2 { font-size: 1rem; font-weight: 700; margin-bottom: 10px; color: var(--ink); }
+
+/* ── reduced-motion additions ─────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .need-card:hover { transform: none !important; }
+  .need-card-vis img, .skill-tile-img img { transition: none !important; }
+  .mila-product-card { transition: none !important; }
+  .wa-float { transition: none !important; }
+  .wa-float:hover { transform: none !important; }
+}

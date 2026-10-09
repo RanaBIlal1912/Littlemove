@@ -27,14 +27,18 @@
             <div class="slide-text">
               <h1 class="hero-headline">{{ b.title }}</h1>
               {% if b.subtitle %}<p class="hero-sub">{{ b.subtitle }}</p>{% endif %}
-              <a class="btn btn-white" href="{{ b.link }}" style="align-self:start">{{ b.button_text }} {% icon 'arrow-r' 18 2.4 %}</a>
+              <div class="hero-cta-row">
+                <a class="btn btn-white" href="{{ b.link }}">{{ b.button_text }} {% icon 'arrow-r' 18 2.4 %}</a>
+                <button class="btn btn-hero-ghost" type="button" data-mila-guide>Find the right toy</button>
+              </div>
             </div>
             {% endif %}
           </div>
         </div>
         {% elif b.image %}
         <div class="swiper-slide">
-          <a class="slide has-photo" href="{{ b.link }}" aria-label="{{ b.title }}">
+          <div class="slide has-photo">
+            <a class="slide-bg-link" href="{{ b.link }}" aria-label="{{ b.title }}" tabindex="-1"></a>
             <picture>
               {% if b.mobile_image %}<source media="(max-width: 760px)" srcset="{{ b.mobile_image.url }}">{% endif %}
               <img src="{{ b.image.url }}" alt="{% if b.image_has_text %}{{ b.title }}{% endif %}" {% if not forloop.first %}loading="lazy"{% else %}fetchpriority="high"{% endif %}>
@@ -43,36 +47,45 @@
             <div class="slide-text">
               <h1 class="hero-headline">{{ b.title }}</h1>
               {% if b.subtitle %}<p class="hero-sub">{{ b.subtitle }}</p>{% endif %}
-              <span class="btn btn-white" style="align-self:start">{{ b.button_text }} {% icon 'arrow-r' 18 2.4 %}</span>
+              <div class="hero-cta-row">
+                <a class="btn btn-white" href="{{ b.link }}">{{ b.button_text }} {% icon 'arrow-r' 18 2.4 %}</a>
+                <button class="btn btn-hero-ghost" type="button" data-mila-guide>Find the right toy</button>
+              </div>
             </div>
             {% endif %}
-          </a>
+          </div>
         </div>
         {% else %}
         <div class="swiper-slide">
-          <a class="slide s-{{ b.style }}" href="{{ b.link }}">
+          <div class="slide s-{{ b.style }}">
             <span class="confetti c1"></span><span class="confetti c2"></span><span class="confetti c3"></span><span class="confetti c4"></span>
             <div>
               <h1 class="hero-headline">{{ b.title }}</h1>
               {% if b.subtitle %}<p class="hero-sub">{{ b.subtitle }}</p>{% endif %}
-              <span class="btn btn-white">{{ b.button_text }} {% icon 'arrow-r' 18 2.4 %}</span>
+              <div class="hero-cta-row">
+                <a class="btn btn-white" href="{{ b.link }}">{{ b.button_text }} {% icon 'arrow-r' 18 2.4 %}</a>
+                <button class="btn btn-hero-ghost" type="button" data-mila-guide>Find the right toy</button>
+              </div>
             </div>
             <div class="slide-art">{% illus b.illustration %}</div>
-          </a>
+          </div>
         </div>
         {% endif %}
       {% empty %}
         {# Default gradient hero with stock illustration #}
         <div class="swiper-slide">
-          <a class="slide hero-default s-sky" href="{% url 'store:shop' %}">
+          <div class="slide hero-default s-sky">
             <span class="confetti c1"></span><span class="confetti c2"></span><span class="confetti c3"></span><span class="confetti c4"></span>
             <div>
               <h1 class="hero-headline">Toys that help<br>little ones grow</h1>
               <p class="hero-sub">Sensory, motor and speech toys chosen with therapists.<br>Cash on delivery across Pakistan.</p>
-              <span class="btn btn-white">Shop all toys {% icon 'arrow-r' 18 2.4 %}</span>
+              <div class="hero-cta-row">
+                <a class="btn btn-white" href="{% url 'store:shop' %}">Shop all toys {% icon 'arrow-r' 18 2.4 %}</a>
+                <button class="btn btn-hero-ghost" type="button" data-mila-guide>Find the right toy</button>
+              </div>
             </div>
             <div class="slide-art">{% illus 'rings' %}</div>
-          </a>
+          </div>
         </div>
       {% endfor %}
     </div>
@@ -152,7 +165,7 @@
           {% if c.image %}<img src="{{ c.image.url }}" alt="" loading="lazy">
           {% else %}{% with first=c.products.first %}{% illus first.illustration|default:'blocks' %}{% endwith %}{% endif %}
         </div>
-        <div class="skill-tile-label">
+        <div class="skill-tile-overlay">
           <b>{{ c.name }}</b>
           {% if c.short %}<span>{{ c.short }}</span>{% endif %}
         </div>
@@ -170,17 +183,26 @@
   <div class="wrap">
     <div class="section-head reveal">
       <div>
-        <h2><span class="title-dot" style="background:var(--orange)"></span>{% if s and s.title %}{{ s.title }}{% else %}Shop by need{% endif %}</h2>
+        <h2><span class="title-dot" style="background:var(--orange)"></span>{% if s and s.title %}{{ s.title }}{% else %}What does your child need help with?{% endif %}</h2>
         <p>{% if s and s.subtitle %}{{ s.subtitle }}{% else %}Start from what your child needs help with — we'll show the toys parents choose for it.{% endif %}</p>
       </div>
     </div>
     <div class="need-grid">
       {% for n in needs %}
-      <a class="need t-{{ n.color }}" href="{{ n.get_absolute_url }}">
-        <b>{{ n.name }}</b>
-        {% if n.short %}<span>{{ n.short }}</span>{% endif %}
-        <i class="need-go">{% icon 'arrow-r' 16 2.4 %}</i>
+      {% with fp=n.products.first %}
+      <a class="need-card t-{{ n.color }}" href="{{ n.get_absolute_url }}">
+        <div class="need-card-vis">
+          {% if fp and fp.image %}<img src="{{ fp.image.url }}" alt="" loading="lazy">
+          {% elif fp %}{% illus fp.illustration|default:'blocks' %}
+          {% else %}{% illus 'blocks' %}{% endif %}
+        </div>
+        <div class="need-card-body">
+          <b>{{ n.name }}</b>
+          {% if n.short %}<span>{{ n.short }}</span>{% endif %}
+          <span class="need-card-arrow">{% icon 'arrow-r' 16 2.4 %}</span>
+        </div>
       </a>
+      {% endwith %}
       {% endfor %}
     </div>
   </div>
@@ -290,6 +312,7 @@
 
 {# ── GALLERY — #LittleMoveKids lifestyle grid ────────────────────── #}
 {% if section_type == "gallery" %}{% with s=sections.gallery %}{% if not s or s.enabled %}
+{% if media_items or request.user.is_staff %}
 <section class="section section-soft">
   <div class="wrap">
     <div class="section-head reveal">
@@ -301,31 +324,17 @@
     <div class="lifestyle-grid">
       {% if media_items %}
         {% for item in media_items %}
-        <figure class="lifestyle-item" onclick="openLightbox('{{ item.image.url|default:'' }}')">
-          {% if item.image %}<img src="{{ item.image.url }}" alt="{{ item.caption|default:'' }}" loading="lazy">
-          {% elif item.video_url %}<div class="lifestyle-video-placeholder">▶</div>
+        <figure class="lifestyle-item{% if item.type == 'image' and item.file %} lifestyle-clickable{% endif %}"
+          {% if item.type == 'image' and item.file %}onclick="openLightbox('{{ item.file.url }}')"{% endif %}>
+          {% if item.file and item.type == 'image' %}<img src="{{ item.file.url }}" alt="{{ item.alt_text }}" loading="lazy">
+          {% elif item.file and item.type == 'video' %}<video src="{{ item.file.url }}" preload="none" class="lifestyle-video" controls></video>
+          {% elif item.youtube_url %}<div class="lifestyle-video-placeholder">▶</div>
           {% else %}<div class="lifestyle-placeholder"></div>{% endif %}
-          {% if item.caption %}<figcaption>{{ item.caption }}</figcaption>{% endif %}
+          {% if item.title %}<figcaption>{{ item.title }}</figcaption>{% endif %}
         </figure>
         {% endfor %}
-      {% else %}
-        {# Stock photo placeholders until real photos are uploaded #}
-        <figure class="lifestyle-item lifestyle-placeholder-fig">
-          <img src="{% static 'img/stock/life-1.svg' %}" alt="Placeholder" loading="lazy">
-          <figcaption>Add your own photos in admin → Gallery &amp; media</figcaption>
-        </figure>
-        <figure class="lifestyle-item lifestyle-placeholder-fig">
-          <img src="{% static 'img/stock/life-2.svg' %}" alt="Placeholder" loading="lazy">
-          <figcaption>Add your own photos in admin → Gallery &amp; media</figcaption>
-        </figure>
-        <figure class="lifestyle-item lifestyle-placeholder-fig">
-          <img src="{% static 'img/stock/life-3.svg' %}" alt="Placeholder" loading="lazy">
-          <figcaption>Add your own photos in admin → Gallery &amp; media</figcaption>
-        </figure>
-        <figure class="lifestyle-item lifestyle-placeholder-fig">
-          <img src="{% static 'img/stock/life-4.svg' %}" alt="Placeholder" loading="lazy">
-          <figcaption>Add your own photos in admin → Gallery &amp; media</figcaption>
-        </figure>
+      {% elif request.user.is_staff %}
+        <div class="admin-hint" style="grid-column:1/-1">Upload customer photos in <strong>Admin → Gallery &amp; media</strong>. They will appear here in a 4-column grid.</div>
       {% endif %}
     </div>
     <div id="lifestyle-lightbox" class="lifestyle-lightbox" role="dialog" aria-label="Photo" aria-hidden="true" onclick="closeLightbox()">
@@ -334,6 +343,7 @@
     </div>
   </div>
 </section>
+{% endif %}
 {% endif %}{% endwith %}{% endif %}
 
 {# ── TESTIMONIALS ────────────────────────────────────────────────── #}
@@ -341,7 +351,7 @@
 {% if testimonials %}
 <section class="section section-blue">
   <div class="wrap">
-    <div class="section-head reveal"><h2><span class="title-dot" style="background:var(--yellow)"></span>{% if s and s.title %}{{ s.title }}{% else %}What parents say{% endif %}</h2></div>
+    <div class="section-head reveal"><h2><span class="title-dot" style="background:var(--yellow)"></span>{% if s and s.title %}{{ s.title }}{% else %}Loved by LittleMove families{% endif %}</h2></div>
     <div class="swiper testimonials-swiper">
       <div class="swiper-wrapper quotes">
         {% for t in testimonials %}
@@ -442,10 +452,10 @@
       <div class="our-story-photo{% if our_story.photo %} has-photo{% endif %}">
         {% if our_story.photo %}
         <img src="{{ our_story.photo.url }}" alt="{{ our_story.title }}" loading="lazy" data-parallax>
-        {% else %}
-        <div class="our-story-placeholder">
+        {% elif request.user.is_staff %}
+        <div class="our-story-placeholder admin-hint">
           <div class="osp-inner">{% illus 'rings' %}{% illus 'blocks' %}{% illus 'balls' %}</div>
-          <p>Upload a photo in admin → Our story section</p>
+          <p>Upload a photo in <strong>Admin → Our story</strong></p>
         </div>
         {% endif %}
       </div>
@@ -453,6 +463,56 @@
   </div>
 </section>
 {% endif %}
+{% endif %}{% endwith %}{% endif %}
+
+{# ── WHY US ──────────────────────────────────────────────────────── #}
+{% if section_type == "why_us" %}{% with s=sections.why_us %}{% if not s or s.enabled %}
+<section class="section section-soft">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <h2><span class="title-dot" style="background:var(--brand)"></span>{% if s and s.title %}{{ s.title }}{% else %}Why parents choose LittleMove{% endif %}</h2>
+        <p>{% if s and s.subtitle %}{{ s.subtitle }}{% else %}Every toy is picked for a reason.{% endif %}</p>
+      </div>
+    </div>
+    <div class="why-us-grid reveal">
+      <div class="why-card">
+        <div class="why-card-icon" style="background:var(--brand-soft)">{% icon 'shield' 26 2.2 %}</div>
+        <h3>Therapist chosen</h3>
+        <p>Every toy is selected or approved by practising therapists at Wellness Rehabilitation Clinic.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-card-icon" style="background:var(--green-soft,#e6f9f2)">{% icon 'star' 26 2.2 %}</div>
+        <h3>Age-right picks</h3>
+        <p>Each toy shows exactly which ages and developmental stages it is designed for.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-card-icon" style="background:var(--yellow-soft,#fff8e0)">{% icon 'truck' 26 2.2 %}</div>
+        <h3>Pakistan-wide delivery</h3>
+        <p>Fast courier to every city. Pay cash on delivery — no prepayment needed.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-card-icon" style="background:var(--pink-soft,#fff0f3)">{% icon 'return' 26 2.2 %}</div>
+        <h3>Easy replacement</h3>
+        <p>Toy arrives damaged? Send us a photo and we replace it — no questions asked.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}{% endwith %}{% endif %}
+
+{# ── FINAL CTA ────────────────────────────────────────────────────── #}
+{% if section_type == "final_cta" %}{% with s=sections.final_cta %}{% if not s or s.enabled %}
+<section class="final-cta">
+  <div class="wrap" style="text-align:center">
+    <h2>{% if s and s.title %}{{ s.title }}{% else %}Ready to find their next favourite?{% endif %}</h2>
+    <p>{% if s and s.subtitle %}{{ s.subtitle }}{% else %}Therapist-chosen toys, delivered across Pakistan.{% endif %}</p>
+    <div class="final-cta-btns">
+      <a class="btn final-cta-btn-solid" href="{% url 'store:shop' %}">Shop all toys {% icon 'arrow-r' 18 2.4 %}</a>
+      <button class="btn final-cta-btn-ghost" type="button" data-mila-guide>Ask Mila</button>
+    </div>
+  </div>
+</section>
 {% endif %}{% endwith %}{% endif %}
 
 {% endfor %}{# end section_order loop #}

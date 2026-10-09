@@ -106,6 +106,13 @@
       </div>
       {% endif %}{% endwith %}
 
+      {% if product.helps_with_list %}
+      <div class="helps-block panel">
+        <h2>How this toy helps</h2>
+        <ul class="ticks">{% for item in product.helps_with_list %}<li>{{ item }}</li>{% endfor %}</ul>
+      </div>
+      {% endif %}
+
       <div class="panel pdp-tabswrap">
         <div class="pdp-tabs" role="tablist">
           {% if product.description %}<button type="button" class="active" data-tab="about" role="tab">About</button>{% endif %}

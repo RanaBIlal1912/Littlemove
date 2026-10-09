@@ -186,7 +186,9 @@
   </nav>
   {% endwith %}
 
-  <div id="mila-bot" class="mila-bot" data-chat-url="{% url 'store:chat_api' %}">
+  <a href="https://wa.me/{{ shop.whatsapp_number }}?text={{ 'Assalam o Alaikum! I need help choosing a toy.'|urlencode }}" class="wa-float" aria-label="Chat on WhatsApp" target="_blank" rel="noopener">{% whatsapp_icon 26 '#fff' %}</a>
+
+  <div id="mila-bot" class="mila-bot" data-chat-url="{% url 'store:chat_api' %}" data-guided-url="{% url 'store:mila_guide' %}">
     <button class="mila-toggle" id="mila-toggle" type="button" aria-label="Ask Mila, your toy guide" aria-expanded="false"><img src="{% static 'img/littlemove-logo.png' %}" alt="Mila" class="mila-av-img"></button>
     <div class="mila-window" id="mila-window" role="dialog" aria-label="Mila toy guide" aria-hidden="true">
       <div class="mila-head">

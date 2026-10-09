@@ -8,6 +8,7 @@
     <div class="badges">
       <span>{% if p.on_sale and p.in_stock %}<span class="badge badge-sale">-{{ p.discount_percent }}%</span>{% endif %}</span>
       {% if p.therapist_pick %}<span class="badge badge-pick">{% icon 'star' 13 2.4 %}<span class="pick-text"> Therapist pick</span></span>{% endif %}
+      {% if p.on_sale and p.saving %}<span class="badge badge-save">Save {{ p.saving|rs }}</span>{% endif %}
     </div>
     {% if not p.in_stock %}<div class="sold-veil"><span>Sold out</span></div>{% endif %}
     {# Slide-up Add to cart shown on hover (desktop) — always visible mobile #}
@@ -30,7 +31,8 @@
       <span class="price{% if p.on_sale %} price-sale{% endif %}">{{ p.price|rs }}</span>
       {% if p.on_sale %}<span class="price-old">{{ p.compare_at_price|rs }}</span>{% endif %}
     </div>
-    {# Desktop: keep a hidden placeholder so the card body height is consistent #}
-    {# Mobile: the .add-slide-wrap above is always visible #}
+    {% with tags=p.helps_with_list|slice:":3" %}{% if tags %}
+    <div class="pcard-skills">{% for tag in tags %}<span class="skill-tag">{{ tag }}</span>{% endfor %}</div>
+    {% endif %}{% endwith %}
   </div>
 </article>

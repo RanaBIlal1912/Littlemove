@@ -390,6 +390,8 @@ class HomeSection(models.Model):
     FAQ_SECTION = "faq"
     SAVE_WITH_BUNDLES = "save_with_bundles"
     OUR_STORY = "our_story"
+    WHY_US = "why_us"
+    FINAL_CTA = "final_cta"
 
     SECTION_TYPES = [
         (HERO_SLIDER,        "Hero slider (banners)"),
@@ -410,6 +412,8 @@ class HomeSection(models.Model):
         (FAQ_SECTION,        "FAQ / Questions parents ask"),
         (SAVE_WITH_BUNDLES,  "Save with bundles"),
         (OUR_STORY,          "Our story"),
+        (WHY_US,             "Why parents choose LittleMove"),
+        (FINAL_CTA,          "Final CTA (Ready to find their favourite?)"),
     ]
 
     type = models.CharField(max_length=30, choices=SECTION_TYPES, unique=True,

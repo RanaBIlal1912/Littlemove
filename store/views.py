@@ -403,3 +403,33 @@ def chat_api(request):
     from .chatbot import get_bot_response
     result = get_bot_response(request, user_message)
     return JsonResponse(result)
+
+
+def mila_guide(request):
+    """Return 3-4 in-stock products matching age + goal for Mila guided flow."""
+    age_key = request.GET.get("age", "").strip()
+    goal = request.GET.get("goal", "").strip().lower()
+    AGE_MAP = {"0-2": (0, 2), "2-4": (2, 4), "4-6": (4, 6), "6+": (6, 20)}
+    qs = Product.objects.live().select_related("category")
+    if age_key in AGE_MAP:
+        lo, hi = AGE_MAP[age_key]
+        qs = qs.filter(age_from__lte=hi, age_to__gte=lo)
+    if goal:
+        qs = qs.filter(
+            Q(category__name__icontains=goal)
+            | Q(needs__name__icontains=goal)
+            | Q(helps_with__icontains=goal)
+        ).distinct()
+    products = list(qs[:4])
+    return JsonResponse({
+        "products": [
+            {
+                "name": p.name,
+                "url": p.get_absolute_url(),
+                "price_display": f"Rs {p.price:,.0f}",
+                "image": p.image.url if p.image else None,
+                "age": p.age_label,
+            }
+            for p in products
+        ]
+    })
