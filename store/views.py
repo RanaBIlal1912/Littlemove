@@ -428,6 +428,7 @@ def mila_guide(request):
                 "url": p.get_absolute_url(),
                 "price_display": f"Rs {p.price:,.0f}",
                 "image": p.image.url if p.image else None,
+                "illustration_svg": str(_illus(p.illustration)) if not p.image else None,
                 "age": p.age_label,
             }
             for p in products

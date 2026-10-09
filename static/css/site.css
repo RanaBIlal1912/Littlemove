@@ -1817,3 +1817,182 @@ body.has-hero .header:not(.is-scrolled) .header-logo svg rect { fill: #fff; }
   .wa-float { transition: none !important; }
   .wa-float:hover { transform: none !important; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   HERO / HEADER / MILA FIXES
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Issue 1: hero overlay z-index ─────────────────────────────────── */
+.hero-fullbleed .slide::after,
+.hero-fullbleed .slide.s-sky::after,
+.hero-fullbleed .slide.s-mint::after,
+.hero-fullbleed .slide.s-coral::after,
+.hero-fullbleed .slide.s-yellow::after { z-index: 0 !important; }
+
+.slide-text,
+.slide-art,
+.hero-cta-row,
+.spin-badge,
+.scroll-cue,
+.hero-fullbleed .slide > div:not(.slide-art) {
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+/* btn-white: pure white + dark navy ink */
+.btn-white, a.btn-white, button.btn-white {
+  background: #ffffff !important;
+  color: #1b2340 !important;
+  border: none !important;
+  box-shadow: 0 4px 18px rgba(0,0,0,.22) !important;
+}
+.btn-white:hover, a.btn-white:hover, button.btn-white:hover {
+  background: #f0f8ff !important;
+  color: #1b2340 !important;
+}
+
+/* btn-hero-ghost: transparent outline + white text */
+.btn-hero-ghost {
+  background: transparent !important;
+  color: #ffffff !important;
+  border: 2px solid rgba(255,255,255,.7) !important;
+  box-shadow: none !important;
+}
+.btn-hero-ghost:hover {
+  background: rgba(255,255,255,.18) !important;
+  color: #ffffff !important;
+}
+
+/* ── Issue 3: fixed header on hero pages ────────────────────────────── */
+body.has-hero .topbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 50; width: 100%;
+}
+body.has-hero .header {
+  position: fixed; left: 0; right: 0; z-index: 40; width: 100%; top: 0;
+}
+body.has-hero.has-topbar .header { top: 38px; }
+
+/* hero fills behind fixed bar; padding-top pushes content below it */
+body.has-hero .hero-fullbleed {
+  margin-top: 0 !important;
+  padding-top: 78px;
+}
+body.has-hero.has-topbar .hero-fullbleed { padding-top: 116px; }
+
+/* white search input when transparent */
+body.has-hero .header:not(.is-scrolled) .search {
+  border-color: rgba(255,255,255,.45) !important;
+  background: rgba(255,255,255,.1) !important;
+}
+body.has-hero .header:not(.is-scrolled) .search input {
+  border-color: transparent !important;
+  background: transparent !important;
+  color: rgba(255,255,255,.9) !important;
+}
+body.has-hero .header:not(.is-scrolled) .search input::placeholder {
+  color: rgba(255,255,255,.6) !important;
+}
+body.has-hero .header:not(.is-scrolled) .search button {
+  background: rgba(255,255,255,.22) !important;
+  color: #fff !important;
+}
+body.has-hero .header.is-scrolled {
+  background: rgba(255,251,243,.96) !important;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 2px 16px rgba(35,49,74,.08) !important;
+}
+
+/* ── Issue 2: mobile hero fix (≤640px) ──────────────────────────────── */
+@media (max-width: 640px) {
+  body.has-hero .hero-fullbleed { padding-top: 108px; }
+  body.has-hero.has-topbar .hero-fullbleed { padding-top: 146px; }
+
+  /* gradient slides: flex column, art on top */
+  .hero-fullbleed .slide:not(.has-photo):not(.has-video) {
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    align-items: stretch !important;
+    padding: 0 !important;
+  }
+  /* text+buttons below art */
+  .hero-fullbleed .slide:not(.has-photo):not(.has-video) > div:not(.slide-art) {
+    order: 2 !important;
+    padding: 16px 20px 24px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    flex: 1 !important;
+    position: relative !important;
+    z-index: 2 !important;
+    justify-content: flex-start !important;
+  }
+  /* art block on top */
+  .hero-fullbleed .slide:not(.has-photo):not(.has-video) .slide-art {
+    display: flex !important;
+    order: 1 !important;
+    flex: 0 0 30vh !important;
+    max-height: 30vh !important;
+    width: 100% !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: hidden !important;
+  }
+  .hero-fullbleed .slide:not(.has-photo):not(.has-video) .slide-art .illus {
+    width: 160px !important;
+    height: 160px !important;
+  }
+}
+
+/* ── Issue 4: Mila chips as brand-blue pill buttons ─────────────────── */
+.mila-opt {
+  background: #fff !important;
+  border: 1.5px solid var(--brand) !important;
+  border-radius: 50px !important;
+  color: var(--brand) !important;
+  font-size: .84rem !important;
+  font-weight: 600 !important;
+  padding: 7px 16px !important;
+  cursor: pointer !important;
+  transition: background .12s, color .12s !important;
+  font-family: var(--body) !important;
+  line-height: 1.4 !important;
+}
+.mila-opt:hover, .mila-opt:focus {
+  background: var(--brand) !important;
+  color: #fff !important;
+  outline: none !important;
+}
+
+/* Mila send button 44×44 brand blue */
+.mila-input button[type=submit] {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 50% !important;
+  background: var(--brand) !important;
+  color: #fff !important;
+  border: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+  padding: 0 !important;
+}
+.mila-input button[type=submit]:hover { background: var(--brand-dark, #2a8fd4) !important; }
+
+/* Mila product card placeholder: show SVG */
+.mpc-ph {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: var(--bg-soft) !important;
+}
+.mpc-ph svg { width: 36px; height: 36px; opacity: .55; }
+
+/* ── Issue 5: WA + Mila stacking on mobile ──────────────────────────── */
+@media (max-width: 760px) {
+  .mila-bot { bottom: 84px !important; right: 16px !important; }
+  .wa-float  { bottom: 148px !important; right: 16px !important; }
+  body.has-sticky-buy .wa-float { bottom: 92px !important; }
+}

@@ -717,7 +717,9 @@
               a.className = "mila-product-card";
               var imgHtml = p.image
                 ? '<img src="' + escapeHtml(p.image) + '" alt="" loading="lazy">'
-                : '<div class="mpc-ph"></div>';
+                : (p.illustration_svg
+                  ? '<div class="mpc-ph">' + p.illustration_svg + '</div>'
+                  : '<div class="mpc-ph"></div>');
               a.innerHTML = imgHtml +
                 '<div class="mpc-body"><b>' + escapeHtml(p.name) + '</b>' +
                 '<span>Ages ' + escapeHtml(p.age) + '</span>' +

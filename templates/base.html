@@ -18,7 +18,7 @@
   {% comment %}LittleMove colour palette lives in site.css — sampled from the logo.{% endcomment %}
   {% block head %}{% endblock %}
 </head>
-<body class="{% block body_class %}{% endblock %}"{% block body_attrs %}{% endblock %}>
+<body class="{% block body_class %}{% endblock %}{% with msgs=shop.announcements %}{% if msgs %} has-topbar{% endif %}{% endwith %}"{% block body_attrs %}{% endblock %}>
   <div id="loader-overlay" class="loader-overlay" aria-hidden="true"><img src="{% static 'img/littlemove-logo.png' %}" alt="" width="120"></div>
   <div id="bg-wrap" aria-hidden="true" data-anim="{{ shop.animated_bg|yesno:'1,0' }}"><canvas id="bg-cv"></canvas></div>
   <a class="sr-only" href="#main">Skip to content</a>
