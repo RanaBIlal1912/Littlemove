@@ -11,8 +11,8 @@ class StoreSettings(models.Model):
     store_name = models.CharField(max_length=80, default="LittleMove")
     tagline = models.CharField(max_length=120, default="Play. Learn. Grow.")
     whatsapp_number = models.CharField(
-        max_length=20, default="923173661912",
-        help_text="International format without + or spaces, e.g. 923173661912",
+        max_length=20, default="923106521912",
+        help_text="International format without + or spaces, e.g. 923106521912",
     )
     email = models.EmailField(default="littlemoveofficial@gmail.com")
     city = models.CharField(max_length=60, default="Bahawalpur")

@@ -2056,3 +2056,107 @@ body.has-hero .header:not(.is-scrolled) {
   pointer-events: none !important;
   transform: scale(.7) !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PRODUCT PHOTO + SOLID HEADER + BUY-NOW FIXES
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Task 1: PDP grid blow-out fix ──────────────────────────────────── */
+/* min-width:0 prevents grid cell from growing to intrinsic image size */
+.pdp > * { min-width: 0; }
+.qv-grid > *, .bundle-detail > * { min-width: 0; }
+
+/* Main photo: absolute fill so aspect-ratio container height stays sane */
+.pdp-main { position: relative; overflow: hidden; }
+.pdp-main img.photo {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+/* Product card media: same pattern */
+.pcard-media { position: relative; }
+.pcard-media img.photo {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform .35s ease;
+}
+
+/* ── Task 3: Buy-now always coral on all screen sizes ───────────────── */
+.btn-pink {
+  background: #FF7272 !important;
+  border-color: #FF7272 !important;
+  color: #fff !important;
+  box-shadow: 0 6px 16px rgba(255,114,114,.35) !important;
+}
+.btn-pink:hover { background: #e85e5e !important; border-color: #e85e5e !important; }
+
+/* ── Task 2: Solid header — remove all transparent/hero-overlay rules ── */
+/* Header always sticky + cream + blur */
+.header {
+  position: sticky !important;
+  top: 0 !important;
+  background: rgba(255,251,243,.96) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  backdrop-filter: blur(14px) !important;
+  box-shadow: 0 2px 16px rgba(35,49,74,.08) !important;
+}
+
+/* Topbar always in normal document flow */
+.topbar,
+body.has-hero .topbar { position: relative !important; top: auto !important; }
+
+/* Cancel has-hero fixed/transparent header overrides */
+body.has-hero .header,
+body.has-hero .header:not(.is-scrolled) {
+  position: sticky !important;
+  top: 0 !important;
+  background: rgba(255,251,243,.96) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  backdrop-filter: blur(14px) !important;
+  box-shadow: 0 2px 16px rgba(35,49,74,.08) !important;
+  border-bottom-color: var(--line) !important;
+}
+
+/* Restore dark ink nav text + brand-colour logo */
+body.has-hero .header:not(.is-scrolled) .logo-txt,
+body.has-hero .header:not(.is-scrolled) .logo-sub,
+body.has-hero .header:not(.is-scrolled) .nav a,
+body.has-hero .header:not(.is-scrolled) .nav-btn { color: var(--ink) !important; }
+body.has-hero .header:not(.is-scrolled) .nav a:hover { color: var(--brand) !important; }
+body.has-hero .header:not(.is-scrolled) .header-logo svg path,
+body.has-hero .header:not(.is-scrolled) .header-logo svg circle,
+body.has-hero .header:not(.is-scrolled) .header-logo svg rect { fill: var(--brand) !important; }
+
+/* Restore normal search box */
+body.has-hero .header:not(.is-scrolled) .search {
+  background: transparent !important;
+  border-color: var(--line) !important;
+}
+body.has-hero .header:not(.is-scrolled) .search input {
+  border-color: transparent !important;
+  background: transparent !important;
+  color: var(--ink) !important;
+}
+body.has-hero .header:not(.is-scrolled) .search input::placeholder {
+  color: var(--ink-2) !important;
+}
+body.has-hero .header:not(.is-scrolled) .search button {
+  background: var(--brand) !important;
+  color: #fff !important;
+}
+
+/* Remove hero negative-margin/padding hacks so hero sits below header */
+.hero-fullbleed,
+body.has-hero .hero-fullbleed,
+body.has-hero.has-topbar .hero-fullbleed {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+@media (min-width: 760px) {
+  .hero-fullbleed { margin-top: 0 !important; padding-top: 0 !important; }
+}
+@media (max-width: 640px) {
+  body.has-hero .hero-fullbleed,
+  body.has-hero.has-topbar .hero-fullbleed { padding-top: 0 !important; }
+}
