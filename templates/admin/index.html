@@ -52,6 +52,12 @@
 {% endblock %}
 
 {% block content %}
+{% if cloudinary_warning %}
+<div style="background:#fff1f0;border:1px solid #ffa39e;color:#a8071a;padding:12px 16px;border-radius:8px;margin-bottom:20px;font-size:.9rem">
+  <strong>&#9888; Uploads are stored temporarily</strong> &mdash; they will be lost on the next deploy.
+  Add <code>CLOUDINARY_URL</code> in Render environment variables to persist uploads.
+</div>
+{% endif %}
 <div style="padding:4px 0 20px">
   <h1 style="font-size:1.4rem;font-weight:700;margin:0 0 4px;color:#111827" class="dark:text-gray-100">
     Welcome back 👋

@@ -208,6 +208,108 @@ class MediaItemValidationTests(TestCase):
         m.clean()
 
 
+# ── Upload validation tests ───────────────────────────────────────────────────
+
+class UploadValidationTests(TestCase):
+    """store/uploads.py: validate_upload, detect_kind, validate_zip_safety."""
+
+    def _file(self, name, content=b"x" * 100):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        return SimpleUploadedFile(name, content)
+
+    def _jpeg(self, name="photo.jpg"):
+        # minimal JPEG magic bytes
+        content = b'\xff\xd8\xff\xe0' + b'\x00' * 100
+        return self._file(name, content)
+
+    def _mp4(self, name="video.mp4"):
+        # ftyp MP4 magic
+        content = b'\x00\x00\x00\x18ftypisom' + b'\x00' * 100
+        return self._file(name, content)
+
+    def _pdf(self, name="doc.pdf"):
+        return self._file(name, b'%PDF-1.4 ' + b'\x00' * 100)
+
+    def _exe(self, name="prog.exe"):
+        return self._file(name, b'\x4d\x5a' + b'\x00' * 100)  # MZ header
+
+    def test_jpeg_image_accepted(self):
+        from store.uploads import validate_upload
+        kind = validate_upload(self._jpeg(), allow_kinds=("image",))
+        self.assertEqual(kind, "image")
+
+    def test_mp4_accepted_as_video(self):
+        from store.uploads import validate_upload
+        kind = validate_upload(self._mp4(), allow_kinds=("video",))
+        self.assertEqual(kind, "video")
+
+    def test_mp4_rejected_as_image_only(self):
+        from django.core.exceptions import ValidationError
+        from store.uploads import validate_upload
+        with self.assertRaises(ValidationError):
+            validate_upload(self._mp4(), allow_kinds=("image",))
+
+    def test_exe_always_blocked(self):
+        from django.core.exceptions import ValidationError
+        from store.uploads import validate_upload
+        with self.assertRaises(ValidationError):
+            validate_upload(self._exe(), allow_kinds=("image",))
+
+    def test_exe_renamed_to_jpg_rejected(self):
+        """Magic bytes win over extension."""
+        from django.core.exceptions import ValidationError
+        from store.uploads import validate_upload
+        # MZ header in a .jpg file
+        f = self._file("photo.jpg", b'\x4d\x5a' + b'\x00' * 100)
+        with self.assertRaises(ValidationError):
+            validate_upload(f, allow_kinds=("image",))
+
+    def test_svg_blocked_by_extension(self):
+        from django.core.exceptions import ValidationError
+        from store.uploads import validate_upload
+        f = self._file("icon.svg", b'<svg xmlns="http://www.w3.org/2000/svg">')
+        with self.assertRaises(ValidationError):
+            validate_upload(f, allow_kinds=("image",))
+
+    def test_pdf_accepted_as_document(self):
+        from store.uploads import validate_upload
+        kind = validate_upload(self._pdf(), allow_kinds=("document",))
+        self.assertEqual(kind, "document")
+
+    def test_oversize_rejected(self):
+        from django.core.exceptions import ValidationError
+        from store.uploads import validate_upload
+        big = self._file("big.jpg", b'\xff\xd8\xff\xe0' + b'\x00' * (11 * 1024 * 1024))
+        with self.assertRaises(ValidationError) as ctx:
+            validate_upload(big, allow_kinds=("image",))
+        self.assertIn("MB", str(ctx.exception))
+
+    def test_zip_traversal_rejected(self):
+        from django.core.exceptions import ValidationError
+        from store.uploads import validate_zip_safety
+        import zipfile, io
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, "w") as zf:
+            zf.writestr("../../../etc/passwd", "root:x:0:0")
+        buf.seek(0)
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        f = SimpleUploadedFile("archive.zip", buf.read())
+        with self.assertRaises(ValidationError):
+            validate_zip_safety(f)
+
+    def test_zip_safe_returns_member_names(self):
+        from store.uploads import validate_zip_safety
+        import zipfile, io
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, "w") as zf:
+            zf.writestr("photo.jpg", b'\xff\xd8\xff\xe0' + b'\x00' * 20)
+        buf.seek(0)
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        f = SimpleUploadedFile("archive.zip", buf.read())
+        names = validate_zip_safety(f)
+        self.assertIn("photo.jpg", names)
+
+
 # ── Chatbot tests ─────────────────────────────────────────────────────────────
 
 @override_settings(

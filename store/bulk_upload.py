@@ -7,7 +7,7 @@ from django.core.files.base import ContentFile
 
 from .models import Product, ProductPhoto
 
-ALLOWED_EXTS = {"jpg", "jpeg", "png", "webp"}
+ALLOWED_EXTS = {"jpg", "jpeg", "png", "webp", "gif", "avif", "bmp", "tiff", "tif"}
 MAX_ZIP_BYTES = 60 * 1024 * 1024  # 60 MB
 
 
@@ -31,28 +31,43 @@ def _match_product(folder_name, by_name, by_sku, by_slug):
     return by_name.get(key) or by_sku.get(key) or by_slug.get(key)
 
 
+_VIDEO_EXTS = {"mp4", "webm", "mov", "m4v"}
+
+
 def process_bulk_zip(zip_bytes, replace=False):
     """
     Process a zip file and import photos to matching products.
 
     Top-level folder → product matched by name (case-insensitive, collapse
     spaces), SKU, or slug. Images sorted alphabetically: first becomes
-    Product.image if empty, rest become ProductPhoto rows. Only jpg/jpeg/
-    png/webp accepted; each is verified with Pillow. Ignores __MACOSX and
-    hidden files.
+    Product.image if empty, rest become ProductPhoto rows. Only image
+    extensions in ALLOWED_EXTS accepted; each is verified with Pillow.
+    Ignores __MACOSX and hidden files.
 
     Returns dict with:
         matched   – list of (Product, int) tuples
         unmatched – list of folder name strings
         errors    – list of error message strings
+        skipped   – list of {"name": str, "reason": str} dicts
     """
     from PIL import Image as PilImage
+    from django.core.files.uploadedfile import SimpleUploadedFile
+    from store.uploads import validate_zip_safety
 
     matched = []
     unmatched = []
     errors = []
+    skipped = []
 
     by_name, by_sku, by_slug = _build_lookup()
+
+    # Validate the ZIP for safety before processing
+    try:
+        zip_file_obj = SimpleUploadedFile("upload.zip", zip_bytes, content_type="application/zip")
+        validate_zip_safety(zip_file_obj)
+    except Exception as exc:
+        errors.append(str(exc))
+        return {"matched": matched, "unmatched": unmatched, "errors": errors, "skipped": skipped}
 
     try:
         with zipfile.ZipFile(io.BytesIO(zip_bytes)) as zf:
@@ -85,7 +100,11 @@ def process_bulk_zip(zip_bytes, replace=False):
                     if not filename or filename.startswith("."):
                         continue
                     ext = filename.lower().rsplit(".", 1)[-1] if "." in filename else ""
+                    if ext in _VIDEO_EXTS:
+                        skipped.append({"name": filename, "reason": "Videos not attached to products in bulk upload"})
+                        continue
                     if ext not in ALLOWED_EXTS:
+                        skipped.append({"name": filename, "reason": "blocked file type"})
                         continue
                     images.append((filename, item))
 
@@ -107,6 +126,7 @@ def process_bulk_zip(zip_bytes, replace=False):
                         img_obj = PilImage.open(io.BytesIO(data))
                         img_obj.verify()
                     except Exception:
+                        skipped.append({"name": filename, "reason": "invalid image data"})
                         continue
 
                     cf = ContentFile(data, name=filename)
@@ -129,4 +149,4 @@ def process_bulk_zip(zip_bytes, replace=False):
     except Exception as exc:
         errors.append(f"Unexpected error: {exc}")
 
-    return {"matched": matched, "unmatched": unmatched, "errors": errors}
+    return {"matched": matched, "unmatched": unmatched, "errors": errors, "skipped": skipped}

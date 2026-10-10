@@ -1,6 +1,8 @@
 """Dashboard context callback and sidebar badge helpers for the admin."""
 import datetime
+import os
 
+from django.conf import settings as settings_module
 from django.db.models import Count, Sum
 from django.utils import timezone
 
@@ -109,6 +111,10 @@ def dashboard_callback(request, context):
         context["kpi_low_stock"] = None
         context["low_stock_products"] = []
         context["no_photo_count"] = None
+
+    context["cloudinary_warning"] = (
+        not os.environ.get("CLOUDINARY_URL") and not getattr(settings_module, "DEBUG", False)
+    )
 
     return context
 

@@ -425,12 +425,23 @@ def match_photos_zip(zip_bytes, image_file_map, replace_existing=False):
         errors    list[str]
     """
     from store.bulk_upload import ALLOWED_EXTS
+    from store.uploads import validate_zip_safety
     from PIL import Image as PilImage
     from django.core.files.base import ContentFile
+    from django.core.files.uploadedfile import SimpleUploadedFile
 
     results: dict = {"attached": [], "no_match": [], "no_photo": [], "errors": []}
 
     if not zip_bytes or not image_file_map:
+        results["no_photo"] = [p.name for p in image_file_map.values() if not p.image]
+        return results
+
+    # Validate ZIP safety before processing
+    try:
+        zip_file_obj = SimpleUploadedFile("photos.zip", zip_bytes, content_type="application/zip")
+        validate_zip_safety(zip_file_obj)
+    except Exception as exc:
+        results["errors"].append(str(exc))
         results["no_photo"] = [p.name for p in image_file_map.values() if not p.image]
         return results
 

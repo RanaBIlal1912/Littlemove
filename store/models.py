@@ -6,6 +6,23 @@ from django.urls import reverse
 from django.utils.text import slugify
 
 
+# ── Upload validators (form/admin validation only, never run on seed/tests) ──
+
+def validate_image_upload(file):
+    from store.uploads import validate_upload as _validate_upload
+    _validate_upload(file, allow_kinds=("image",))
+
+
+def validate_video_upload(file):
+    from store.uploads import validate_upload as _validate_upload
+    _validate_upload(file, allow_kinds=("video",))
+
+
+def validate_media_upload(file):
+    from store.uploads import validate_upload as _validate_upload
+    _validate_upload(file, allow_kinds=("image", "video"))
+
+
 class StoreSettings(models.Model):
     """One row of shop-wide settings, editable from the admin panel."""
 
@@ -107,6 +124,16 @@ class StoreSettings(models.Model):
     def __str__(self):
         return "Store settings"
 
+    def clean(self):
+        from store.uploads import validate_upload
+        for field_name in ("logo", "white_logo", "favicon", "share_image"):
+            f = getattr(self, field_name)
+            if f and hasattr(f, "file"):
+                try:
+                    validate_upload(f, allow_kinds=("image",))
+                except ValidationError as exc:
+                    raise ValidationError({field_name: exc.message})
+
     def save(self, *args, **kwargs):
         self.pk = 1
         super().save(*args, **kwargs)
@@ -160,6 +187,14 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
+
+    def clean(self):
+        if self.image and hasattr(self.image, "file"):
+            from store.uploads import validate_upload
+            try:
+                validate_upload(self.image, allow_kinds=("image",))
+            except ValidationError as exc:
+                raise ValidationError({"image": exc.message})
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -252,6 +287,14 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
+    def clean(self):
+        if self.image and hasattr(self.image, "file"):
+            from store.uploads import validate_upload
+            try:
+                validate_upload(self.image, allow_kinds=("image",))
+            except ValidationError as exc:
+                raise ValidationError({"image": exc.message})
+
     def save(self, *args, **kwargs):
         if not self.slug:
             base = slugify(self.name)[:120] or "product"
@@ -313,6 +356,14 @@ class ProductPhoto(models.Model):
     def __str__(self):
         return self.alt or f"Photo of {self.product}"
 
+    def clean(self):
+        if self.image and hasattr(self.image, "file"):
+            from store.uploads import validate_upload
+            try:
+                validate_upload(self.image, allow_kinds=("image",))
+            except ValidationError as exc:
+                raise ValidationError({"image": exc.message})
+
 
 class Banner(models.Model):
     """Home page slider. Upload banners made in Canva or Photoshop."""
@@ -350,8 +401,22 @@ class Banner(models.Model):
         return self.title
 
     def clean(self):
-        from django.core.exceptions import ValidationError
-        if self.video:
+        from store.uploads import validate_upload
+        # Validate image fields
+        for field_name in ("image", "mobile_image"):
+            f = getattr(self, field_name)
+            if f and hasattr(f, "file"):
+                try:
+                    validate_upload(f, allow_kinds=("image",))
+                except ValidationError as exc:
+                    raise ValidationError({field_name: exc.message})
+        # Validate video field using magic bytes + legacy extension/size checks
+        if self.video and hasattr(self.video, "file"):
+            try:
+                validate_upload(self.video, allow_kinds=("video",))
+            except ValidationError as exc:
+                raise ValidationError({"video": exc.message})
+        elif self.video:
             name = getattr(self.video, 'name', '') or ''
             if name and not any(name.lower().endswith(ext) for ext in ('.mp4', '.webm', '.mov')):
                 raise ValidationError({"video": "Only mp4, webm or mov video files are accepted."})
@@ -451,6 +516,14 @@ class HomeSection(models.Model):
     def __str__(self):
         return self.get_type_display()
 
+    def clean(self):
+        if self.bg_image and hasattr(self.bg_image, "file"):
+            from store.uploads import validate_upload
+            try:
+                validate_upload(self.bg_image, allow_kinds=("image",))
+            except ValidationError as exc:
+                raise ValidationError({"bg_image": exc.message})
+
 
 class Bundle(models.Model):
     """A curated set of products sold together at a lower combined price."""
@@ -480,6 +553,14 @@ class Bundle(models.Model):
 
     def __str__(self):
         return self.name
+
+    def clean(self):
+        if self.image and hasattr(self.image, "file"):
+            from store.uploads import validate_upload
+            try:
+                validate_upload(self.image, allow_kinds=("image",))
+            except ValidationError as exc:
+                raise ValidationError({"image": exc.message})
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -530,6 +611,14 @@ class OurStory(models.Model):
 
     def __str__(self):
         return "Our story"
+
+    def clean(self):
+        if self.photo and hasattr(self.photo, "file"):
+            from store.uploads import validate_upload
+            try:
+                validate_upload(self.photo, allow_kinds=("image",))
+            except ValidationError as exc:
+                raise ValidationError({"photo": exc.message})
 
     def save(self, *args, **kwargs):
         self.pk = 1
@@ -586,6 +675,14 @@ class Popup(models.Model):
     def __str__(self):
         return self.name
 
+    def clean(self):
+        if self.image and hasattr(self.image, "file"):
+            from store.uploads import validate_upload
+            try:
+                validate_upload(self.image, allow_kinds=("image",))
+            except ValidationError as exc:
+                raise ValidationError({"image": exc.message})
+
     @classmethod
     def get_active(cls):
         from django.db.models import Q
@@ -638,6 +735,12 @@ class MediaItem(models.Model):
         if self.file and self.file.name:
             name = self.file.name.lower()
             size = self.file.size if hasattr(self.file, "size") else 0
+            # Magic-byte check: block executables/programs regardless of extension
+            if hasattr(self.file, "file"):
+                from store.uploads import detect_kind
+                kind = detect_kind(self.file)
+                if kind == "blocked":
+                    raise ValidationError({"file": "This looks like a program or script file. Please upload an image or video."})
             if self.type == self.TYPE_IMAGE:
                 if not any(name.endswith(ext) for ext in (".jpg", ".jpeg", ".png", ".webp")):
                     raise ValidationError({"file": "Images must be jpg, png or webp."})
