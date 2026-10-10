@@ -132,6 +132,50 @@ class ProductAdmin(ModelAdmin):
             return format_html('<b style="color:#b54708">Low</b>')
         return "OK"
 
+    def get_urls(self):
+        from django.urls import path as urlpath
+        custom = [
+            urlpath(
+                "bulk-upload/",
+                self.admin_site.admin_view(self.bulk_upload_view),
+                name="store_product_bulk_upload",
+            ),
+        ]
+        return custom + super().get_urls()
+
+    def bulk_upload_view(self, request):
+        import os
+        from django.conf import settings as djsettings
+        from django.shortcuts import render
+        from .bulk_upload import MAX_ZIP_BYTES, process_bulk_zip
+
+        cloudinary_warning = (
+            not os.environ.get("CLOUDINARY_URL") and not djsettings.DEBUG
+        )
+        report = None
+        error = None
+
+        if request.method == "POST":
+            zf = request.FILES.get("zipfile")
+            if not zf:
+                error = "Please choose a ZIP file."
+            elif zf.size > MAX_ZIP_BYTES:
+                mb = zf.size // (1024 * 1024)
+                error = f"ZIP file must be ≤ 60 MB (yours is {mb} MB)."
+            else:
+                replace = request.POST.get("replace") == "on"
+                report = process_bulk_zip(zf.read(), replace=replace)
+
+        context = {
+            **self.admin_site.each_context(request),
+            "title": "Bulk photo upload",
+            "opts": self.model._meta,
+            "cloudinary_warning": cloudinary_warning,
+            "report": report,
+            "error": error,
+        }
+        return render(request, "store/admin_bulk_upload.html", context)
+
 
 # ── Banners ────────────────────────────────────────────────────────────────────
 

@@ -501,3 +501,163 @@ class OurStoryTests(TestCase):
         obj = OurStory.load()
         self.assertEqual(obj.pk, 1)
         self.assertEqual(OurStory.objects.count(), 1)
+
+
+# ── Bulk photo upload tests ───────────────────────────────────────────────────
+
+import zipfile as _zipfile
+
+
+def _make_png_bytes():
+    """Return bytes of a valid 1×1 white PNG via Pillow."""
+    from PIL import Image as PilImage
+    buf = io.BytesIO()
+    PilImage.new("RGB", (1, 1), (255, 255, 255)).save(buf, format="PNG")
+    return buf.getvalue()
+
+
+def _make_zip(folders):
+    """
+    Build an in-memory ZIP where `folders` is:
+        { "FolderName": {"img.png": <bytes>, ...}, ... }
+    """
+    buf = io.BytesIO()
+    with _zipfile.ZipFile(buf, "w") as zf:
+        for folder, files in folders.items():
+            for filename, data in files.items():
+                zf.writestr(f"{folder}/{filename}", data)
+    buf.seek(0)
+    return buf.read()
+
+
+class BulkUploadMatchTests(TestCase):
+    """Unit tests for process_bulk_zip matching and reporting logic."""
+
+    def setUp(self):
+        cat = make_category()
+        self.p1 = Product.objects.create(
+            category=cat, name="Stacking Rings", sku="RING01",
+            slug="stacking-rings", price=1000, stock=5, summary="x",
+        )
+        self.p2 = Product.objects.create(
+            category=cat, name="Puzzle Board", sku="PUZ02",
+            slug="puzzle-board", price=1500, stock=3, summary="x",
+        )
+        self.png = _make_png_bytes()
+
+    def test_match_by_name_exact(self):
+        from store.bulk_upload import process_bulk_zip
+        data = _make_zip({"Stacking Rings": {"a.png": self.png}})
+        result = process_bulk_zip(data)
+        self.assertEqual(len(result["matched"]), 1)
+        self.assertEqual(result["matched"][0][0].pk, self.p1.pk)
+        self.assertEqual(result["unmatched"], [])
+
+    def test_match_by_name_case_insensitive(self):
+        from store.bulk_upload import process_bulk_zip
+        data = _make_zip({"stacking  rings": {"b.png": self.png}})
+        result = process_bulk_zip(data)
+        self.assertEqual(len(result["matched"]), 1)
+        self.assertEqual(result["matched"][0][0].pk, self.p1.pk)
+
+    def test_match_by_sku(self):
+        from store.bulk_upload import process_bulk_zip
+        data = _make_zip({"RING01": {"c.png": self.png}})
+        result = process_bulk_zip(data)
+        self.assertEqual(len(result["matched"]), 1)
+        self.assertEqual(result["matched"][0][0].pk, self.p1.pk)
+
+    def test_match_by_slug(self):
+        from store.bulk_upload import process_bulk_zip
+        data = _make_zip({"puzzle-board": {"d.png": self.png}})
+        result = process_bulk_zip(data)
+        self.assertEqual(len(result["matched"]), 1)
+        self.assertEqual(result["matched"][0][0].pk, self.p2.pk)
+
+    def test_unmatched_folder_reported(self):
+        from store.bulk_upload import process_bulk_zip
+        data = _make_zip({
+            "Stacking Rings": {"a.png": self.png},
+            "No Such Product": {"x.png": self.png},
+        })
+        result = process_bulk_zip(data)
+        self.assertEqual(len(result["matched"]), 1)
+        self.assertIn("No Such Product", result["unmatched"])
+
+    def test_non_image_file_rejected(self):
+        from store.bulk_upload import process_bulk_zip
+        data = _make_zip({"Stacking Rings": {"readme.txt": b"not an image"}})
+        result = process_bulk_zip(data)
+        self.assertEqual(result["matched"], [])
+        self.assertIn("Stacking Rings", result["unmatched"])
+
+    def test_corrupt_image_rejected(self):
+        from store.bulk_upload import process_bulk_zip
+        data = _make_zip({"Stacking Rings": {"bad.png": b"\x89PNG corrupted"}})
+        result = process_bulk_zip(data)
+        self.assertEqual(result["matched"], [])
+
+    def test_macosx_folders_ignored(self):
+        from store.bulk_upload import process_bulk_zip
+        data = _make_zip({
+            "__MACOSX": {"._a.png": self.png},
+            "Stacking Rings": {"a.png": self.png},
+        })
+        result = process_bulk_zip(data)
+        self.assertEqual(len(result["matched"]), 1)
+        self.assertNotIn("__MACOSX", result["unmatched"])
+
+    def test_bad_zip_returns_error(self):
+        from store.bulk_upload import process_bulk_zip
+        result = process_bulk_zip(b"not a zip file")
+        self.assertTrue(len(result["errors"]) > 0)
+
+    @override_settings(DEBUG=False)
+    def test_multiple_images_creates_photo_rows(self):
+        from store.bulk_upload import process_bulk_zip
+        from store.models import ProductPhoto
+        png2 = _make_png_bytes()
+        data = _make_zip({"Stacking Rings": {"a.png": self.png, "b.png": png2}})
+        result = process_bulk_zip(data)
+        self.assertEqual(result["matched"][0][1], 2)
+        self.assertEqual(ProductPhoto.objects.filter(product=self.p1).count(), 1)
+        self.p1.refresh_from_db()
+        self.assertTrue(bool(self.p1.image))
+
+
+class BulkUploadViewTests(TestCase):
+    """Integration tests for the admin bulk upload view."""
+
+    def setUp(self):
+        self.staff = User.objects.create_user("staff2", password="pw", is_staff=True, is_superuser=True)
+        self.client.force_login(self.staff)
+        cat = make_category("Cat2")
+        self.product = Product.objects.create(
+            category=cat, name="Test Toy", sku="TOY01",
+            slug="test-toy", price=999, stock=10, summary="y",
+        )
+
+    def test_get_page_loads(self):
+        url = reverse("admin:store_product_bulk_upload")
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Bulk photo upload")
+
+    def test_anonymous_redirected(self):
+        self.client.logout()
+        url = reverse("admin:store_product_bulk_upload")
+        resp = self.client.get(url)
+        self.assertNotEqual(resp.status_code, 200)
+
+    def test_post_no_file_shows_error(self):
+        url = reverse("admin:store_product_bulk_upload")
+        resp = self.client.post(url, {})
+        self.assertContains(resp, "Please choose")
+
+    def test_post_valid_zip_shows_report(self):
+        png = _make_png_bytes()
+        data = _make_zip({"Test Toy": {"photo.png": png}})
+        url = reverse("admin:store_product_bulk_upload")
+        resp = self.client.post(url, {"zipfile": SimpleUploadedFile("up.zip", data, content_type="application/zip")})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Test Toy")

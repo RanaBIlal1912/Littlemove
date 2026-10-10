@@ -289,6 +289,11 @@ UNFOLD = {
                         "link": lambda request: reverse_lazy("admin:store_product_changelist").__str__() + "?stock=low",
                         "badge": "store.admin_callbacks.badge_low_stock",
                     },
+                    {
+                        "title": "Bulk photo upload",
+                        "icon": "upload",
+                        "link": reverse_lazy("admin:store_product_bulk_upload"),
+                    },
                 ],
             },
             {

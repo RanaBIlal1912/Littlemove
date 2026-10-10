@@ -1,0 +1,95 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block title %}Bulk photo upload | LittleMove{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">Home</a>
+  &rsaquo; <a href="{% url 'admin:store_product_changelist' %}">Products</a>
+  &rsaquo; Bulk photo upload
+</div>
+{% endblock %}
+
+{% block content %}
+<h1>Bulk photo upload</h1>
+<p style="color:#6b7280;margin-bottom:20px">
+  Upload a single ZIP file. Each <strong>top-level folder</strong> name must match a product
+  by name, SKU, or slug (case-insensitive). Images inside each folder are sorted
+  alphabetically: the first becomes the main product photo, the rest become gallery rows.
+  Accepted formats: jpg, jpeg, png, webp. Maximum ZIP size: 60 MB.
+</p>
+
+{% if cloudinary_warning %}
+<div style="background:#fff1f0;border:1px solid #ffa39e;color:#a8071a;padding:12px 16px;border-radius:8px;margin-bottom:20px">
+  <strong>⚠ Photos will be lost on the next deploy — set CLOUDINARY_URL first.</strong>
+</div>
+{% endif %}
+
+{% if error %}
+<div style="background:#fff1f0;border:1px solid #ffa39e;color:#a8071a;padding:12px 16px;border-radius:8px;margin-bottom:20px">
+  {{ error }}
+</div>
+{% endif %}
+
+{% if report %}
+  {% if report.errors %}
+  <div style="background:#fff1f0;border:1px solid #ffa39e;color:#a8071a;padding:12px 16px;border-radius:8px;margin-bottom:20px">
+    {% for e in report.errors %}<p style="margin:0">{{ e }}</p>{% endfor %}
+  </div>
+  {% endif %}
+
+  {% if report.matched %}
+  <div style="background:#f6ffed;border:1px solid #b7eb8f;padding:12px 16px;border-radius:8px;margin-bottom:20px">
+    <strong>✓ Matched {{ report.matched|length }} product{{ report.matched|length|pluralize }}</strong>
+    <ul style="margin:8px 0 0 20px;padding:0">
+      {% for product, n in report.matched %}
+      <li>
+        <a href="{% url 'admin:store_product_change' product.pk %}">{{ product.name }}</a>
+        — {{ n }} photo{{ n|pluralize }} added
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  {% if report.unmatched %}
+  <div style="background:#fffbe6;border:1px solid #ffe58f;padding:12px 16px;border-radius:8px;margin-bottom:20px">
+    <strong>⚠ {{ report.unmatched|length }} folder{{ report.unmatched|length|pluralize }} matched no product</strong>
+    <ul style="margin:8px 0 0 20px;padding:0">
+      {% for folder in report.unmatched %}<li>{{ folder }}</li>{% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  {% if not report.errors and not report.matched and not report.unmatched %}
+  <div style="background:#fffbe6;border:1px solid #ffe58f;padding:12px 16px;border-radius:8px;margin-bottom:20px">
+    No top-level folders found in the ZIP.
+  </div>
+  {% endif %}
+{% endif %}
+
+<form method="post" enctype="multipart/form-data" style="max-width:520px">
+  {% csrf_token %}
+  <fieldset style="border:1px solid #e5e7eb;border-radius:8px;padding:20px">
+    <legend style="padding:0 8px;font-weight:600">Upload ZIP</legend>
+
+    <div style="margin-bottom:14px">
+      <label for="zipfile" style="display:block;margin-bottom:4px;font-weight:600">ZIP file (max 60 MB)</label>
+      <input type="file" name="zipfile" id="zipfile" accept=".zip" required>
+    </div>
+
+    <div style="margin-bottom:18px">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:400">
+        <input type="checkbox" name="replace">
+        Replace existing photos (default: add to existing)
+      </label>
+      <p style="margin:4px 0 0 24px;font-size:.85rem;color:#6b7280">
+        When checked, the product's existing main photo and gallery rows are deleted before import.
+      </p>
+    </div>
+
+    <button type="submit" class="button default">Upload and process</button>
+  </fieldset>
+</form>
+{% endblock %}

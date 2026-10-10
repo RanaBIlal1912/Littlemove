@@ -1832,11 +1832,25 @@ body.has-hero .header:not(.is-scrolled) .header-logo svg rect { fill: #fff; }
 .slide-text,
 .slide-art,
 .hero-cta-row,
-.spin-badge,
-.scroll-cue,
 .hero-fullbleed .slide > div:not(.slide-art) {
   position: relative !important;
   z-index: 2 !important;
+}
+
+/* spin-badge and scroll-cue are absolute within the hero section, not inside slides */
+.spin-badge {
+  position: absolute !important;
+  top: auto !important; left: auto !important;
+  bottom: 100px !important;
+  right: clamp(14px, 5vw, 60px) !important;
+  z-index: 5 !important;
+}
+.scroll-cue {
+  position: absolute !important;
+  top: auto !important; right: auto !important;
+  bottom: 28px !important;
+  left: 50% !important;
+  z-index: 5 !important;
 }
 
 /* btn-white: pure white + dark navy ink */
@@ -1995,4 +2009,50 @@ body.has-hero .header.is-scrolled {
   .mila-bot { bottom: 84px !important; right: 16px !important; }
   .wa-float  { bottom: 148px !important; right: 16px !important; }
   body.has-sticky-buy .wa-float { bottom: 92px !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   HEADER READABILITY + SPIN-BADGE + WA FLOAT FIXES
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Dark gradient behind transparent header ──────────────────────── */
+body.has-hero .header:not(.is-scrolled) {
+  background: linear-gradient(rgba(10,20,40,.45) 0%, transparent 100%) !important;
+}
+
+/* Mobile: keep search box solid white so text is always readable */
+@media (max-width: 760px) {
+  body.has-hero .header:not(.is-scrolled) .search {
+    background: #fff !important;
+    border-radius: var(--r-sm) !important;
+    overflow: hidden !important;
+  }
+  body.has-hero .header:not(.is-scrolled) .search input {
+    color: var(--ink) !important;
+    background: transparent !important;
+    border-color: transparent !important;
+  }
+  body.has-hero .header:not(.is-scrolled) .search input::placeholder {
+    color: var(--ink-2) !important;
+  }
+  body.has-hero .header:not(.is-scrolled) .search button {
+    background: var(--brand) !important;
+    color: #fff !important;
+  }
+}
+
+/* ── 2. Spin badge: contained inside hero, hidden on mobile ─────────── */
+/* Already overridden above via .spin-badge { position:absolute !important } */
+@media (max-width: 760px) {
+  .spin-badge { display: none !important; }
+}
+
+/* ── 3. WA float: hidden while hero is in viewport ──────────────────── */
+.wa-float {
+  transition: opacity .35s, transform .35s !important;
+}
+.wa-float.wa-hidden {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: scale(.7) !important;
 }

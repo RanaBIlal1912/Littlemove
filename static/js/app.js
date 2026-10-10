@@ -772,6 +772,17 @@
     });
   }
 
+  /* ---------------- 15. WA float hidden while hero is visible ------- */
+  function initWaFloat() {
+    var btn = document.querySelector(".wa-float");
+    var hero = document.querySelector(".hero-fullbleed");
+    if (!btn || !hero || !window.IntersectionObserver) return;
+    var io = new IntersectionObserver(function (entries) {
+      btn.classList.toggle("wa-hidden", entries[0].isIntersecting);
+    }, { threshold: 0.05 });
+    io.observe(hero);
+  }
+
   /* ---------------- init ---------------- */
   function boot() {
     document.documentElement.classList.remove("js-off");
@@ -790,6 +801,7 @@
     initBottomNav();
     initRecentlyViewed();
     initHeaderScroll();
+    initWaFloat();
     initCartFormsWithConfetti();
   }
 
