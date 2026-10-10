@@ -405,6 +405,31 @@ def chat_api(request):
     return JsonResponse(result)
 
 
+@require_POST
+def mila_quick(request, answer_id):
+    """Return the answer for a quick-button click without keyword matching."""
+    from .models import BotAnswer
+    try:
+        qa = BotAnswer.objects.select_related("product", "category").get(
+            pk=answer_id, show_as_quick=True, active=True
+        )
+    except BotAnswer.DoesNotExist:
+        return JsonResponse({"error": "Not found"}, status=404)
+
+    resp = {"answer": qa.answer, "action": qa.action}
+    if qa.product_id:
+        resp["product"] = {
+            "name": qa.product.name,
+            "url": qa.product.get_absolute_url(),
+        }
+    if qa.category_id:
+        resp["category"] = {
+            "name": qa.category.name,
+            "url": qa.category.get_absolute_url(),
+        }
+    return JsonResponse(resp)
+
+
 def mila_guide(request):
     """Return 3-4 in-stock products matching age + goal for Mila guided flow."""
     age_key = request.GET.get("age", "").strip()

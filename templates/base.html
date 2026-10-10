@@ -10,7 +10,12 @@
   <link rel="preload" href="{% static 'fonts/nunito-sans-latin-400-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{% static 'vendor/swiper.min.css' %}">
   <link rel="stylesheet" href="{% static 'css/site.css' %}">
-  {% if shop.favicon %}<link rel="icon" href="{{ shop.favicon.url }}" type="image/x-icon">{% else %}<link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">{% endif %}
+  {% if shop.favicon %}<link rel="icon" href="{{ shop.favicon.url }}" type="image/x-icon">{% else %}
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/favicon-32.png' %}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{% static 'img/favicon-16.png' %}">
+  <link rel="shortcut icon" href="{% static 'img/favicon.ico' %}">
+  <link rel="apple-touch-icon" href="{% static 'img/apple-touch-icon.png' %}">
+  {% endif %}
   {% if shop.share_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ shop.share_image.url }}">{% endif %}
   <meta property="og:site_name" content="{{ shop.store_name }}">
   <meta property="og:title" content="{% block og_title %}{{ shop.store_name }} — {{ shop.tagline }}{% endblock %}">
@@ -188,7 +193,12 @@
 
   <a href="https://wa.me/{{ shop.whatsapp_number }}?text={{ 'Assalam o Alaikum! I need help choosing a toy.'|urlencode }}" class="wa-float" aria-label="Chat on WhatsApp" target="_blank" rel="noopener">{% whatsapp_icon 26 '#fff' %}</a>
 
-  <div id="mila-bot" class="mila-bot" data-chat-url="{% url 'store:chat_api' %}" data-guided-url="{% url 'store:mila_guide' %}">
+  {{ bot_quick_buttons|json_script:"mila-quick-config" }}
+  <div id="mila-bot" class="mila-bot"
+       data-chat-url="{% url 'store:chat_api' %}"
+       data-guided-url="{% url 'store:mila_guide' %}"
+       data-quick-base-url="/api/mila/quick/"
+       data-wa="{{ shop.whatsapp_number }}">
     <button class="mila-toggle" id="mila-toggle" type="button" aria-label="Ask Mila, your toy guide" aria-expanded="false"><img src="{% static 'img/littlemove-logo.png' %}" alt="Mila" class="mila-av-img"></button>
     <div class="mila-window" id="mila-window" role="dialog" aria-label="Mila toy guide" aria-hidden="true">
       <div class="mila-head">

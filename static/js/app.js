@@ -451,8 +451,63 @@
         bubble("Sorry, I couldn't reach the server. Please try WhatsApp.", "bot");
       });
     }
+    var quickConfigEl = document.getElementById("mila-quick-config");
+    var quickBtns = quickConfigEl ? JSON.parse(quickConfigEl.textContent) : [];
+    var quickBaseUrl = bot.dataset.quickBaseUrl || "/api/mila/quick/";
+
+    function handleQuick(q) {
+      if (q.action === "toy_finder") {
+        open(true);
+        bot.dispatchEvent(new CustomEvent("mila:guide"));
+        return;
+      }
+      if (q.action === "whatsapp") {
+        var wa = (bot.dataset.wa || "").trim();
+        var waUrl = "https://wa.me/" + (wa || "923106521912");
+        window.open(waUrl, "_blank", "noopener");
+        return;
+      }
+      if (!msgs.children.length) open(true);
+      bubble(q.label, "me");
+      var typing = document.createElement("div");
+      typing.className = "mila-typing";
+      typing.innerHTML = "<span></span><span></span><span></span>";
+      msgs.appendChild(typing); msgs.scrollTop = msgs.scrollHeight;
+      fetch(quickBaseUrl + q.id + "/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRFToken": csrf() },
+      }).then(function (r) { return r.json(); }).then(function (data) {
+        typing.remove();
+        bubble(data.answer || "Sorry, please try again.", "bot");
+        if (data.product) {
+          var a = document.createElement("a");
+          a.href = data.product.url;
+          a.className = "mila-msg mila-link";
+          a.textContent = "View: " + data.product.name;
+          msgs.appendChild(a);
+          msgs.scrollTop = msgs.scrollHeight;
+        }
+      }).catch(function () {
+        typing.remove();
+        bubble("Sorry, couldn't reach the server. Please try WhatsApp.", "bot");
+      });
+    }
+
     if (opts) {
       opts.innerHTML = "";
+      if (quickBtns.length) {
+        var chips = document.createElement("div");
+        chips.className = "mila-chips mila-quick-chips";
+        quickBtns.forEach(function (q) {
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "mila-opt";
+          btn.textContent = q.label;
+          btn.addEventListener("click", function () { handleQuick(q); });
+          chips.appendChild(btn);
+        });
+        opts.appendChild(chips);
+      }
       var row = document.createElement("form");
       row.className = "mila-input";
       row.innerHTML = '<input type="text" placeholder="Type your question…" aria-label="Your message">' +
@@ -767,6 +822,11 @@
       var trigger = e.target.closest("[data-mila-guide]");
       if (!trigger) return;
       e.preventDefault();
+      openBot();
+      setTimeout(startGuide, 60);
+    });
+
+    bot.addEventListener("mila:guide", function () {
       openBot();
       setTimeout(startGuide, 60);
     });

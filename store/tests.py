@@ -1260,3 +1260,182 @@ class BulkImportViewTests(TestCase):
         url = reverse("admin:store_product_changelist")
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
+
+
+# ── Chatbot quick button tests ────────────────────────────────────────────────
+
+class QuickButtonTests(TestCase):
+    """Tests for chatbot quick-button feature (Part B)."""
+
+    def setUp(self):
+        # Reset quick-button state so each test starts from zero.
+        BotAnswer.objects.update(show_as_quick=False)
+        self.user = User.objects.create_superuser("qbadmin", "qb@test.com", "pass1234x!")
+
+    # ── context processor ────────────────────────────────────────────────────
+
+    def test_context_returns_at_most_six_active_quick_buttons(self):
+        for i in range(7):
+            BotAnswer.objects.create(
+                question=f"Q{i}", keywords=f"kw{i}", answer=f"A{i}",
+                show_as_quick=True, active=True, quick_order=i,
+            )
+        from store.context_processors import store as store_cp
+        factory = RequestFactory()
+        req = factory.get("/")
+        req.session = {}
+        ctx = store_cp(req)
+        self.assertEqual(len(ctx["bot_quick_buttons"]), 6)
+
+    def test_inactive_quick_button_excluded_from_context(self):
+        BotAnswer.objects.create(
+            question="Hidden", keywords="hidden", answer="Nope",
+            show_as_quick=True, active=False, quick_order=0,
+        )
+        from store.context_processors import store as store_cp
+        factory = RequestFactory()
+        req = factory.get("/")
+        req.session = {}
+        ctx = store_cp(req)
+        labels = [b["label"] for b in ctx["bot_quick_buttons"]]
+        self.assertNotIn("Hidden", labels)
+
+    def test_context_uses_quick_label_when_set(self):
+        BotAnswer.objects.create(
+            question="Long question text", keywords="q", answer="A",
+            show_as_quick=True, active=True, quick_order=0,
+            quick_label="Short label",
+        )
+        from store.context_processors import store as store_cp
+        factory = RequestFactory()
+        req = factory.get("/")
+        req.session = {}
+        ctx = store_cp(req)
+        self.assertEqual(ctx["bot_quick_buttons"][0]["label"], "Short label")
+
+    def test_context_falls_back_to_question_when_no_quick_label(self):
+        BotAnswer.objects.create(
+            question="The question", keywords="q", answer="A",
+            show_as_quick=True, active=True, quick_order=0, quick_label="",
+        )
+        from store.context_processors import store as store_cp
+        factory = RequestFactory()
+        req = factory.get("/")
+        req.session = {}
+        ctx = store_cp(req)
+        self.assertEqual(ctx["bot_quick_buttons"][0]["label"], "The question")
+
+    # ── quick API endpoint ────────────────────────────────────────────────────
+
+    def test_quick_api_returns_answer(self):
+        qa = BotAnswer.objects.create(
+            question="Delivery?", keywords="delivery", answer="We deliver.",
+            show_as_quick=True, active=True, action="normal",
+        )
+        url = reverse("store:mila_quick", args=[qa.pk])
+        resp = self.client.post(url)
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertEqual(data["answer"], "We deliver.")
+        self.assertEqual(data["action"], "normal")
+
+    def test_quick_api_returns_action_field(self):
+        qa = BotAnswer.objects.create(
+            question="Find toy", keywords="find", answer="Start finder",
+            show_as_quick=True, active=True, action="toy_finder",
+        )
+        resp = self.client.post(reverse("store:mila_quick", args=[qa.pk]))
+        self.assertEqual(resp.json()["action"], "toy_finder")
+
+    def test_quick_api_404_for_inactive(self):
+        qa = BotAnswer.objects.create(
+            question="Test", keywords="test", answer="Test answer",
+            show_as_quick=True, active=False,
+        )
+        resp = self.client.post(reverse("store:mila_quick", args=[qa.pk]))
+        self.assertEqual(resp.status_code, 404)
+
+    def test_quick_api_404_for_non_quick(self):
+        qa = BotAnswer.objects.create(
+            question="Test", keywords="test", answer="Test answer",
+            show_as_quick=False, active=True,
+        )
+        resp = self.client.post(reverse("store:mila_quick", args=[qa.pk]))
+        self.assertEqual(resp.status_code, 404)
+
+    def test_quick_api_requires_post(self):
+        qa = BotAnswer.objects.create(
+            question="Test", keywords="test", answer="Test answer",
+            show_as_quick=True, active=True,
+        )
+        resp = self.client.get(reverse("store:mila_quick", args=[qa.pk]))
+        self.assertEqual(resp.status_code, 405)
+
+    # ── keyword matching still works for non-quick Q&As ──────────────────────
+
+    def test_typed_keyword_matches_non_quick_qa(self):
+        BotAnswer.objects.create(
+            question="My special question", keywords="unicornkeyword\nspecialkw",
+            answer="Yes it works!", show_as_quick=False, active=True,
+        )
+        url = reverse("store:chat_api")
+        resp = self.client.post(
+            url,
+            data=json.dumps({"message": "unicornkeyword"}),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["answer"], "Yes it works!")
+
+    # ── admin max-6 enforcement ───────────────────────────────────────────────
+
+    def test_admin_form_rejects_seventh_quick_button(self):
+        from store.admin import BotAnswerAdminForm
+        for i in range(6):
+            BotAnswer.objects.create(
+                question=f"Q{i}", keywords=f"kw{i}", answer=f"A{i}",
+                show_as_quick=True, active=True, quick_order=i,
+            )
+        form = BotAnswerAdminForm(data={
+            "question": "7th button",
+            "keywords": "seventh",
+            "answer": "Seven",
+            "show_as_quick": True,
+            "active": True,
+            "action": "normal",
+            "quick_order": 6,
+            "quick_label": "",
+        })
+        self.assertFalse(form.is_valid())
+        self.assertIn("show_as_quick", form.errors)
+        self.assertIn("Only 6 quick buttons", str(form.errors["show_as_quick"]))
+
+    def test_admin_form_allows_editing_existing_quick_button(self):
+        """Saving an already-flagged item (pk already in the 6) must not error."""
+        from store.admin import BotAnswerAdminForm
+        for i in range(6):
+            BotAnswer.objects.create(
+                question=f"Q{i}", keywords=f"kw{i}", answer=f"A{i}",
+                show_as_quick=True, active=True, quick_order=i,
+            )
+        existing = BotAnswer.objects.filter(show_as_quick=True).first()
+        form = BotAnswerAdminForm(
+            data={
+                "question": existing.question,
+                "keywords": existing.keywords,
+                "answer": existing.answer,
+                "show_as_quick": True,
+                "active": True,
+                "action": "normal",
+                "quick_order": existing.quick_order,
+                "quick_label": "",
+            },
+            instance=existing,
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+
+    def test_botanswer_changelist_loads(self):
+        self.client.login(username="qbadmin", password="pass1234x!")
+        resp = self.client.get(reverse("admin:store_botanswer_changelist"))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "quick buttons active")

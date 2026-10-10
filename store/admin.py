@@ -658,10 +658,6 @@ class OurStoryAdmin(ModelAdmin):
 class BotSettingsAdmin(ModelAdmin):
     fieldsets = [
         ("General", {"fields": ["enabled", "bot_name", "welcome_message"]}),
-        ("Quick-reply buttons", {"fields": [
-            "quick_reply_1", "quick_reply_2", "quick_reply_3",
-            "quick_reply_4", "quick_reply_5", "quick_reply_6",
-        ]}),
         ("Fallback & AI", {"fields": ["fallback_message", "use_ai"]}),
     ]
 
@@ -672,14 +668,69 @@ class BotSettingsAdmin(ModelAdmin):
         return False
 
 
+class BotAnswerAdminForm(forms.ModelForm):
+    class Meta:
+        model = BotAnswer
+        fields = "__all__"
+
+    def clean_show_as_quick(self):
+        val = self.cleaned_data.get("show_as_quick")
+        if val:
+            qs = BotAnswer.objects.filter(show_as_quick=True)
+            if self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.count() >= 6:
+                raise forms.ValidationError(
+                    "Only 6 quick buttons can be shown. Untick one first."
+                )
+        return val
+
+
 @admin.register(BotAnswer)
 class BotAnswerAdmin(ModelAdmin):
-    list_display = ["question", "active", "short_answer"]
-    list_editable = ["active"]
-    list_filter = ["active"]
+    form = BotAnswerAdminForm
+    change_list_template = "admin/store/botanswer/change_list.html"
+    list_display = ["question", "show_as_quick", "active", "short_answer"]
+    list_editable = ["active", "show_as_quick"]
+    list_filter = ["active", "show_as_quick"]
     search_fields = ["question", "keywords", "answer"]
     autocomplete_fields = ["product", "category"]
-    fields = ["question", "keywords", "answer", "product", "category", "active"]
+    fieldsets = [
+        (None, {
+            "fields": ["question", "keywords", "answer", "product", "category", "active"],
+        }),
+        ("Quick button", {
+            "fields": ["show_as_quick", "quick_label", "quick_order", "action"],
+            "description": "Show this Q&A as a chip in the chat widget (max 6 total).",
+        }),
+    ]
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context["quick_used"] = BotAnswer.objects.filter(show_as_quick=True).count()
+        return super().changelist_view(request, extra_context)
+
+    def save_model(self, request, obj, form, change):
+        if obj.show_as_quick:
+            qs = BotAnswer.objects.filter(show_as_quick=True)
+            if obj.pk:
+                qs = qs.exclude(pk=obj.pk)
+            if qs.count() >= 6:
+                self.message_user(
+                    request,
+                    "Only 6 quick buttons can be shown. Untick one first.",
+                    level="ERROR",
+                )
+                obj.show_as_quick = False
+        super().save_model(request, obj, form, change)
+
+    @display(description="Quick")
+    def quick_badge(self, obj):
+        if obj.show_as_quick:
+            return format_html(
+                '<span style="color:#067647;font-weight:700;font-size:1.1em">&#10003;</span>'
+            )
+        return "—"
 
     @display(description="Answer preview")
     def short_answer(self, obj):

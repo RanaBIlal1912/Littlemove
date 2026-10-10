@@ -19,6 +19,7 @@ urlpatterns = [
     path("delivery-and-returns/", views.delivery_info, name="delivery"),
     path("api/chat/", views.chat_api, name="chat_api"),
     path("api/mila/guide/", views.mila_guide, name="mila_guide"),
+    path("api/mila/quick/<int:answer_id>/", views.mila_quick, name="mila_quick"),
     path("bundles/<slug:slug>/", views.bundle_detail, name="bundle_detail"),
     path("bundles/<int:bundle_id>/add/", views.bundle_add_to_cart, name="bundle_add_to_cart"),
 ]

@@ -1,15 +1,29 @@
 from .cart import Cart
-from .models import Category, Need, Popup, StoreSettings
+from .models import BotAnswer, Category, Need, Popup, StoreSettings
 from .views import AGE_BANDS
 
 
 def store(request):
+    quick_qs = (
+        BotAnswer.objects
+        .filter(show_as_quick=True, active=True)
+        .order_by("quick_order")[:6]
+    )
+    bot_quick_buttons = [
+        {
+            "id": qa.pk,
+            "label": qa.quick_label.strip() or qa.question,
+            "action": qa.action,
+        }
+        for qa in quick_qs
+    ]
     return {
         "shop": StoreSettings.load(),
         "cart_count": Cart(request).count,
         "nav_categories": Category.objects.filter(is_active=True),
         "nav_ages": AGE_BANDS,
         "nav_needs": Need.objects.filter(is_active=True),
+        "bot_quick_buttons": bot_quick_buttons,
     }
 
 

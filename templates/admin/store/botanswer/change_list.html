@@ -1,0 +1,11 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+
+{% block object-tools-items %}
+{{ block.super }}
+<li>
+  <span style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:6px;background:#f0fdf4;color:#067647;border:1px solid #bbf7d0;font-size:.85rem;font-weight:600;white-space:nowrap">
+    &#10003; {{ quick_used }} / 6 quick buttons active
+  </span>
+</li>
+{% endblock %}

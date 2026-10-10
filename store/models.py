@@ -741,6 +741,24 @@ class BotAnswer(models.Model):
         related_name="+", help_text="Optional: link to a category mentioned in the answer.",
     )
     active = models.BooleanField(default=True)
+    show_as_quick = models.BooleanField(
+        "Show as quick button", default=False,
+        help_text="Show this Q&A as a quick-reply chip in the chat widget (max 6 total).",
+    )
+    quick_label = models.CharField(
+        "Button text", max_length=40, blank=True,
+        help_text="Label on the chip. Falls back to the question if blank.",
+    )
+    quick_order = models.PositiveSmallIntegerField("Button order", default=0)
+    action = models.CharField(
+        max_length=20,
+        choices=[
+            ("normal", "Normal answer"),
+            ("toy_finder", "Start toy finder"),
+            ("whatsapp", "Open WhatsApp"),
+        ],
+        default="normal",
+    )
 
     class Meta:
         verbose_name = "Bot answer"
@@ -749,6 +767,10 @@ class BotAnswer(models.Model):
 
     def __str__(self):
         return self.question
+
+    @property
+    def button_label(self):
+        return self.quick_label.strip() or self.question
 
     def keyword_list(self):
         return [k.strip().lower() for k in self.keywords.splitlines() if k.strip()]
