@@ -1,4 +1,4 @@
-{% extends "base.html" %}{% load store_tags %}
+{% extends "base.html" %}{% load store_tags i18n %}
 {% block title %}Your cart — {{ shop.store_name }}{% endblock %}
 {% block content %}
 <div class="wrap">
@@ -26,7 +26,7 @@
               </div>
             </form>
             <form method="post" action="{% url 'store:cart_remove' p.pk %}">
-              {% csrf_token %}<button class="linkish" type="submit">Remove</button>
+              {% csrf_token %}<button class="linkish" type="submit">{% trans "Remove" %}</button>
             </form>
           </div>
           {% if line.over_stock %}<p class="warn" style="margin-top:6px">Only {{ p.stock }} left — lower the quantity to check out.</p>{% endif %}
@@ -34,15 +34,15 @@
         <div class="line-total">{{ line.line_total|rs }}</div>
       </div>
       {% endwith %}{% endfor %}
-      <a class="link" href="{% url 'store:shop' %}" style="margin-top:8px">Keep shopping</a>
+      <a class="link" href="{% url 'store:shop' %}" style="margin-top:8px">{% trans "Continue shopping" %}</a>
     </div>
 
     <aside class="box" aria-label="Order summary">
-      <h2>Order summary</h2>
+      <h2>{% trans "Order summary" %}</h2>
       <div class="rows">
-        <div><span>Subtotal</span><span>{{ subtotal|rs }}</span></div>
-        <div><span>Delivery</span><span>{% if delivery %}{{ delivery|rs }}{% else %}Free{% endif %}</span></div>
-        <div class="total"><span>Total</span><span>{{ total|rs }}</span></div>
+        <div><span>{% trans "Subtotal" %}</span><span>{{ subtotal|rs }}</span></div>
+        <div><span>{% trans "Delivery fee" %}</span><span>{% if delivery %}{{ delivery|rs }}{% else %}{% trans "Free delivery" %}{% endif %}</span></div>
+        <div class="total"><span>{% trans "Total" %}</span><span>{{ total|rs }}</span></div>
       </div>
       {% if to_free_delivery %}
       <div class="free-meter">Add <b>{{ to_free_delivery|rs }}</b> more for free delivery.
@@ -53,7 +53,7 @@
       <p class="warn" style="margin-top:16px">Some items have less stock than your cart. Update them to continue.</p>
       <button class="btn btn-block" disabled>Check out</button>
       {% else %}
-      <a class="btn btn-block" href="{% url 'orders:checkout' %}">Check out</a>
+      <a class="btn btn-block" href="{% url 'orders:checkout' %}">{% trans "Checkout" %}</a>
       {% endif %}
       <div class="pay-chips"><span>Cash on delivery</span>{% if shop.jazzcash_number %}<span>JazzCash</span>{% endif %}{% if shop.easypaisa_number %}<span>EasyPaisa</span>{% endif %}</div>
     </aside>

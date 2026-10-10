@@ -4,6 +4,7 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.urls import reverse
 from django.utils.text import slugify
+from django.utils.translation import gettext_lazy as _
 
 
 class StoreSettings(models.Model):
@@ -97,8 +98,8 @@ class StoreSettings(models.Model):
     )
 
     class Meta:
-        verbose_name = "Store settings"
-        verbose_name_plural = "Store settings"
+        verbose_name = _("Store settings")
+        verbose_name_plural = _("Store settings")
 
     def __str__(self):
         return "Store settings"
@@ -153,7 +154,8 @@ class Category(models.Model):
 
     class Meta:
         ordering = ["order", "name"]
-        verbose_name_plural = "categories"
+        verbose_name = _("Category")
+        verbose_name_plural = _("Categories")
 
     def __str__(self):
         return self.name
@@ -181,6 +183,8 @@ class Need(models.Model):
 
     class Meta:
         ordering = ["order", "name"]
+        verbose_name = _("Need")
+        verbose_name_plural = _("Needs")
 
     def __str__(self):
         return self.name
@@ -250,6 +254,8 @@ class Product(models.Model):
 
     class Meta:
         ordering = ["-is_featured", "-created_at"]
+        verbose_name = _("Product")
+        verbose_name_plural = _("Products")
 
     def __str__(self):
         return self.name

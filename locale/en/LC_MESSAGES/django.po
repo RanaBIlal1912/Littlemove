@@ -200,3 +200,234 @@ msgstr "Products"
 
 msgid "Settings"
 msgstr "Settings"
+
+msgid "Sort by:"
+msgstr "Sort by:"
+
+msgid "Newest"
+msgstr "Newest"
+
+msgid "Price: low to high"
+msgstr "Price: low to high"
+
+msgid "Price: high to low"
+msgstr "Price: high to low"
+
+msgid "A–Z"
+msgstr "A–Z"
+
+msgid "On sale"
+msgstr "On sale"
+
+msgid "Therapist picks only"
+msgstr "Therapist picks only"
+
+msgid "No toys found."
+msgstr "No toys found."
+
+msgid "Clear filters"
+msgstr "Clear filters"
+
+msgid "All ages"
+msgstr "All ages"
+
+msgid "Description"
+msgstr "Description"
+
+msgid "In the box"
+msgstr "In the box"
+
+msgid "Helps with"
+msgstr "Helps with"
+
+msgid "Add to cart"
+msgstr "Add to cart"
+
+msgid "Buy now"
+msgstr "Buy now"
+
+msgid "Sold out"
+msgstr "Sold out"
+
+msgid "Therapist pick"
+msgstr "Therapist pick"
+
+msgid "Save Rs %(amount)s"
+msgstr "Save Rs %(amount)s"
+
+msgid "ages %(from)s–%(to)s"
+msgstr "ages %(from)s–%(to)s"
+
+msgid "You might also like"
+msgstr "You might also like"
+
+msgid "Delivery"
+msgstr "Delivery"
+
+msgid "Reviews"
+msgstr "Reviews"
+
+msgid "Product"
+msgstr "Product"
+
+msgid "Price"
+msgstr "Price"
+
+msgid "Quantity"
+msgstr "Quantity"
+
+msgid "Remove"
+msgstr "Remove"
+
+msgid "Subtotal"
+msgstr "Subtotal"
+
+msgid "Delivery fee"
+msgstr "Delivery fee"
+
+msgid "Checkout"
+msgstr "Checkout"
+
+msgid "Continue shopping"
+msgstr "Continue shopping"
+
+msgid "Free delivery"
+msgstr "Free delivery"
+
+msgid "Your details"
+msgstr "Your details"
+
+msgid "Full name"
+msgstr "Full name"
+
+msgid "Phone number"
+msgstr "Phone number"
+
+msgid "City"
+msgstr "City"
+
+msgid "Address"
+msgstr "Address"
+
+msgid "Order notes"
+msgstr "Order notes"
+
+msgid "Payment method"
+msgstr "Payment method"
+
+msgid "Place order"
+msgstr "Place order"
+
+msgid "JazzCash number"
+msgstr "JazzCash number"
+
+msgid "Account title"
+msgstr "Account title"
+
+msgid "Track your order"
+msgstr "Track your order"
+
+msgid "Order number"
+msgstr "Order number"
+
+msgid "Mobile number"
+msgstr "Mobile number"
+
+msgid "Track"
+msgstr "Track"
+
+msgid "Order placed"
+msgstr "Order placed"
+
+msgid "Your order is on hold"
+msgstr "Your order is on hold"
+
+msgid "This order has been returned."
+msgstr "This order has been returned."
+
+msgid "This order was cancelled."
+msgstr "This order was cancelled."
+
+msgid "Thank you for your order!"
+msgstr "Thank you for your order!"
+
+msgid "We've received your order"
+msgstr "We've received your order"
+
+msgid "Page not found"
+msgstr "Page not found"
+
+msgid "Go home"
+msgstr "Go home"
+
+msgid "Find the right toy"
+msgstr "Find the right toy"
+
+msgid "Toys under Rs 1,000"
+msgstr "Toys under Rs 1,000"
+
+msgid "Small gifts that still teach something"
+msgstr "Small gifts that still teach something"
+
+msgid "Therapist picks"
+msgstr "Therapist picks"
+
+msgid "Used in sessions, made for home"
+msgstr "Used in sessions, made for home"
+
+msgid "See the picks"
+msgstr "See the picks"
+
+msgid "Shop now"
+msgstr "Shop now"
+
+msgid "Pay when the parcel arrives"
+msgstr "Pay when the parcel arrives"
+
+msgid "All over Pakistan"
+msgstr "All over Pakistan"
+
+msgid "Fast courier delivery"
+msgstr "Fast courier delivery"
+
+msgid "Easy returns"
+msgstr "Easy returns"
+
+msgid "Damaged item? We replace it"
+msgstr "Damaged item? We replace it"
+
+msgid "Therapist chosen"
+msgstr "Therapist chosen"
+
+msgid "Safe, age-right toys"
+msgstr "Safe, age-right toys"
+
+msgid "Shop all toys"
+msgstr "Shop all toys"
+
+msgid "Shop by skill"
+msgstr "Shop by skill"
+
+msgid "Pick what your child is working on right now."
+msgstr "Pick what your child is working on right now."
+
+msgid "All toys"
+msgstr "All toys"
+
+msgid "What does your child need help with?"
+msgstr "What does your child need help with?"
+
+msgid "Scroll"
+msgstr "Scroll"
+
+msgid "Free over %(amount)s"
+msgstr "Free over %(amount)s"
+
+msgid "Your order"
+msgstr "Your order"
+
+msgid "Order summary"
+msgstr "Order summary"
+
+msgid "Start from what your child needs help with — we'll show the toys parents choose for it."
+msgstr "Start from what your child needs help with — we'll show the toys parents choose for it."

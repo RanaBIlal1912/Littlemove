@@ -4,11 +4,37 @@
   font-weight: 400;
   font-style: normal;
   font-display: swap;
+  unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF;
 }
-[lang="ar"] body, [lang="ar"] p, [lang="ar"] h1, [lang="ar"] h2, [lang="ar"] h3,
-[lang="ar"] .card-name, [lang="ar"] .mila-msg, [lang="ar"] .mila-opt,
-[lang="ar"] .nav-link, [lang="ar"] .drawer-panel a,
-[lang="ar"] button, [lang="ar"] label, [lang="ar"] input, [lang="ar"] textarea {
+
+[lang="ar"] body,
+[lang="ar"] p,
+[lang="ar"] li,
+[lang="ar"] td,
+[lang="ar"] th,
+[lang="ar"] .card-name,
+[lang="ar"] .mila-msg,
+[lang="ar"] .mila-opt,
+[lang="ar"] .nav-link,
+[lang="ar"] .drawer-panel a,
+[lang="ar"] button,
+[lang="ar"] label,
+[lang="ar"] input,
+[lang="ar"] textarea {
+  font-family: 'Nunito Sans', 'Nunito', sans-serif, 'Noto Naskh Arabic';
+  line-height: 1.7;
+}
+
+[lang="ar"] h1,
+[lang="ar"] h2,
+[lang="ar"] h3 {
+  font-family: 'Fredoka', 'Fredoka One', sans-serif, 'Noto Naskh Arabic';
+  line-height: 1.4;
+}
+
+[lang="ar"] :lang(ar),
+[lang="ar"] .ar-text {
   font-family: 'Noto Naskh Arabic', 'Traditional Arabic', serif;
   line-height: 1.9;
+  font-size: 1.05em;
 }

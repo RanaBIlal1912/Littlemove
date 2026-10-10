@@ -200,3 +200,222 @@ msgstr "Products"
 
 msgid "Settings"
 msgstr "Settings"
+
+msgid "Sort by:"
+msgstr "Tarteeb:"
+
+msgid "Newest"
+msgstr "Naye tareen"
+
+msgid "Price: low to high"
+msgstr "Qeemat: kam se zyada"
+
+msgid "Price: high to low"
+msgstr "Qeemat: zyada se kam"
+
+msgid "A–Z"
+msgstr "A se Z"
+
+msgid "On sale"
+msgstr "Sale par"
+
+msgid "Therapist picks only"
+msgstr "Sirf therapist ki pasand"
+
+msgid "No toys found."
+msgstr "Koi khilona nahi mila."
+
+msgid "Clear filters"
+msgstr "Filter saaf karen"
+
+msgid "All ages"
+msgstr "Tamam umrein"
+
+msgid "Description"
+msgstr "Tafseelaat"
+
+msgid "In the box"
+msgstr "Dabbay mein kya hai"
+
+msgid "Helps with"
+msgstr "Kis cheez mein madad karta hai"
+
+msgid "Add to cart"
+msgstr "Cart mein daalein"
+
+msgid "Buy now"
+msgstr "Abhi kharidein"
+
+msgid "Sold out"
+msgstr "Khatam ho gaya"
+
+msgid "Therapist pick"
+msgstr "Therapist ki pasand"
+
+msgid "Save Rs %(amount)s"
+msgstr "Rs %(amount)s bachaein"
+
+msgid "ages %(from)s–%(to)s"
+msgstr "umar %(from)s-%(to)s saal"
+
+msgid "You might also like"
+msgstr "Aap ko yeh bhi pasand aa saktay hain"
+
+msgid "Delivery"
+msgstr "Delivery"
+
+msgid "Reviews"
+msgstr "Jaizay"
+
+msgid "Product"
+msgstr "Masnooah"
+
+msgid "Price"
+msgstr "Qeemat"
+
+msgid "Quantity"
+msgstr "Tadaad"
+
+msgid "Remove"
+msgstr "Hataaein"
+
+msgid "Subtotal"
+msgstr "Upay jama"
+
+msgid "Delivery fee"
+msgstr "Delivery fees"
+
+msgid "Checkout"
+msgstr "Kharidari mukammal karen"
+
+msgid "Continue shopping"
+msgstr "Kharidari jaari rakhein"
+
+msgid "Free delivery"
+msgstr "Muft delivery"
+
+msgid "Your details"
+msgstr "Aap ki maaloomat"
+
+msgid "Full name"
+msgstr "Pura naam"
+
+msgid "Phone number"
+msgstr "Phone number"
+
+msgid "City"
+msgstr "Sheher"
+
+msgid "Address"
+msgstr "Pata"
+
+msgid "Order notes"
+msgstr "Order notes"
+
+msgid "Payment method"
+msgstr "Adaigi ka tareeqa"
+
+msgid "Place order"
+msgstr "Order dein"
+
+msgid "JazzCash number"
+msgstr "JazzCash number"
+
+msgid "Account title"
+msgstr "Account ka naam"
+
+msgid "Order number"
+msgstr "Order number"
+
+msgid "Mobile number"
+msgstr "Mobile number"
+
+msgid "Track"
+msgstr "Track karen"
+
+msgid "Order placed"
+msgstr "Order diya gaya"
+
+msgid "Your order is on hold"
+msgstr "Aap ka order rok diya gaya hai"
+
+msgid "This order has been returned."
+msgstr "Yeh order wapas kiya ja chuka hai."
+
+msgid "This order was cancelled."
+msgstr "Yeh order mansookh ho chuka hai."
+
+msgid "Thank you for your order!"
+msgstr "Order ke liye shukriya!"
+
+msgid "We've received your order"
+msgstr "Hum ne aap ka order moosool kar liya hai"
+
+msgid "Page not found"
+msgstr "Safha nahi mila"
+
+msgid "Go home"
+msgstr "Home jaein"
+
+msgid "Find the right toy"
+msgstr "Sahi khilona dhundhein"
+
+msgid "Toys under Rs 1,000"
+msgstr "Rs 1,000 se kam khilonay"
+
+msgid "Small gifts that still teach something"
+msgstr "Chotay tohfay jo phir bhi sikhatay hain"
+
+msgid "Used in sessions, made for home"
+msgstr "Sessions mein istemal, ghar ke liye banay"
+
+msgid "See the picks"
+msgstr "Pasand dekhein"
+
+msgid "Shop now"
+msgstr "Abhi kharidein"
+
+msgid "Pay when the parcel arrives"
+msgstr "Parcel aanay par adaigi karen"
+
+msgid "All over Pakistan"
+msgstr "Poray Pakistan mein"
+
+msgid "Fast courier delivery"
+msgstr "Tez courier delivery"
+
+msgid "Easy returns"
+msgstr "Aasaan wapasi"
+
+msgid "Damaged item? We replace it"
+msgstr "Kharab cheez? Hum badal datay hain"
+
+msgid "Therapist chosen"
+msgstr "Therapist ne chuna"
+
+msgid "Safe, age-right toys"
+msgstr "Mehfooz, umar ke mutabiq khilonay"
+
+msgid "Shop all toys"
+msgstr "Tamam khilonay kharidein"
+
+msgid "Pick what your child is working on right now."
+msgstr "Apnay bachay ki mojuda maharat chunein."
+
+msgid "What does your child need help with?"
+msgstr "Aap ke bachay ko kis cheez mein madad chahiye?"
+
+msgid "Scroll"
+msgstr "Scroll karen"
+
+msgid "Free over %(amount)s"
+msgstr "%(amount)s se zyada par muft"
+
+msgid "Your order"
+msgstr "Aap ka order"
+
+msgid "Order summary"
+msgstr "Order ka khulasa"
+
+msgid "Start from what your child needs help with — we'll show the toys parents choose for it."
+msgstr "Apnay bachay ki zaroorat se shuru karen — hum woh khilonay dikhaein gay jo walid/waldain chuntay hain."

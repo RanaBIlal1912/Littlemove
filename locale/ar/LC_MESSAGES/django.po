@@ -200,3 +200,222 @@ msgstr "المنتجات"
 
 msgid "Settings"
 msgstr "الإعدادات"
+
+msgid "Sort by:"
+msgstr "ترتيب حسب:"
+
+msgid "Newest"
+msgstr "الأحدث"
+
+msgid "Price: low to high"
+msgstr "السعر: من الأقل"
+
+msgid "Price: high to low"
+msgstr "السعر: من الأكثر"
+
+msgid "A–Z"
+msgstr "أ-ي"
+
+msgid "On sale"
+msgstr "بالتخفيض"
+
+msgid "Therapist picks only"
+msgstr "اختيارات المعالج فقط"
+
+msgid "No toys found."
+msgstr "لا توجد ألعاب."
+
+msgid "Clear filters"
+msgstr "مسح التصفية"
+
+msgid "All ages"
+msgstr "كل الأعمار"
+
+msgid "Description"
+msgstr "الوصف"
+
+msgid "In the box"
+msgstr "محتويات العلبة"
+
+msgid "Helps with"
+msgstr "يساعد في"
+
+msgid "Add to cart"
+msgstr "أضف إلى السلة"
+
+msgid "Buy now"
+msgstr "اشتر الآن"
+
+msgid "Sold out"
+msgstr "نفدت الكمية"
+
+msgid "Therapist pick"
+msgstr "اختيار المعالج"
+
+msgid "Save Rs %(amount)s"
+msgstr "وفر %(amount)s روبية"
+
+msgid "ages %(from)s–%(to)s"
+msgstr "الأعمار %(from)s–%(to)s"
+
+msgid "You might also like"
+msgstr "قد يعجبك أيضاً"
+
+msgid "Delivery"
+msgstr "التوصيل"
+
+msgid "Reviews"
+msgstr "التقييمات"
+
+msgid "Product"
+msgstr "المنتج"
+
+msgid "Price"
+msgstr "السعر"
+
+msgid "Quantity"
+msgstr "الكمية"
+
+msgid "Remove"
+msgstr "حذف"
+
+msgid "Subtotal"
+msgstr "المجموع الجزئي"
+
+msgid "Delivery fee"
+msgstr "رسوم التوصيل"
+
+msgid "Checkout"
+msgstr "الدفع"
+
+msgid "Continue shopping"
+msgstr "مواصلة التسوق"
+
+msgid "Free delivery"
+msgstr "توصيل مجاني"
+
+msgid "Your details"
+msgstr "تفاصيلك"
+
+msgid "Full name"
+msgstr "الاسم الكامل"
+
+msgid "Phone number"
+msgstr "رقم الهاتف"
+
+msgid "City"
+msgstr "المدينة"
+
+msgid "Address"
+msgstr "العنوان"
+
+msgid "Order notes"
+msgstr "ملاحظات الطلب"
+
+msgid "Payment method"
+msgstr "طريقة الدفع"
+
+msgid "Place order"
+msgstr "تقديم الطلب"
+
+msgid "JazzCash number"
+msgstr "رقم JazzCash"
+
+msgid "Account title"
+msgstr "اسم الحساب"
+
+msgid "Order number"
+msgstr "رقم الطلب"
+
+msgid "Mobile number"
+msgstr "رقم الجوال"
+
+msgid "Track"
+msgstr "تتبع"
+
+msgid "Order placed"
+msgstr "تم تقديم الطلب"
+
+msgid "Your order is on hold"
+msgstr "طلبك معلق"
+
+msgid "This order has been returned."
+msgstr "تم إرجاع هذا الطلب."
+
+msgid "This order was cancelled."
+msgstr "تم إلغاء هذا الطلب."
+
+msgid "Thank you for your order!"
+msgstr "شكراً على طلبك!"
+
+msgid "We've received your order"
+msgstr "استلمنا طلبك"
+
+msgid "Page not found"
+msgstr "الصفحة غير موجودة"
+
+msgid "Go home"
+msgstr "الرجوع إلى الرئيسية"
+
+msgid "Find the right toy"
+msgstr "ابحث عن اللعبة المناسبة"
+
+msgid "Toys under Rs 1,000"
+msgstr "ألعاب بأقل من 1000 روبية"
+
+msgid "Small gifts that still teach something"
+msgstr "هدايا صغيرة لكنها تعلم"
+
+msgid "Used in sessions, made for home"
+msgstr "تستخدم في الجلسات، مصممة للمنزل"
+
+msgid "See the picks"
+msgstr "انظر الاختيارات"
+
+msgid "Shop now"
+msgstr "تسوق الآن"
+
+msgid "Pay when the parcel arrives"
+msgstr "ادفع عند وصول الطرد"
+
+msgid "All over Pakistan"
+msgstr "في جميع أنحاء باكستان"
+
+msgid "Fast courier delivery"
+msgstr "توصيل سريع"
+
+msgid "Easy returns"
+msgstr "إرجاع سهل"
+
+msgid "Damaged item? We replace it"
+msgstr "عنصر تالف؟ نستبدله"
+
+msgid "Therapist chosen"
+msgstr "مختار من قبل المعالج"
+
+msgid "Safe, age-right toys"
+msgstr "ألعاب آمنة ومناسبة للعمر"
+
+msgid "Shop all toys"
+msgstr "تسوق كل الألعاب"
+
+msgid "Pick what your child is working on right now."
+msgstr "اختر ما يعمل عليه طفلك الآن."
+
+msgid "What does your child need help with?"
+msgstr "ما الذي يحتاج طفلك مساعدة فيه؟"
+
+msgid "Scroll"
+msgstr "تمرير"
+
+msgid "Free over %(amount)s"
+msgstr "مجاني فوق %(amount)s"
+
+msgid "Your order"
+msgstr "طلبك"
+
+msgid "Order summary"
+msgstr "ملخص الطلب"
+
+msgid "Start from what your child needs help with — we'll show the toys parents choose for it."
+msgstr "ابدأ بما يحتاج طفلك مساعدة فيه — سنعرض الألعاب التي يختارها الآباء لذلك."

@@ -8,3 +8,4 @@ python manage.py migrate --noinput
 python manage.py setup_roles
 python manage.py ensure_admin
 python manage.py seed_store
+python manage.py fill_urdu_content

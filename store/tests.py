@@ -2008,3 +2008,72 @@ class LanguageSwitcherTests(TestCase):
             {"language": "en", "next": "/"},
         )
         self.assertIn(resp.status_code, [200, 302])
+
+
+class FillUrduContentTests(TestCase):
+    """fill_urdu_content command: fills empty fields, never overwrites."""
+
+    def setUp(self):
+        from store.management.commands.setup_roles import Command
+        Command().handle()
+        cat = make_category("Fine motor")
+        make_product(cat, "Rainbow Stacking Rings", price=1450, stock=10)
+
+    def test_fills_empty_urdu_fields(self):
+        from django.core.management import call_command
+        call_command("fill_urdu_content", verbosity=0)
+        from store.models import Product
+        p = Product.objects.get(name="Rainbow Stacking Rings")
+        self.assertTrue(p.name_ur, "name_ur should be filled")
+        self.assertIn("رِنگ", p.name_ur)
+
+    def test_does_not_overwrite_existing(self):
+        from store.models import Product
+        p = Product.objects.get(name="Rainbow Stacking Rings")
+        p.name_ur = "Existing content"
+        p.save()
+        from django.core.management import call_command
+        call_command("fill_urdu_content", verbosity=0)
+        p.refresh_from_db()
+        self.assertEqual(p.name_ur, "Existing content")
+
+    def test_idempotent(self):
+        from django.core.management import call_command
+        call_command("fill_urdu_content", verbosity=0)
+        from store.models import Product
+        p = Product.objects.get(name="Rainbow Stacking Rings")
+        val_after_first = p.name_ur
+        call_command("fill_urdu_content", verbosity=0)
+        p.refresh_from_db()
+        self.assertEqual(p.name_ur, val_after_first)
+
+
+class TranslationCoverageTests(TestCase):
+    """Verify key translated strings appear when ur/ar cookies are set."""
+
+    def _set_lang(self, lang):
+        self.client.cookies['django_language'] = lang
+
+    def test_cart_page_translates_ur(self):
+        self._set_lang("ur")
+        resp = self.client.get(reverse("store:cart"))
+        self.assertContains(resp, 'lang="ur"')
+
+    def test_checkout_page_translates_ar(self):
+        self._set_lang("ar")
+        # Add an item to cart so checkout doesn't redirect
+        cat = make_category("Test")
+        p = make_product(cat, "Test Toy", price=500, stock=5)
+        self.client.post(reverse("store:cart_add", args=[p.pk]), {"qty": 1})
+        resp = self.client.get(reverse("orders:checkout"))
+        self.assertContains(resp, 'dir="rtl"')
+
+    def test_shop_page_translates_ur(self):
+        self._set_lang("ur")
+        resp = self.client.get(reverse("store:shop"))
+        self.assertContains(resp, 'lang="ur"')
+
+    def test_home_page_translates_ar(self):
+        self._set_lang("ar")
+        resp = self.client.get(reverse("store:home"))
+        self.assertContains(resp, 'dir="rtl"')

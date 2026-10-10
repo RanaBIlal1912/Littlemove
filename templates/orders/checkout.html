@@ -1,10 +1,10 @@
-{% extends "base.html" %}{% load store_tags %}
-{% block title %}Checkout — {{ shop.store_name }}{% endblock %}
+{% extends "base.html" %}{% load store_tags i18n %}
+{% block title %}{% trans "Checkout" %} — {{ shop.store_name }}{% endblock %}
 {% block content %}
 <div class="wrap">
   <div class="page-head">
-    <p class="crumbs"><a href="{% url 'store:cart' %}">Cart</a> / Checkout</p>
-    <h1 class="page-title">Checkout</h1>
+    <p class="crumbs"><a href="{% url 'store:cart' %}">{% trans "Your cart" %}</a> / {% trans "Checkout" %}</p>
+    <h1 class="page-title">{% trans "Checkout" %}</h1>
     <p class="muted" style="margin-top:8px">No account needed. We'll confirm your order on WhatsApp before sending it.</p>
   </div>
 
@@ -15,7 +15,7 @@
       {{ form.website }}
 
       <fieldset class="fieldset">
-        <legend>Your details</legend>
+        <legend>{% trans "Your details" %}</legend>
         <div class="row-2">
           {% include "orders/_field.html" with f=form.full_name %}
           {% include "orders/_field.html" with f=form.phone %}
@@ -32,7 +32,7 @@
       </fieldset>
 
       <fieldset class="fieldset">
-        <legend>Payment</legend>
+        <legend>{% trans "Payment method" %}</legend>
         <div class="pay-options" role="radiogroup" aria-label="{{ form.payment_method.label }}">
           {% for radio in form.payment_method %}
           <label class="pay" for="{{ radio.id_for_label }}">
@@ -68,19 +68,19 @@
         <div id="txn-field">{% include "orders/_field.html" with f=form.transaction_id %}</div>
       </fieldset>
 
-      <button class="btn btn-pink btn-block" type="submit" style="min-height:56px;font-size:1.05rem">Place order — {{ total|rs }}</button>
+      <button class="btn btn-pink btn-block" type="submit" style="min-height:56px;font-size:1.05rem">{% trans "Place order" %} — {{ total|rs }}</button>
       <p class="small muted" style="text-align:center;margin-top:-12px">By placing the order you agree to our <a class="link" href="{% url 'store:delivery' %}">delivery and returns terms</a>.</p>
     </form>
 
     <aside class="box" aria-label="Order summary">
-      <h2>Your order</h2>
+      <h2>{% trans "Your order" %}</h2>
       <div class="mini-lines">
         {% for line in lines %}<div><span>{{ line.qty }} × {{ line.product.name }}</span><span>{{ line.line_total|rs }}</span></div>{% endfor %}
       </div>
       <div class="rows">
-        <div><span>Subtotal</span><span>{{ subtotal|rs }}</span></div>
-        <div><span>Delivery</span><span>{% if delivery %}{{ delivery|rs }}{% else %}Free{% endif %}</span></div>
-        <div class="total"><span>Total</span><span>{{ total|rs }}</span></div>
+        <div><span>{% trans "Subtotal" %}</span><span>{{ subtotal|rs }}</span></div>
+        <div><span>{% trans "Delivery fee" %}</span><span>{% if delivery %}{{ delivery|rs }}{% else %}{% trans "Free delivery" %}{% endif %}</span></div>
+        <div class="total"><span>{% trans "Total" %}</span><span>{{ total|rs }}</span></div>
       </div>
       <a class="link small" href="{% url 'store:cart' %}" style="display:inline-block;margin-top:16px">Edit cart</a>
     </aside>

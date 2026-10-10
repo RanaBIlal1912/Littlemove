@@ -4,6 +4,7 @@ from django.db import models, transaction
 from django.db.models import F
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from store.models import Product
 
@@ -50,26 +51,26 @@ VALID_TRANSITIONS = {
 
 class Order(models.Model):
     class Status(models.TextChoices):
-        PENDING   = "pending",   "New – needs confirming"
-        CONFIRMED = "confirmed", "Confirmed"
-        PACKED    = "packed",    "Packed – ready for pickup"
-        SHIPPED   = "shipped",   "Picked up – on the way"
-        DELIVERED = "delivered", "Delivered"
-        CANCELLED = "cancelled", "Cancelled"
-        ON_HOLD   = "on_hold",   "On hold"
-        RETURNED  = "returned",  "Returned"
+        PENDING   = "pending",   _("New – needs confirming")
+        CONFIRMED = "confirmed", _("Confirmed")
+        PACKED    = "packed",    _("Packed – ready for pickup")
+        SHIPPED   = "shipped",   _("Picked up – on the way")
+        DELIVERED = "delivered", _("Delivered")
+        CANCELLED = "cancelled", _("Cancelled")
+        ON_HOLD   = "on_hold",   _("On hold")
+        RETURNED  = "returned",  _("Returned")
 
     class Payment(models.TextChoices):
-        COD = "cod", "Cash on delivery"
+        COD = "cod", _("Cash on delivery")
         JAZZCASH = "jazzcash", "JazzCash"
         EASYPAISA = "easypaisa", "EasyPaisa"
-        BANK = "bank", "Bank transfer"
+        BANK = "bank", _("Bank transfer")
 
     class PaymentStatus(models.TextChoices):
-        UNPAID = "unpaid", "Unpaid"
-        CHECKING = "checking", "Customer says paid — check"
-        PAID = "paid", "Paid"
-        REFUNDED = "refunded", "Refunded"
+        UNPAID = "unpaid", _("Unpaid")
+        CHECKING = "checking", _("Customer says paid - check")
+        PAID = "paid", _("Paid")
+        REFUNDED = "refunded", _("Refunded")
 
     number = models.CharField(max_length=20, unique=True, editable=False)
     status = models.CharField(max_length=12, choices=Status.choices, default=Status.PENDING)

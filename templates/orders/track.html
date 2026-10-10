@@ -1,10 +1,10 @@
-{% extends "base.html" %}{% load store_tags %}
+{% extends "base.html" %}{% load store_tags i18n %}
 {% block title %}Track your order — {{ shop.store_name }}{% endblock %}
 {% block head %}<meta name="robots" content="noindex">{% endblock %}
 {% block content %}
 <div class="wrap" style="max-width:760px;padding-bottom:80px">
   <div class="page-head">
-    <h1 class="page-title">Track your order</h1>
+    <h1 class="page-title">{% trans "Track your order" %}</h1>
     <p class="muted" style="margin-top:8px">Enter the order number from your confirmation and the mobile number you ordered with.</p>
   </div>
 
@@ -12,18 +12,18 @@
     {{ form.non_field_errors }}
     {% include "orders/_field.html" with f=form.number %}
     {% include "orders/_field.html" with f=form.phone %}
-    <button class="btn" type="submit">Find my order</button>
+    <button class="btn" type="submit">{% trans "Track" %}</button>
   </form>
 
   {% if order %}
   <div class="card-panel">
     <h2>Order {{ order.number }}</h2>
     {% if order.status == 'cancelled' %}
-    <p class="warn">This order was cancelled. Message us on WhatsApp if that's a surprise.</p>
+    <p class="warn">{% trans "This order was cancelled." %}</p>
     {% elif is_on_hold %}
-    <p class="warn" style="background:#f3f4f6;color:#374151;border-color:#d1d5db">Your order is on hold. We'll be in touch shortly.</p>
+    <p class="warn" style="background:#f3f4f6;color:#374151;border-color:#d1d5db">{% trans "Your order is on hold" %}. We'll be in touch shortly.</p>
     {% elif is_returned %}
-    <p class="warn" style="background:#fff7ed;color:#c2410c;border-color:#fed7aa">This order has been returned.</p>
+    <p class="warn" style="background:#fff7ed;color:#c2410c;border-color:#fed7aa">{% trans "This order has been returned." %}</p>
     {% else %}
     <ol class="timeline" aria-label="Order progress">
       {% for s in steps %}<li class="{% if s.done %}done{% endif %}{% if s.current %} current{% endif %}" {% if s.current %}aria-current="step"{% endif %}>{{ s.label }}</li>{% endfor %}
@@ -35,7 +35,7 @@
     <div class="mini-lines" style="margin-top:20px">
       {% for i in order.items.all %}<div><span>{{ i.qty }} × {{ i.name }}</span><span>{{ i.line_total|rs }}</span></div>{% endfor %}
     </div>
-    <div class="rows"><div class="total"><span>Total</span><span>{{ order.total|rs }}</span></div></div>
+    <div class="rows"><div class="total"><span>{% trans "Total" %}</span><span>{{ order.total|rs }}</span></div></div>
     <p class="small muted" style="margin-top:12px">Placed {{ order.created_at|date:"j M Y, g:i a" }}</p>
   </div>
   {% endif %}

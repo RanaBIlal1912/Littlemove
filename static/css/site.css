@@ -2287,3 +2287,49 @@ body.has-hero.has-topbar .hero-fullbleed {
 
 /* Arabic font */
 .lang-ar { font-family: 'Noto Naskh Arabic', 'Noto Sans Arabic', serif; line-height: 1.8; }
+
+/* ── Roman Urdu: long label truncation ─────────────────────────── */
+[lang="ur-latn"] .nav-right { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
+
+/* ── Hero alignment in RTL ─────────────────────────────────────── */
+[dir="rtl"] .hero { flex-direction: row-reverse; }
+[dir="rtl"] .hero-text { text-align: right; }
+[dir="rtl"] .hero-btns { justify-content: flex-end; }
+[dir="rtl"] .hero-illus { order: -1; }
+
+/* ── Shop page: illustration moves to the other side ───────────── */
+[dir="rtl"] .shop-hero { flex-direction: row-reverse; }
+[dir="rtl"] .shop-hero-illus { order: -1; }
+
+/* ── Sort select arrow text ─────────────────────────────────────── */
+[dir="rtl"] select { text-align-last: right; padding-inline-start: 8px; padding-inline-end: 28px; }
+
+/* ── Discount/sale badge corners ────────────────────────────────── */
+[dir="rtl"] .badge-sale,
+[dir="rtl"] .sale-pct {
+  border-radius: 0 6px 6px 0;
+  left: auto;
+  right: 0;
+  inset-inline-start: 0;
+  inset-inline-end: auto;
+}
+
+/* ── Breadcrumb arrow flip ──────────────────────────────────────── */
+[dir="rtl"] .breadcrumb-sep { transform: scaleX(-1); display: inline-block; }
+
+/* ── PDP buy box ────────────────────────────────────────────────── */
+[dir="rtl"] .buy-box { text-align: right; }
+[dir="rtl"] .buy-box .price { justify-content: flex-end; }
+
+/* ── Checkout form ──────────────────────────────────────────────── */
+[dir="rtl"] .checkout-grid { direction: rtl; }
+
+/* ── Tracking timeline ──────────────────────────────────────────── */
+[dir="rtl"] ol.timeline { padding-inline-start: 0; padding-inline-end: 1.5rem; }
+[dir="rtl"] ol.timeline li::before { left: auto; right: -1.5rem; }
+
+/* ── Mobile 390px RTL specifics ─────────────────────────────────── */
+@media (max-width: 640px) {
+  [dir="rtl"] .header-main { gap: 8px; }
+  [dir="rtl"] .search { max-width: 100%; }
+}

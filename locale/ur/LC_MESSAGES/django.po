@@ -200,3 +200,222 @@ msgstr "مصنوعات"
 
 msgid "Settings"
 msgstr "ترتیبات"
+
+msgid "Sort by:"
+msgstr "ترتیب:"
+
+msgid "Newest"
+msgstr "نئے ترین"
+
+msgid "Price: low to high"
+msgstr "قیمت: کم سے زیادہ"
+
+msgid "Price: high to low"
+msgstr "قیمت: زیادہ سے کم"
+
+msgid "A–Z"
+msgstr "A سے Z"
+
+msgid "On sale"
+msgstr "سیل پر"
+
+msgid "Therapist picks only"
+msgstr "صرف تھیراپسٹ کی پسند"
+
+msgid "No toys found."
+msgstr "کوئی کھلونا نہیں ملا۔"
+
+msgid "Clear filters"
+msgstr "فلٹر صاف کریں"
+
+msgid "All ages"
+msgstr "تمام عمریں"
+
+msgid "Description"
+msgstr "تفصیل"
+
+msgid "In the box"
+msgstr "ڈبے میں کیا ہے"
+
+msgid "Helps with"
+msgstr "کس چیز میں مدد کرتا ہے"
+
+msgid "Add to cart"
+msgstr "کارٹ میں ڈالیں"
+
+msgid "Buy now"
+msgstr "ابھی خریدیں"
+
+msgid "Sold out"
+msgstr "ختم ہو گیا"
+
+msgid "Therapist pick"
+msgstr "تھیراپسٹ کی پسند"
+
+msgid "Save Rs %(amount)s"
+msgstr "Rs %(amount)s بچائیں"
+
+msgid "ages %(from)s–%(to)s"
+msgstr "عمر %(from)s–%(to)s سال"
+
+msgid "You might also like"
+msgstr "آپ کو یہ بھی پسند آ سکتے ہیں"
+
+msgid "Delivery"
+msgstr "ڈیلیوری"
+
+msgid "Reviews"
+msgstr "جائزے"
+
+msgid "Product"
+msgstr "مصنوعہ"
+
+msgid "Price"
+msgstr "قیمت"
+
+msgid "Quantity"
+msgstr "تعداد"
+
+msgid "Remove"
+msgstr "ہٹائیں"
+
+msgid "Subtotal"
+msgstr "ذیلی کل"
+
+msgid "Delivery fee"
+msgstr "ڈیلیوری فیس"
+
+msgid "Checkout"
+msgstr "خریداری مکمل کریں"
+
+msgid "Continue shopping"
+msgstr "خریداری جاری رکھیں"
+
+msgid "Free delivery"
+msgstr "مفت ڈیلیوری"
+
+msgid "Your details"
+msgstr "آپ کی معلومات"
+
+msgid "Full name"
+msgstr "پورا نام"
+
+msgid "Phone number"
+msgstr "فون نمبر"
+
+msgid "City"
+msgstr "شہر"
+
+msgid "Address"
+msgstr "پتہ"
+
+msgid "Order notes"
+msgstr "آرڈر نوٹس"
+
+msgid "Payment method"
+msgstr "ادائیگی کا طریقہ"
+
+msgid "Place order"
+msgstr "آرڈر دیں"
+
+msgid "JazzCash number"
+msgstr "جاز کیش نمبر"
+
+msgid "Account title"
+msgstr "اکاؤنٹ کا نام"
+
+msgid "Order number"
+msgstr "آرڈر نمبر"
+
+msgid "Mobile number"
+msgstr "موبائل نمبر"
+
+msgid "Track"
+msgstr "ٹریک کریں"
+
+msgid "Order placed"
+msgstr "آرڈر دیا گیا"
+
+msgid "Your order is on hold"
+msgstr "آپ کا آرڈر روک دیا گیا ہے"
+
+msgid "This order has been returned."
+msgstr "یہ آرڈر واپس کیا جا چکا ہے۔"
+
+msgid "This order was cancelled."
+msgstr "یہ آرڈر منسوخ ہو چکا ہے۔"
+
+msgid "Thank you for your order!"
+msgstr "آرڈر کے لیے شکریہ!"
+
+msgid "We've received your order"
+msgstr "ہم نے آپ کا آرڈر موصول کر لیا ہے"
+
+msgid "Page not found"
+msgstr "صفحہ نہیں ملا"
+
+msgid "Go home"
+msgstr "گھر جائیں"
+
+msgid "Find the right toy"
+msgstr "صحیح کھلونا ڈھونڈیں"
+
+msgid "Toys under Rs 1,000"
+msgstr "Rs 1,000 سے کم کھلونے"
+
+msgid "Small gifts that still teach something"
+msgstr "چھوٹے تحفے جو پھر بھی سکھاتے ہیں"
+
+msgid "Used in sessions, made for home"
+msgstr "سیشن میں استعمال، گھر کے لیے بنے"
+
+msgid "See the picks"
+msgstr "پسند دیکھیں"
+
+msgid "Shop now"
+msgstr "ابھی خریدیں"
+
+msgid "Pay when the parcel arrives"
+msgstr "پارسل آنے پر ادائیگی کریں"
+
+msgid "All over Pakistan"
+msgstr "پورے پاکستان میں"
+
+msgid "Fast courier delivery"
+msgstr "تیز کوریئر ڈیلیوری"
+
+msgid "Easy returns"
+msgstr "آسان واپسی"
+
+msgid "Damaged item? We replace it"
+msgstr "خراب چیز؟ ہم بدل دیتے ہیں"
+
+msgid "Therapist chosen"
+msgstr "تھیراپسٹ نے چُنا"
+
+msgid "Safe, age-right toys"
+msgstr "محفوظ، عمر کے مطابق کھلونے"
+
+msgid "Shop all toys"
+msgstr "تمام کھلونے خریدیں"
+
+msgid "Pick what your child is working on right now."
+msgstr "اپنے بچے کی موجودہ مہارت چُنیں۔"
+
+msgid "What does your child need help with?"
+msgstr "آپ کے بچے کو کس چیز میں مدد چاہیے؟"
+
+msgid "Scroll"
+msgstr "اسکرول کریں"
+
+msgid "Free over %(amount)s"
+msgstr "%(amount)s سے زیادہ پر مفت"
+
+msgid "Your order"
+msgstr "آپ کا آرڈر"
+
+msgid "Order summary"
+msgstr "آرڈر کا خلاصہ"
+
+msgid "Start from what your child needs help with — we'll show the toys parents choose for it."
+msgstr "اپنے بچے کی ضرورت سے شروع کریں — ہم وہ کھلونے دکھائیں گے جو والدین چنتے ہیں۔"
