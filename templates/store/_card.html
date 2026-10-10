@@ -1,7 +1,11 @@
 {% load store_tags %}<article class="pcard tilt-card t-{{ p.category.color }}">
   <div class="pcard-media">
-    {% if p.image %}<img class="photo" src="{{ p.image.url }}" alt="{{ p.name }}" loading="lazy" width="400" height="400">
-    {% else %}{% illus p.illustration %}{% endif %}
+    {% if p.image %}
+    <img class="photo" src="{{ p.image.url }}" alt="{{ p.name }}" loading="lazy" width="400" height="400" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+    <div class="card-img-placeholder" style="display:none">{% illus p.illustration %}</div>
+    {% else %}
+    <div class="card-img-placeholder">{% illus p.illustration %}</div>
+    {% endif %}
     {% with ph2=p.photos.first %}{% if ph2 %}<img class="photo-2" src="{{ ph2.image.url }}" alt="" loading="lazy" width="400" height="400">{% endif %}{% endwith %}
     <button class="wishlist-btn" data-pid="{{ p.pk }}" type="button" aria-label="Add {{ p.name }} to wishlist">&#9825;</button>
     <button class="quick-view-btn" data-slug="{{ p.slug }}" type="button">Quick view</button>

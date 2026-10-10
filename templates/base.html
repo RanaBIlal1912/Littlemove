@@ -16,7 +16,7 @@
   <link rel="shortcut icon" href="{% static 'img/favicon.ico' %}">
   <link rel="apple-touch-icon" href="{% static 'img/apple-touch-icon.png' %}">
   {% endif %}
-  {% if shop.share_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ shop.share_image.url }}">{% endif %}
+  {% if shop.share_image %}<meta property="og:image" content="{{ shop.share_image.url|absolute_url:request }}">{% endif %}
   <meta property="og:site_name" content="{{ shop.store_name }}">
   <meta property="og:title" content="{% block og_title %}{{ shop.store_name }} — {{ shop.tagline }}{% endblock %}">
   <meta property="og:type" content="{% block og_type %}website{% endblock %}">

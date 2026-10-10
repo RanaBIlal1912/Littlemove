@@ -6,7 +6,7 @@
 {% block body_class %}{% if product.in_stock %}has-sticky-buy{% endif %}{% endblock %}
 {% block body_attrs %} data-product-slug="{{ product.slug }}"{% endblock %}
 {% block head %}
-{% if product.image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ product.image.url }}">{% endif %}
+{% if product.image %}<meta property="og:image" content="{{ product.image.url|absolute_url:request }}">{% endif %}
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Product","name":"{{ product.name|escapejs }}","description":"{{ product.summary|escapejs }}","sku":"{{ product.sku|escapejs }}","brand":{"@type":"Brand","name":"{{ shop.store_name|escapejs }}"},"offers":{"@type":"Offer","priceCurrency":"PKR","price":"{{ product.price }}","availability":"https://schema.org/{% if product.in_stock %}InStock{% else %}OutOfStock{% endif %}"}}
 </script>
@@ -87,7 +87,7 @@
 
       <div class="share-row">
         <a class="share-btn wa" target="_blank" rel="noopener"
-           href="https://wa.me/?text={{ product.name|urlencode }}{{ ' — '|urlencode }}{{ request.scheme }}://{{ request.get_host }}{{ product.get_absolute_url|urlencode }}">{% whatsapp_icon 18 'currentColor' %} Share</a>
+           href="https://wa.me/?text={{ product.name|urlencode }}{{ ' — '|urlencode }}{{ product.get_absolute_url|absolute_url:request|urlencode }}">{% whatsapp_icon 18 'currentColor' %} Share</a>
         <button class="share-btn" type="button" data-copy-link
                 data-url="{{ request.scheme }}://{{ request.get_host }}{{ product.get_absolute_url }}">Copy link</button>
       </div>

@@ -2155,6 +2155,31 @@ class GoogleTranslateTests(TestCase):
             self.assertIn(resp.status_code, [200, 302])
 
 
+class OgImageTests(TestCase):
+    def test_absolute_url_filter_local(self):
+        from store.templatetags.store_tags import absolute_url
+        class FakeReq:
+            scheme = "https"
+            def get_host(self): return "example.com"
+        self.assertEqual(absolute_url("/shop/", FakeReq()), "https://example.com/shop/")
+
+    def test_absolute_url_filter_cloudinary(self):
+        from store.templatetags.store_tags import absolute_url
+        class FakeReq:
+            scheme = "https"
+            def get_host(self): return "example.com"
+        url = "https://res.cloudinary.com/xyz/image/upload/v1/photo.jpg"
+        self.assertEqual(absolute_url(url, FakeReq()), url)  # unchanged
+
+    def test_absolute_url_empty(self):
+        from store.templatetags.store_tags import absolute_url
+        class FakeReq:
+            scheme = "https"
+            def get_host(self): return "example.com"
+        self.assertEqual(absolute_url("", FakeReq()), "")
+        self.assertIsNone(absolute_url(None, FakeReq()))
+
+
 class UploadSecurityTests(TestCase):
     def _f(self, name, content):
         from django.core.files.uploadedfile import SimpleUploadedFile

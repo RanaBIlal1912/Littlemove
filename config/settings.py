@@ -216,7 +216,7 @@ UNFOLD = {
     "SITE_HEADER": "LittleMove",
     "SITE_SUBHEADER": "Store Manager",
     "SITE_URL": "/",
-    "SITE_LOGO": lambda request: static("img/littlemove-logo.png"),
+    "SITE_LOGO": lambda request: static("img/icon-192.png"),
     "SITE_ICON": lambda request: static("img/icon-192.png"),
     "SHOW_HISTORY": True,
     "SHOW_VIEW_ON_SITE": True,

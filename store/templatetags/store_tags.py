@@ -219,3 +219,15 @@ def first_name(value):
     return parts[0] if parts else ""
 
 
+@register.filter
+def absolute_url(value, request):
+    """Make a URL absolute only when it starts with /. Cloudinary URLs are already absolute."""
+    if not value:
+        return value
+    if value.startswith(("http://", "https://", "//")):
+        return value  # already absolute
+    if value.startswith("/"):
+        return f"{request.scheme}://{request.get_host()}{value}"
+    return value
+
+

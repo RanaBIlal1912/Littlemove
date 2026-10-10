@@ -2380,3 +2380,34 @@ body.has-hero.has-topbar .hero-fullbleed {
 /* ── pcard: compact name and price ──────────────────────────────────── */
 .pcard-name { font-size: .95rem; -webkit-line-clamp: 2; }
 .pcard-price { font-size: .95rem; font-weight: 800; }
+
+/* ── D1: Mobile hero height ──────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .hero { height: clamp(260px, 42vh, 380px) !important; }
+  .scroll-cue { display: none !important; }
+}
+
+/* ── D2: Card density: 4/3 aspect ratio ─────────────────────────────── */
+.product-card .card-img,
+.product-card .card-img-wrap { aspect-ratio: 4 / 3; }
+/* PDP main image stays square */
+.pdp-gallery .main-img { aspect-ratio: 1; }
+
+.shop-grid {
+  grid-template-columns: repeat(4, 1fr);
+}
+@media (max-width: 1100px) {
+  .shop-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 640px) {
+  .shop-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── D5: Missing photo placeholder ──────────────────────────────────── */
+.card-img-placeholder {
+  width: 100%; aspect-ratio: 4/3;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+  border-radius: 12px;
+  font-size: 3rem;
+}
