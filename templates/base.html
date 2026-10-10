@@ -94,9 +94,20 @@
         </a>
         {% if ENABLE_GOOGLE_TRANSLATE %}
         <div class="lang-switcher" id="lang-switcher" {% if current_gt_lang %}data-gt="{{ current_gt_lang }}"{% endif %} data-rtl-codes="{{ GT_RTL_CODES }}">
-          <button class="lang-btn" type="button" aria-expanded="false" aria-controls="lang-menu" aria-label="Change language" id="lang-btn">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-            <span class="lang-name notranslate" translate="no" id="lang-name-display">English</span>
+          <button class="lang-btn" type="button" aria-expanded="false" aria-controls="lang-menu"
+                  id="lang-btn"
+                  title="Change language"
+                  aria-label="Change language (currently {{ current_gt_lang|default:'English' }})">
+            <svg class="lang-globe" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                 stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+            <span class="lang-code notranslate" translate="no" id="lang-name-display">
+              {% if current_gt_lang %}{{ current_gt_lang|upper|slice:":2" }}{% else %}EN{% endif %}
+            </span>
           </button>
           <div class="lang-menu lang-menu--extended" id="lang-menu" role="dialog" aria-label="Select language" hidden>
             <div class="lang-menu-inner">

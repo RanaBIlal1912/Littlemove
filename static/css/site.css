@@ -2178,19 +2178,36 @@ body.has-hero.has-topbar .hero-fullbleed {
 .lang-btn {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid rgba(0,0,0,.15);
+  border-radius: 14px;
   background: transparent;
-  border: 1.5px solid rgba(0,0,0,.12);
-  border-radius: 6px;
-  padding: 5px 10px;
-  cursor: pointer;
   font-size: .8125rem;
   font-weight: 600;
-  color: inherit;
+  cursor: pointer;
   white-space: nowrap;
+  color: inherit;
+  min-width: 0;
+  position: relative;
 }
-.lang-btn:hover { background: rgba(0,0,0,.04); }
-.lang-name { max-width: 80px; overflow: hidden; text-overflow: ellipsis; }
+.lang-btn:hover { background: rgba(0,0,0,.05); }
+/* Touch target: ensure 40px clickable area via padding/margin */
+.lang-btn::before {
+  content: '';
+  position: absolute;
+  inset: -6px -4px;
+}
+.lang-globe { flex-shrink: 0; }
+.lang-code { font-variant: small-caps; letter-spacing: .03em; }
+
+/* Below 768px: icon only */
+@media (max-width: 767px) {
+  .lang-code { display: none; }
+  .lang-btn { width: 28px; padding: 0; justify-content: center; border-radius: 50%; position: relative; }
+}
+
 .lang-menu {
   position: absolute;
   top: calc(100% + 6px);
@@ -2202,6 +2219,24 @@ body.has-hero.has-topbar .hero-fullbleed {
   min-width: 140px;
   z-index: 200;
   padding: 4px 0;
+  width: 260px;
+  max-width: calc(100vw - 24px);
+  max-height: min(340px, 60vh);
+  overflow-y: auto;
+}
+
+@media (max-width: 767px) {
+  .lang-menu {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100%;
+    max-height: 60vh;
+    border-radius: 16px 16px 0 0;
+    z-index: 9999;
+  }
 }
 .lang-opt { display: block; margin: 0; }
 .lang-opt button {
@@ -2226,8 +2261,8 @@ body.has-hero.has-topbar .hero-fullbleed {
 
 /* ── Extended language dropdown (GT) ── */
 .lang-menu--extended {
-  width: 320px;
-  max-height: 480px;
+  width: 260px;
+  max-height: min(340px, 60vh);
   display: flex;
   flex-direction: column;
 }
@@ -2273,11 +2308,11 @@ body.has-hero.has-topbar .hero-fullbleed {
   align-items: baseline;
   gap: 6px;
   width: 100%;
-  padding: 7px 16px;
+  padding: 6px 10px;
   background: transparent;
   border: none;
   cursor: pointer;
-  font-size: .875rem;
+  font-size: .8125rem;
   color: #374151;
   text-align: start;
 }

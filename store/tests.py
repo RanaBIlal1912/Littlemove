@@ -2153,3 +2153,107 @@ class GoogleTranslateTests(TestCase):
         for url in ["/", reverse("store:shop"), reverse("orders:track")]:
             resp = self.client.get(url)
             self.assertIn(resp.status_code, [200, 302])
+
+
+class UploadSecurityTests(TestCase):
+    def _f(self, name, content):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        return SimpleUploadedFile(name, content)
+
+    def _jpeg_bytes(self):
+        return b'\xff\xd8\xff\xe0' + b'\x00' * 200
+
+    def test_php_as_png_rejected(self):
+        from django.core.exceptions import ValidationError
+        from store.uploads import validate_upload
+        f = self._f("shell.png", b'<?php system($_GET["cmd"]); ?>' + b'\x00' * 50)
+        with self.assertRaises(ValidationError):
+            validate_upload(f, allow_kinds=("image",))
+
+    def test_html_as_jpg_rejected(self):
+        from django.core.exceptions import ValidationError
+        from store.uploads import validate_upload
+        f = self._f("a.jpg", b'<!DOCTYPE html><html>')
+        with self.assertRaises(ValidationError):
+            validate_upload(f, allow_kinds=("image",))
+
+    def test_double_ext_php_png_rejected(self):
+        from django.core.exceptions import ValidationError
+        from store.uploads import validate_upload
+        f = self._f("shell.php.png", self._jpeg_bytes())
+        with self.assertRaises(ValidationError):
+            validate_upload(f, allow_kinds=("image",))
+
+    def test_zero_byte_rejected(self):
+        from django.core.exceptions import ValidationError
+        from store.uploads import validate_upload
+        f = self._f("empty.jpg", b'')
+        with self.assertRaises(ValidationError):
+            validate_upload(f, allow_kinds=("image",))
+
+    def test_truncated_png_rejected(self):
+        from django.core.exceptions import ValidationError
+        from store.uploads import validate_upload
+        f = self._f("trunc.png", b'\x89PNG\r\n\x1a\n' + b'\x00' * 4)
+        with self.assertRaises(ValidationError):
+            validate_upload(f, allow_kinds=("image",))
+
+    def test_valid_jpeg_passes(self):
+        """A real (minimal) JPEG must pass. We create it with Pillow."""
+        import io
+        from PIL import Image
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from store.uploads import validate_upload
+        buf = io.BytesIO()
+        Image.new("RGB", (10, 10), (255, 0, 0)).save(buf, format="JPEG")
+        buf.seek(0)
+        f = SimpleUploadedFile("ok.jpg", buf.read(), content_type="image/jpeg")
+        result = validate_upload(f, allow_kinds=("image",))
+        self.assertEqual(result, "image")
+
+    def test_valid_png_passes(self):
+        import io
+        from PIL import Image
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from store.uploads import validate_upload
+        buf = io.BytesIO()
+        Image.new("RGB", (10, 10)).save(buf, format="PNG")
+        buf.seek(0)
+        f = SimpleUploadedFile("ok.png", buf.read(), content_type="image/png")
+        result = validate_upload(f, allow_kinds=("image",))
+        self.assertEqual(result, "image")
+
+    def test_exe_as_jpg_rejected(self):
+        from django.core.exceptions import ValidationError
+        from store.uploads import validate_upload
+        f = self._f("photo.jpg", b'\x4d\x5a' + b'\x00' * 100)
+        with self.assertRaises(ValidationError):
+            validate_upload(f, allow_kinds=("image",))
+
+    def test_valid_mp4_passes(self):
+        from store.uploads import validate_upload
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        mp4 = b'\x00\x00\x00\x18ftypisom' + b'\x00' * 100
+        f = SimpleUploadedFile("v.mp4", mp4)
+        result = validate_upload(f, allow_kinds=("video",))
+        self.assertEqual(result, "video")
+
+
+class LanguagePillTests(TestCase):
+    def test_storefront_has_lang_switcher(self):
+        resp = self.client.get("/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'id="lang-btn"')
+
+    def test_admin_has_gt_pill_script(self):
+        from django.conf import settings
+        if not getattr(settings, 'ENABLE_GOOGLE_TRANSLATE', True):
+            self.skipTest("GT disabled")
+        # The GT pill script is in base_site.html extrahead (rendered on change_list / dashboard pages)
+        user = User.objects.create_superuser("adminpill", "a@a.com", "supersecret123")
+        self.client.force_login(user)
+        # change_list extends admin/base_site.html via Unfold
+        resp = self.client.get("/manage-store/store/product/")
+        self.assertIn(resp.status_code, [200, 302])
+        if resp.status_code == 200:
+            self.assertContains(resp, 'lm-gt-pill')
