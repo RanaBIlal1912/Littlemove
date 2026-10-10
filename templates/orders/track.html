@@ -19,7 +19,11 @@
   <div class="card-panel">
     <h2>Order {{ order.number }}</h2>
     {% if order.status == 'cancelled' %}
-    <p class="warn" style="font-size:1rem">This order was cancelled. Message us on WhatsApp if that's a surprise.</p>
+    <p class="warn">This order was cancelled. Message us on WhatsApp if that's a surprise.</p>
+    {% elif is_on_hold %}
+    <p class="warn" style="background:#f3f4f6;color:#374151;border-color:#d1d5db">Your order is on hold. We'll be in touch shortly.</p>
+    {% elif is_returned %}
+    <p class="warn" style="background:#fff7ed;color:#c2410c;border-color:#fed7aa">This order has been returned.</p>
     {% else %}
     <ol class="timeline" aria-label="Order progress">
       {% for s in steps %}<li class="{% if s.done %}done{% endif %}{% if s.current %} current{% endif %}" {% if s.current %}aria-current="step"{% endif %}>{{ s.label }}</li>{% endfor %}

@@ -18,14 +18,46 @@ def make_order_number():
             return number
 
 
+STATUS_COLORS = {
+    "pending":   "#b54708",
+    "confirmed": "#1d4ed8",
+    "packed":    "#5b21b6",
+    "shipped":   "#0e7490",
+    "delivered": "#067647",
+    "cancelled": "#b42318",
+    "on_hold":   "#6b7280",
+    "returned":  "#c2410c",
+}
+
+PAYMENT_COLORS = {
+    "unpaid":   "#b42318",
+    "checking": "#b54708",
+    "paid":     "#067647",
+    "refunded": "#6b7280",
+}
+
+VALID_TRANSITIONS = {
+    "pending":   {"confirmed", "on_hold", "cancelled"},
+    "confirmed": {"packed", "on_hold", "cancelled"},
+    "packed":    {"shipped", "cancelled"},
+    "shipped":   {"delivered", "returned"},
+    "delivered": {"returned"},
+    "on_hold":   {"confirmed", "cancelled"},
+    "cancelled": set(),
+    "returned":  set(),
+}
+
+
 class Order(models.Model):
     class Status(models.TextChoices):
-        PENDING = "pending", "New — needs confirming"
+        PENDING   = "pending",   "New – needs confirming"
         CONFIRMED = "confirmed", "Confirmed"
-        PACKED = "packed", "Packed"
-        SHIPPED = "shipped", "Shipped"
+        PACKED    = "packed",    "Packed – ready for pickup"
+        SHIPPED   = "shipped",   "Picked up – on the way"
         DELIVERED = "delivered", "Delivered"
         CANCELLED = "cancelled", "Cancelled"
+        ON_HOLD   = "on_hold",   "On hold"
+        RETURNED  = "returned",  "Returned"
 
     class Payment(models.TextChoices):
         COD = "cod", "Cash on delivery"
@@ -95,17 +127,32 @@ class Order(models.Model):
     def is_prepaid(self):
         return self.payment_method != self.Payment.COD
 
+    def _restore_stock(self):
+        for item in self.items.select_related("product"):
+            if item.product_id:
+                Product.objects.filter(pk=item.product_id).update(stock=F("stock") + item.qty)
+        self.stock_restored = True
+
     def cancel_and_restock(self):
         """Cancel the order and put its items back in stock (only once)."""
         with transaction.atomic():
             order = Order.objects.select_for_update().get(pk=self.pk)
             if order.stock_restored:
                 return False
-            for item in order.items.select_related("product"):
-                if item.product_id:
-                    Product.objects.filter(pk=item.product_id).update(stock=F("stock") + item.qty)
+            order._restore_stock()
             order.status = Order.Status.CANCELLED
-            order.stock_restored = True
+            order.save(update_fields=["status", "stock_restored", "updated_at"])
+        self.refresh_from_db()
+        return True
+
+    def return_and_restock(self):
+        """Return the order and put its items back in stock (only once)."""
+        with transaction.atomic():
+            order = Order.objects.select_for_update().get(pk=self.pk)
+            if order.stock_restored:
+                return False
+            order._restore_stock()
+            order.status = Order.Status.RETURNED
             order.save(update_fields=["status", "stock_restored", "updated_at"])
         self.refresh_from_db()
         return True
@@ -126,3 +173,49 @@ class OrderItem(models.Model):
     @property
     def line_total(self):
         return self.price * self.qty
+
+
+class OrderEvent(models.Model):
+    class Kind(models.TextChoices):
+        STATUS  = "status",  "Status change"
+        PAYMENT = "payment", "Payment change"
+        NOTE    = "note",    "Note added"
+
+    order      = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="events")
+    user       = models.ForeignKey("auth.User", on_delete=models.SET_NULL, null=True, blank=True)
+    kind       = models.CharField(max_length=10, choices=Kind.choices)
+    from_value = models.CharField(max_length=40, blank=True)
+    to_value   = models.CharField(max_length=40, blank=True)
+    note       = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"{self.order.number} {self.kind}"
+
+    def describe(self):
+        if self.kind == self.Kind.STATUS:
+            try:
+                fl = Order.Status(self.from_value).label
+            except Exception:
+                fl = self.from_value or "—"
+            try:
+                tl = Order.Status(self.to_value).label
+            except Exception:
+                tl = self.to_value or "—"
+            return f"{fl} → {tl}"
+        if self.kind == self.Kind.PAYMENT:
+            try:
+                fl = Order.PaymentStatus(self.from_value).label
+            except Exception:
+                fl = self.from_value or "—"
+            try:
+                tl = Order.PaymentStatus(self.to_value).label
+            except Exception:
+                tl = self.to_value or "—"
+            return f"Payment: {fl} → {tl}"
+        if self.kind == self.Kind.NOTE:
+            return f"Note: {self.note[:80]}"
+        return self.kind

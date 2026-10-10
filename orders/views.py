@@ -47,10 +47,10 @@ def success(request, number):
 STEPS = [Order.Status.PENDING, Order.Status.CONFIRMED, Order.Status.PACKED,
          Order.Status.SHIPPED, Order.Status.DELIVERED]
 STEP_LABELS = {
-    Order.Status.PENDING: "Received",
+    Order.Status.PENDING:   "Received",
     Order.Status.CONFIRMED: "Confirmed",
-    Order.Status.PACKED: "Packed",
-    Order.Status.SHIPPED: "On the way",
+    Order.Status.PACKED:    "Packed",
+    Order.Status.SHIPPED:   "On the way",
     Order.Status.DELIVERED: "Delivered",
 }
 
@@ -64,8 +64,21 @@ def track(request):
         if order is None:
             form.add_error(None, "No order matches that number and mobile. Check the SMS or WhatsApp message we sent.")
     steps = []
-    if order and order.status != Order.Status.CANCELLED:
-        reached = STEPS.index(order.status)
+    is_on_hold = order and order.status == Order.Status.ON_HOLD
+    is_returned = order and order.status == Order.Status.RETURNED
+    if order and order.status not in (Order.Status.CANCELLED, Order.Status.ON_HOLD):
+        current_status = order.status
+        if current_status == Order.Status.RETURNED:
+            # Show as delivered in the progress bar, but with "Returned" note
+            reached = len(STEPS) - 1
+        elif current_status in STEPS:
+            reached = STEPS.index(current_status)
+        else:
+            reached = 0
         steps = [{"label": STEP_LABELS[s], "done": i <= reached, "current": i == reached}
                  for i, s in enumerate(STEPS)]
-    return render(request, "orders/track.html", {"form": form, "order": order, "steps": steps})
+    return render(request, "orders/track.html", {
+        "form": form, "order": order, "steps": steps,
+        "is_on_hold": is_on_hold,
+        "is_returned": is_returned,
+    })

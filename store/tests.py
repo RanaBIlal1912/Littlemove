@@ -1741,3 +1741,198 @@ class RBACProxySettingsTests(TestCase):
             reverse("admin:store_storeinfo_change", args=[self.settings.pk])
         )
         self.assertEqual(resp.status_code, 200)
+
+
+# ── Order workflow tests ──────────────────────────────────────────────────────
+
+class OrderWorkflowTests(TestCase):
+    """Order workflow: transitions, stock restore, timeline events, bulk actions."""
+
+    def setUp(self):
+        from store.management.commands.setup_roles import Command
+        Command().handle()
+        self.cat = make_category("Test")
+        self.product = make_product(self.cat, "Test Toy", price=1000, stock=10)
+        self.su = User.objects.create_superuser("workflow_su", "wf@x.com", "Pass1234!")
+
+    def _make_order(self, status="pending"):
+        from orders.models import Order, OrderItem
+        order = Order.objects.create(
+            full_name="Test Customer", phone="03001234567", city="Karachi",
+            address="1 Test St", payment_method=Order.Payment.COD,
+            subtotal=1000, delivery_fee=200, total=1200, status=status,
+        )
+        OrderItem.objects.create(order=order, product=self.product,
+                                 name=self.product.name, qty=2, price=500)
+        return order
+
+    # ── Valid transitions ─────────────────────────────────────────────────────
+
+    def test_valid_transition_pending_to_confirmed(self):
+        from orders.models import VALID_TRANSITIONS
+        self.assertIn("confirmed", VALID_TRANSITIONS["pending"])
+
+    def test_valid_transition_pending_to_on_hold(self):
+        from orders.models import VALID_TRANSITIONS
+        self.assertIn("on_hold", VALID_TRANSITIONS["pending"])
+
+    def test_invalid_transition_pending_to_shipped(self):
+        from orders.models import VALID_TRANSITIONS
+        self.assertNotIn("shipped", VALID_TRANSITIONS["pending"])
+
+    def test_invalid_transition_delivered_to_confirmed(self):
+        from orders.models import VALID_TRANSITIONS
+        self.assertNotIn("confirmed", VALID_TRANSITIONS["delivered"])
+
+    # ── Stock restore ─────────────────────────────────────────────────────────
+
+    def test_cancel_restores_stock(self):
+        order = self._make_order("confirmed")
+        before = self.product.stock
+        order.cancel_and_restock()
+        self.product.refresh_from_db()
+        self.assertEqual(self.product.stock, before + 2)
+
+    def test_cancel_sets_stock_restored_flag(self):
+        order = self._make_order("confirmed")
+        order.cancel_and_restock()
+        order.refresh_from_db()
+        self.assertTrue(order.stock_restored)
+
+    def test_cancel_only_restores_once(self):
+        order = self._make_order("confirmed")
+        order.cancel_and_restock()
+        self.product.refresh_from_db()
+        stock_after_first = self.product.stock
+        order.cancel_and_restock()  # second call should be no-op
+        self.product.refresh_from_db()
+        self.assertEqual(self.product.stock, stock_after_first)
+
+    def test_return_restores_stock(self):
+        order = self._make_order("shipped")
+        before = self.product.stock
+        order.return_and_restock()
+        self.product.refresh_from_db()
+        self.assertEqual(self.product.stock, before + 2)
+
+    def test_return_sets_returned_status(self):
+        from orders.models import Order as OrderModel
+        order = self._make_order("shipped")
+        order.return_and_restock()
+        order.refresh_from_db()
+        self.assertEqual(order.status, OrderModel.Status.RETURNED)
+
+    def test_return_only_restores_once(self):
+        order = self._make_order("shipped")
+        order.return_and_restock()
+        self.product.refresh_from_db()
+        stock_after = self.product.stock
+        order.return_and_restock()
+        self.product.refresh_from_db()
+        self.assertEqual(self.product.stock, stock_after)
+
+    # ── Timeline events ───────────────────────────────────────────────────────
+
+    def test_change_status_view_writes_event(self):
+        from orders.models import OrderEvent
+        order = self._make_order("pending")
+        self.client.force_login(self.su)
+        url = reverse("admin:orders_order_change_status", args=[order.pk, "confirmed"])
+        self.client.get(url)
+        self.assertTrue(OrderEvent.objects.filter(
+            order=order, kind=OrderEvent.Kind.STATUS,
+            from_value="pending", to_value="confirmed",
+        ).exists())
+
+    def test_invalid_transition_rejected_by_view(self):
+        from orders.models import Order as OrderModel
+        order = self._make_order("pending")
+        self.client.force_login(self.su)
+        url = reverse("admin:orders_order_change_status", args=[order.pk, "shipped"])
+        self.client.get(url)
+        order.refresh_from_db()
+        self.assertEqual(order.status, OrderModel.Status.PENDING)
+
+    # ── Permission enforcement ────────────────────────────────────────────────
+
+    def test_dispatch_role_cannot_confirm(self):
+        from orders.models import Order as OrderModel
+        staff = _make_staff("disp_wf1")
+        _assign_role(staff, "Dispatch & Delivery")
+        order = self._make_order("pending")
+        self.client.force_login(staff)
+        url = reverse("admin:orders_order_change_status", args=[order.pk, "confirmed"])
+        self.client.get(url)
+        order.refresh_from_db()
+        self.assertEqual(order.status, OrderModel.Status.PENDING)
+
+    def test_confirm_role_cannot_pack(self):
+        from orders.models import Order as OrderModel
+        staff = _make_staff("conf_wf1")
+        _assign_role(staff, "Order Confirmation")
+        order = self._make_order("confirmed")
+        self.client.force_login(staff)
+        url = reverse("admin:orders_order_change_status", args=[order.pk, "packed"])
+        self.client.get(url)
+        order.refresh_from_db()
+        self.assertEqual(order.status, OrderModel.Status.CONFIRMED)
+
+    # ── Bulk actions ──────────────────────────────────────────────────────────
+
+    def test_bulk_confirm_valid_orders(self):
+        from orders.models import Order as OrderModel
+        o1 = self._make_order("pending")
+        o2 = self._make_order("pending")
+        self.client.force_login(self.su)
+        self.client.post(
+            reverse("admin:orders_order_changelist"),
+            {"action": "mark_confirmed", "_selected_action": [o1.pk, o2.pk]},
+        )
+        o1.refresh_from_db()
+        o2.refresh_from_db()
+        self.assertEqual(o1.status, OrderModel.Status.CONFIRMED)
+        self.assertEqual(o2.status, OrderModel.Status.CONFIRMED)
+
+    def test_bulk_confirm_skips_invalid_transitions(self):
+        from orders.models import Order as OrderModel
+        o1 = self._make_order("pending")
+        o2 = self._make_order("shipped")  # can't confirm shipped
+        self.client.force_login(self.su)
+        self.client.post(
+            reverse("admin:orders_order_changelist"),
+            {"action": "mark_confirmed", "_selected_action": [o1.pk, o2.pk]},
+        )
+        o1.refresh_from_db()
+        o2.refresh_from_db()
+        self.assertEqual(o1.status, OrderModel.Status.CONFIRMED)
+        self.assertEqual(o2.status, OrderModel.Status.SHIPPED)
+
+    def test_bulk_cancel_restores_stock(self):
+        before = self.product.stock
+        o1 = self._make_order("pending")
+        o2 = self._make_order("confirmed")
+        self.client.force_login(self.su)
+        self.client.post(
+            reverse("admin:orders_order_changelist"),
+            {"action": "cancel_and_restock_action", "_selected_action": [o1.pk, o2.pk]},
+        )
+        self.product.refresh_from_db()
+        # Each order has 2 items, so stock restored by 4
+        self.assertEqual(self.product.stock, before + 4)
+
+    # ── Tracking page ─────────────────────────────────────────────────────────
+
+    def test_tracking_page_shows_progress_for_confirmed_order(self):
+        order = self._make_order("confirmed")
+        resp = self.client.get(reverse("orders:track") + f"?number={order.number}&phone={order.phone}")
+        self.assertContains(resp, "Confirmed")
+
+    def test_tracking_page_shows_on_hold_message(self):
+        order = self._make_order("on_hold")
+        resp = self.client.get(reverse("orders:track") + f"?number={order.number}&phone={order.phone}")
+        self.assertContains(resp, "on hold")
+
+    def test_tracking_page_shows_returned_message(self):
+        order = self._make_order("returned")
+        resp = self.client.get(reverse("orders:track") + f"?number={order.number}&phone={order.phone}")
+        self.assertContains(resp, "returned")

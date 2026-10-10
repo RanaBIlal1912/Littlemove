@@ -26,7 +26,7 @@ def dashboard_callback(request, context):
 
         context["kpi_revenue_month"] = (
             Order.objects.filter(created_at__date__gte=month_start)
-            .exclude(status=Order.Status.CANCELLED)
+            .exclude(status__in=[Order.Status.CANCELLED, Order.Status.RETURNED])
             .aggregate(r=Sum("total"))["r"] or 0
         )
 
@@ -34,9 +34,30 @@ def dashboard_callback(request, context):
             status=Order.Status.PENDING
         ).count()
 
+        context["kpi_waiting"] = Order.objects.filter(
+            status=Order.Status.PENDING
+        ).count()
+
+        context["kpi_ready_ship"] = Order.objects.filter(
+            status=Order.Status.PACKED
+        ).count()
+
+        context["kpi_on_the_way"] = Order.objects.filter(
+            status=Order.Status.SHIPPED
+        ).count()
+
+        context["kpi_pay_check"] = Order.objects.filter(
+            payment_status=Order.PaymentStatus.CHECKING
+        ).count()
+
+        context["kpi_delivered_month"] = Order.objects.filter(
+            status=Order.Status.DELIVERED,
+            updated_at__date__gte=month_start,
+        ).count()
+
         daily = (
             Order.objects.filter(created_at__date__gte=thirty_days_ago)
-            .exclude(status=Order.Status.CANCELLED)
+            .exclude(status__in=[Order.Status.CANCELLED, Order.Status.RETURNED])
             .values("created_at__date")
             .annotate(orders=Count("id"), revenue=Sum("total"))
             .order_by("created_at__date")
@@ -62,6 +83,11 @@ def dashboard_callback(request, context):
         context["kpi_orders_today"] = None
         context["kpi_revenue_month"] = None
         context["kpi_pending"] = None
+        context["kpi_waiting"] = None
+        context["kpi_ready_ship"] = None
+        context["kpi_on_the_way"] = None
+        context["kpi_pay_check"] = None
+        context["kpi_delivered_month"] = None
         context["chart_labels"] = []
         context["chart_orders"] = []
         context["chart_revenue"] = []

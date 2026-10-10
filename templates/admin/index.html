@@ -70,38 +70,35 @@
 
 {# ── KPI cards ─────────────────────────────────────────────────────────────── #}
 <div class="lm-kpi-grid">
-  <div class="lm-kpi">
-    <span class="lm-kpi-icon">📦</span>
-    <span class="lm-kpi-value">{{ kpi_orders_today }}</span>
-    <span class="lm-kpi-label">Orders today</span>
-  </div>
-  <div class="lm-kpi">
-    <span class="lm-kpi-icon">💰</span>
-    <span class="lm-kpi-value">Rs {{ kpi_revenue_month|floatformat:0 }}</span>
-    <span class="lm-kpi-label">Revenue this month</span>
-  </div>
-  <div class="lm-kpi">
-    <span class="lm-kpi-icon">⏳</span>
-    <span class="lm-kpi-value" style="color:{% if kpi_pending %}#b54708{% else %}#067647{% endif %}">
-      {{ kpi_pending }}
-    </span>
+  <a href="{% url 'admin:orders_order_changelist' %}?status=pending" class="lm-kpi" style="text-decoration:none;color:inherit">
+    <span class="lm-kpi-icon">🆕</span>
+    <span class="lm-kpi-value" style="color:{% if kpi_pending %}#b54708{% else %}#067647{% endif %}">{{ kpi_pending }}</span>
     <span class="lm-kpi-label">Waiting to confirm</span>
-  </div>
+  </a>
+  <a href="{% url 'admin:orders_order_changelist' %}?status=packed" class="lm-kpi" style="text-decoration:none;color:inherit">
+    <span class="lm-kpi-icon">📦</span>
+    <span class="lm-kpi-value">{{ kpi_ready_ship }}</span>
+    <span class="lm-kpi-label">Ready to ship</span>
+  </a>
+  <a href="{% url 'admin:orders_order_changelist' %}?status=shipped" class="lm-kpi" style="text-decoration:none;color:inherit">
+    <span class="lm-kpi-icon">🚚</span>
+    <span class="lm-kpi-value">{{ kpi_on_the_way }}</span>
+    <span class="lm-kpi-label">On the way</span>
+  </a>
+  <a href="{% url 'admin:orders_order_changelist' %}?pay_tab=checking" class="lm-kpi" style="text-decoration:none;color:inherit">
+    <span class="lm-kpi-icon">💳</span>
+    <span class="lm-kpi-value" style="color:{% if kpi_pay_check %}#b54708{% else %}#6b7280{% endif %}">{{ kpi_pay_check }}</span>
+    <span class="lm-kpi-label">Payments to check</span>
+  </a>
+  <a href="{% url 'admin:orders_order_changelist' %}?status=delivered" class="lm-kpi" style="text-decoration:none;color:inherit">
+    <span class="lm-kpi-icon">✅</span>
+    <span class="lm-kpi-value" style="color:#067647">{{ kpi_delivered_month }}</span>
+    <span class="lm-kpi-label">Delivered this month</span>
+  </a>
   <div class="lm-kpi">
     <span class="lm-kpi-icon">⚠️</span>
-    <span class="lm-kpi-value" style="color:{% if kpi_low_stock %}#b42318{% else %}#067647{% endif %}">
-      {{ kpi_low_stock }}
-    </span>
+    <span class="lm-kpi-value" style="color:{% if kpi_low_stock %}#b42318{% else %}#067647{% endif %}">{{ kpi_low_stock }}</span>
     <span class="lm-kpi-label">Low / sold-out products</span>
-  </div>
-  <div class="lm-kpi">
-    <a href="{% url 'admin:store_product_changelist' %}?has_photo=no" style="text-decoration:none;color:inherit">
-      <span class="lm-kpi-icon">📷</span>
-      <span class="lm-kpi-value" style="color:{% if no_photo_count %}#b54708{% else %}#067647{% endif %}">
-        {{ no_photo_count }}
-      </span>
-      <span class="lm-kpi-label">Products without photos</span>
-    </a>
   </div>
 </div>
 
