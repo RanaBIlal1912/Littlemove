@@ -238,40 +238,46 @@ UNFOLD = {
             {
                 "title": "Orders",
                 "separator": True,
-                "collapsible": True,
+                "collapsible": False,
                 "items": [
                     {
-                        "title": "All orders",
-                        "icon": "shopping_cart",
-                        "link": reverse_lazy("admin:orders_order_changelist"),
-                    },
-                    {
-                        "title": "New (pending)",
+                        "title": "New orders",
                         "icon": "fiber_new",
                         "link": lambda request: reverse_lazy("admin:orders_order_changelist").__str__() + "?status=pending",
                         "badge": "store.admin_callbacks.badge_pending_orders",
                     },
                     {
-                        "title": "Shipped",
-                        "icon": "local_shipping",
-                        "link": lambda request: reverse_lazy("admin:orders_order_changelist").__str__() + "?status=shipped",
-                    },
-                    {
-                        "title": "Cancelled",
-                        "icon": "cancel",
-                        "link": lambda request: reverse_lazy("admin:orders_order_changelist").__str__() + "?status=cancelled",
+                        "title": "All orders",
+                        "icon": "shopping_cart",
+                        "link": reverse_lazy("admin:orders_order_changelist"),
                     },
                 ],
             },
             {
-                "title": "Catalog",
+                "title": "Products",
                 "separator": True,
-                "collapsible": True,
+                "collapsible": False,
                 "items": [
                     {
-                        "title": "Products",
+                        "title": "All products",
                         "icon": "inventory_2",
                         "link": reverse_lazy("admin:store_product_changelist"),
+                    },
+                    {
+                        "title": "Add product",
+                        "icon": "add_box",
+                        "link": reverse_lazy("admin:store_product_add"),
+                    },
+                    {
+                        "title": "Bulk photo upload",
+                        "icon": "upload",
+                        "link": reverse_lazy("admin:store_product_bulk_upload"),
+                    },
+                    {
+                        "title": "Low stock",
+                        "icon": "warning",
+                        "link": lambda request: reverse_lazy("admin:store_product_changelist").__str__() + "?stock=low",
+                        "badge": "store.admin_callbacks.badge_low_stock",
                     },
                     {
                         "title": "Categories",
@@ -283,41 +289,30 @@ UNFOLD = {
                         "icon": "favorite",
                         "link": reverse_lazy("admin:store_need_changelist"),
                     },
-                    {
-                        "title": "Low stock",
-                        "icon": "warning",
-                        "link": lambda request: reverse_lazy("admin:store_product_changelist").__str__() + "?stock=low",
-                        "badge": "store.admin_callbacks.badge_low_stock",
-                    },
-                    {
-                        "title": "Bulk photo upload",
-                        "icon": "upload",
-                        "link": reverse_lazy("admin:store_product_bulk_upload"),
-                    },
                 ],
             },
             {
                 "title": "Website",
                 "separator": True,
-                "collapsible": True,
+                "collapsible": False,
                 "items": [
                     {
-                        "title": "Home page sections",
+                        "title": "Home sections",
                         "icon": "home",
                         "link": reverse_lazy("admin:store_homesection_changelist"),
                     },
                     {
-                        "title": "Slides / Banners",
+                        "title": "Banners",
                         "icon": "image",
                         "link": reverse_lazy("admin:store_banner_changelist"),
                     },
                     {
-                        "title": "Popups & offers",
+                        "title": "Popup",
                         "icon": "campaign",
                         "link": reverse_lazy("admin:store_popup_changelist"),
                     },
                     {
-                        "title": "Gallery & media",
+                        "title": "Gallery",
                         "icon": "photo_library",
                         "link": reverse_lazy("admin:store_mediaitem_changelist"),
                     },
@@ -336,17 +331,17 @@ UNFOLD = {
             {
                 "title": "Chatbot",
                 "separator": True,
-                "collapsible": True,
+                "collapsible": False,
                 "items": [
-                    {
-                        "title": "Bot settings",
-                        "icon": "smart_toy",
-                        "link": reverse_lazy("admin:store_botsettings_changelist"),
-                    },
                     {
                         "title": "Questions & answers",
                         "icon": "question_answer",
                         "link": reverse_lazy("admin:store_botanswer_changelist"),
+                    },
+                    {
+                        "title": "Bot settings",
+                        "icon": "smart_toy",
+                        "link": reverse_lazy("admin:store_botsettings_changelist"),
                     },
                     {
                         "title": "Chat history",
@@ -358,10 +353,10 @@ UNFOLD = {
             {
                 "title": "Settings",
                 "separator": True,
-                "collapsible": True,
+                "collapsible": False,
                 "items": [
                     {
-                        "title": "Site settings",
+                        "title": "Store settings",
                         "icon": "settings",
                         "link": reverse_lazy("admin:store_storesettings_changelist"),
                     },

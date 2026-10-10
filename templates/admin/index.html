@@ -32,7 +32,7 @@
   .lm-badge-cancelled{ background:#f3f4f6; color:#374151; }
   .lm-quick { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:24px; }
   .lm-quick a { display:inline-flex; align-items:center; gap:6px; padding:9px 16px; border-radius:8px;
-    background:#5b3fd6; color:#fff; font-size:.875rem; font-weight:500; text-decoration:none; transition:opacity .15s; }
+    background:#3BA4E6; color:#fff; font-size:.875rem; font-weight:500; text-decoration:none; transition:opacity .15s; }
   .lm-quick a:hover { opacity:.85; }
   .lm-stock-list { display:flex; flex-direction:column; gap:6px; }
   .lm-stock-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0;
@@ -42,6 +42,12 @@
   .lm-stock-zero { color:#b42318; }
   .lm-stock-low  { color:#b54708; }
   .lm-chart-wrap { position:relative; height:220px; }
+  .lm-empty { text-align:center; padding:40px 20px; color:#6b7280; }
+  .lm-empty p { margin:8px 0; font-size:.95rem; }
+  .lm-copy-btn { display:inline-flex; align-items:center; gap:6px; margin-top:12px; padding:9px 18px;
+    border-radius:8px; background:#3BA4E6; color:#fff; font-size:.875rem; font-weight:600;
+    border:none; cursor:pointer; transition:opacity .15s; }
+  .lm-copy-btn:hover { opacity:.85; }
 </style>
 {% endblock %}
 
@@ -55,11 +61,11 @@
 
 {# ── Quick action buttons ──────────────────────────────────────────────────── #}
 <div class="lm-quick">
+  <a href="{% url 'admin:orders_order_changelist' %}?status=pending">📦 New orders{% if kpi_pending %} ({{ kpi_pending }}){% endif %}</a>
   <a href="{% url 'admin:store_product_add' %}">➕ Add product</a>
-  <a href="{% url 'admin:store_banner_add' %}">🖼 Add slide</a>
-  <a href="{% url 'admin:store_mediaitem_add' %}">📁 Upload media</a>
-  <a href="{% url 'admin:store_popup_add' %}">🎉 Edit popup</a>
-  <a href="{% url 'admin:store_storesettings_changelist' %}">⚙️ Site settings</a>
+  <a href="{% url 'admin:store_product_bulk_upload' %}">📁 Bulk photo upload</a>
+  <a href="{% url 'admin:store_banner_changelist' %}">🖼 Edit banners</a>
+  <a href="{% url 'admin:store_storesettings_changelist' %}">⚙️ Store settings</a>
 </div>
 
 {# ── KPI cards ─────────────────────────────────────────────────────────────── #}
@@ -88,22 +94,43 @@
     </span>
     <span class="lm-kpi-label">Low / sold-out products</span>
   </div>
+  <div class="lm-kpi">
+    <a href="{% url 'admin:store_product_changelist' %}?has_photo=no" style="text-decoration:none;color:inherit">
+      <span class="lm-kpi-icon">📷</span>
+      <span class="lm-kpi-value" style="color:{% if no_photo_count %}#b54708{% else %}#067647{% endif %}">
+        {{ no_photo_count }}
+      </span>
+      <span class="lm-kpi-label">Products without photos</span>
+    </a>
+  </div>
 </div>
 
 {# ── 30-day chart ─────────────────────────────────────────────────────────── #}
+{% if has_30day_orders %}
 <div class="lm-card">
   <h2 class="lm-card-title">Orders &amp; revenue — last 30 days</h2>
   <div class="lm-chart-wrap">
     <canvas id="lm-chart"></canvas>
   </div>
 </div>
+{% else %}
+<div class="lm-card">
+  <h2 class="lm-card-title">Orders &amp; revenue — last 30 days</h2>
+  <div class="lm-empty">
+    <div style="font-size:2.5rem">🛒</div>
+    <p><strong>No orders yet in the last 30 days.</strong></p>
+    <p>Share your shop link to start receiving orders!</p>
+    <button type="button" class="lm-copy-btn" id="copy-link-btn" onclick="copyShopLink()">🔗 Copy shop link</button>
+  </div>
+</div>
+{% endif %}
 
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
 
 {# ── Latest orders ─────────────────────────────────────────────────────────── #}
 <div class="lm-card">
   <h2 class="lm-card-title">Latest 10 orders
-    <a href="{% url 'admin:orders_order_changelist' %}" style="font-size:.8rem;font-weight:400;color:#5b3fd6;float:right">See all →</a>
+    <a href="{% url 'admin:orders_order_changelist' %}" style="font-size:.8rem;font-weight:400;color:#3BA4E6;float:right">See all →</a>
   </h2>
   <table class="lm-table">
     <thead><tr>
@@ -112,7 +139,7 @@
     <tbody>
     {% for o in latest_orders %}
     <tr>
-      <td><a href="{% url 'admin:orders_order_change' o.pk %}" style="color:#5b3fd6;font-weight:600">{{ o.number }}</a></td>
+      <td><a href="{% url 'admin:orders_order_change' o.pk %}" style="color:#3BA4E6;font-weight:600">{{ o.number }}</a></td>
       <td>{{ o.full_name }}</td>
       <td>Rs {{ o.total|floatformat:0 }}</td>
       <td><span class="lm-badge lm-badge-{{ o.status }}">{{ o.get_status_display }}</span></td>
@@ -127,7 +154,7 @@
 {# ── Low stock ─────────────────────────────────────────────────────────────── #}
 <div class="lm-card">
   <h2 class="lm-card-title">Low / sold-out products
-    <a href="{% url 'admin:store_product_changelist' %}?stock=low" style="font-size:.8rem;font-weight:400;color:#5b3fd6;float:right">See all →</a>
+    <a href="{% url 'admin:store_product_changelist' %}?stock=low" style="font-size:.8rem;font-weight:400;color:#3BA4E6;float:right">See all →</a>
   </h2>
   <div class="lm-stock-list">
     {% for p in low_stock_products %}
@@ -146,6 +173,18 @@
 </div>{# end grid #}
 
 <script>
+function copyShopLink() {
+  var btn = document.getElementById('copy-link-btn');
+  if (!btn) return;
+  navigator.clipboard.writeText(window.location.origin).then(function () {
+    btn.textContent = '✓ Copied!';
+    setTimeout(function () { btn.innerHTML = '🔗 Copy shop link'; }, 2000);
+  }).catch(function () {
+    prompt('Copy this link:', window.location.origin);
+  });
+}
+
+{% if has_30day_orders %}
 (function () {
   var ctx = document.getElementById('lm-chart');
   if (!ctx) return;
@@ -163,8 +202,8 @@
         {
           label: 'Orders',
           data: orders,
-          borderColor: '#5b3fd6',
-          backgroundColor: 'rgba(91,63,214,.08)',
+          borderColor: '#3BA4E6',
+          backgroundColor: 'rgba(59,164,230,.08)',
           tension: .4,
           fill: true,
           yAxisID: 'y',
@@ -191,11 +230,12 @@
       plugins: { legend: { labels: { color: textColor, font: { size: 12 } } } },
       scales: {
         x:  { ticks: { color: textColor, maxTicksLimit: 8, maxRotation: 0 }, grid: { color: gridColor } },
-        y:  { position: 'left',  ticks: { color: textColor }, grid: { color: gridColor }, title: { display: true, text: 'Orders', color: textColor } },
-        y1: { position: 'right', ticks: { color: textColor }, grid: { drawOnChartArea: false }, title: { display: true, text: 'Revenue (Rs)', color: textColor } },
+        y:  { position: 'left',  min: 0, ticks: { color: textColor }, grid: { color: gridColor }, title: { display: true, text: 'Orders', color: textColor } },
+        y1: { position: 'right', min: 0, ticks: { color: textColor }, grid: { drawOnChartArea: false }, title: { display: true, text: 'Revenue (Rs)', color: textColor } },
       },
     },
   });
 })();
+{% endif %}
 </script>
 {% endblock %}

@@ -1,5 +1,9 @@
+from django import forms
 from django.contrib import admin
+from django.db.models import Max
+from django.urls import reverse
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from unfold.admin import ModelAdmin, TabularInline
 from unfold.decorators import action, display
 
@@ -14,26 +18,65 @@ from .models import (
 
 @admin.register(StoreSettings)
 class StoreSettingsAdmin(ModelAdmin):
+    tabs = True
+    save_on_top = True
     fieldsets = [
-        ("Shop", {"fields": ["store_name", "tagline", "announcement", "city"]}),
-        ("Homepage design", {"fields": ["animated_bg", "hero_height"]}),
-        ("Branding & colours", {"fields": [
-            "logo", "white_logo", "favicon",
-            ("primary_color", "secondary_color"),
-            ("accent_color", "background_color"),
-        ]}),
-        ("Contact & social", {"fields": [
-            "whatsapp_number", "email",
-            "instagram_url", "facebook_url", "tiktok_url", "youtube_url",
-        ]}),
-        ("Footer & SEO", {"fields": [
-            "footer_text", "seo_title", "seo_description", "share_image",
-        ]}),
-        ("Delivery", {"fields": ["delivery_fee", "free_delivery_over"]}),
-        ("Payments", {"fields": [
-            "cod_enabled", "jazzcash_number", "easypaisa_number",
-            "account_title", "bank_details",
-        ]}),
+        (
+            "Contact",
+            {
+                "fields": [
+                    "store_name", "tagline", "city",
+                    "whatsapp_number", "email",
+                    "instagram_url", "facebook_url", "tiktok_url", "youtube_url",
+                ],
+                "classes": ["tab"],
+                "description": "Your shop name and how customers can reach you.",
+            },
+        ),
+        (
+            "Payments",
+            {
+                "fields": [
+                    "cod_enabled",
+                    "jazzcash_number", "easypaisa_number",
+                    "account_title", "bank_details",
+                ],
+                "classes": ["tab"],
+                "description": (
+                    "Cash on delivery is the default. Add JazzCash / EasyPaisa numbers "
+                    "to let customers pay online. Leave bank details blank to hide that option."
+                ),
+            },
+        ),
+        (
+            "Delivery",
+            {
+                "fields": ["delivery_fee", "free_delivery_over"],
+                "classes": ["tab"],
+                "description": (
+                    "Set the flat delivery fee charged per order. "
+                    "Orders at or above the free-delivery amount ship free — set to 0 to never offer free delivery."
+                ),
+            },
+        ),
+        (
+            "Branding",
+            {
+                "fields": [
+                    "logo", "white_logo", "favicon",
+                    ("primary_color", "secondary_color"),
+                    ("accent_color", "background_color"),
+                    "announcement", "footer_text",
+                    "animated_bg", "hero_height",
+                    "seo_title", "seo_description", "share_image",
+                ],
+                "classes": ["tab"],
+                "description": (
+                    "Upload your logo, pick brand colours, and write the scrolling announcement bar text. "
+                    "Separate multiple announcement messages with |"
+                ),
+            },
+        ),
     ]
 
     def has_add_permission(self, request):
@@ -41,6 +84,13 @@ class StoreSettingsAdmin(ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+    def changelist_view(self, request, extra_context=None):
+        from django.shortcuts import redirect
+        obj = StoreSettings.objects.first()
+        if obj:
+            return redirect(reverse("admin:store_storesettings_change", args=[obj.pk]))
+        return redirect(reverse("admin:store_storesettings_add"))
 
 
 # ── Categories & needs ─────────────────────────────────────────────────────────
@@ -91,38 +141,117 @@ class StockFilter(admin.SimpleListFilter):
         return qs
 
 
+class HasPhotoFilter(admin.SimpleListFilter):
+    title = "has photo"
+    parameter_name = "has_photo"
+
+    def lookups(self, request, model_admin):
+        return [("yes", "Has photo"), ("no", "No photo")]
+
+    def queryset(self, request, qs):
+        if self.value() == "yes":
+            return qs.exclude(image="")
+        if self.value() == "no":
+            return qs.filter(image="")
+        return qs
+
+
+class MultiFileInput(forms.FileInput):
+    allow_multiple_selected = True
+
+
+class ProductAdminForm(forms.ModelForm):
+    extra_photos = forms.FileField(
+        widget=MultiFileInput(attrs={"multiple": True}),
+        required=False,
+        label="Upload more photos",
+        help_text="Pick several photos at once — each becomes a new extra photo card below.",
+    )
+
+    class Meta:
+        model = Product
+        fields = "__all__"
+        widgets = {
+            "needs": forms.CheckboxSelectMultiple(),
+        }
+
+    def clean_extra_photos(self):
+        # Actual files are handled in save_related via request.FILES.getlist()
+        return None
+
+
 @admin.register(Product)
 class ProductAdmin(ModelAdmin):
+    form = ProductAdminForm
+    tabs = True
+    save_on_top = True
     list_display = ["thumb", "name", "category", "price", "stock", "stock_flag",
                     "is_active", "is_featured"]
     list_display_links = ["thumb", "name"]
     list_editable = ["price", "stock", "is_active", "is_featured"]
-    list_filter = [StockFilter, "category", "is_active", "is_featured", "therapist_pick"]
+    list_filter = [StockFilter, HasPhotoFilter, "category", "is_active", "is_featured", "therapist_pick"]
     search_fields = ["name", "sku", "summary"]
-    prepopulated_fields = {"slug": ["name"]}
     inlines = [PhotoInline]
-    filter_horizontal = ["needs"]
     list_per_page = 50
     fieldsets = [
-        (None, {"fields": ["name", "slug", "category", "needs", "summary"]}),
-        ("Price and stock", {"fields": [("price", "compare_at_price"), ("stock", "sku")]}),
-        ("Age", {"fields": [("age_from", "age_to")]}),
-        ("Details", {"fields": ["description", "helps_with", "in_the_box"]}),
-        ("Pictures", {
-            "fields": ["image", "illustration"],
-            "description": "Upload a square photo (at least 800×800). Until then the drawing is shown.",
-        }),
-        ("Visibility", {"fields": [("is_active", "is_featured", "therapist_pick")]}),
+        (
+            "Basics",
+            {
+                "fields": [
+                    "name", "category", "summary",
+                    ("price", "compare_at_price"),
+                    ("stock", "age_from", "age_to"),
+                    ("is_active", "is_featured", "therapist_pick"),
+                ],
+                "classes": ["tab"],
+            },
+        ),
+        (
+            "Photos",
+            {
+                "fields": ["image", "extra_photos"],
+                "classes": ["tab"],
+                "description": (
+                    "Upload a square photo (at least 800×800 px). "
+                    "The drawing below is shown until you upload a real photo. "
+                    "Use 'Upload more photos' to add extra photos all at once."
+                ),
+            },
+        ),
+        (
+            "Details",
+            {
+                "fields": ["description", "helps_with", "in_the_box", "needs"],
+                "classes": ["tab"],
+            },
+        ),
+        (
+            "Advanced",
+            {
+                "fields": ["slug", "sku", "illustration"],
+                "classes": ["tab"],
+                "description": "The slug is the URL-friendly name. It auto-fills from the product name.",
+            },
+        ),
     ]
+    prepopulated_fields = {"slug": ["name"]}
+
+    class Media:
+        js = ["admin/js/product_price_preview.js"]
 
     @display(description="")
     def thumb(self, obj):
         if obj.image:
             return format_html(
-                '<img src="{}" style="width:40px;height:40px;object-fit:cover;border-radius:8px">',
+                '<img src="{}" style="width:48px;height:48px;object-fit:cover;border-radius:8px">',
                 obj.image.url,
             )
-        return "—"
+        return format_html(
+            '<span style="display:inline-block;width:48px;height:48px;border-radius:8px;'
+            'background:#fef3c7;color:#92400e;font-size:.6rem;font-weight:700;'
+            'display:inline-flex;align-items:center;justify-content:center;text-align:center;'
+            'line-height:1.2">No<br>photo</span>'
+        )
 
     @display(description="Stock status")
     def stock_flag(self, obj):
@@ -175,6 +304,15 @@ class ProductAdmin(ModelAdmin):
             "error": error,
         }
         return render(request, "store/admin_bulk_upload.html", context)
+
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+        files = request.FILES.getlist("extra_photos")
+        if files:
+            obj = form.instance
+            max_order = ProductPhoto.objects.filter(product=obj).aggregate(m=Max("order"))["m"] or 0
+            for i, f in enumerate(files):
+                ProductPhoto.objects.create(product=obj, image=f, order=max_order + i + 1)
 
 
 # ── Banners ────────────────────────────────────────────────────────────────────

@@ -399,7 +399,7 @@ class AdminDashboardTests(TestCase):
         """Key admin changelist pages should return 200."""
         urls = [
             reverse("admin:store_product_changelist"),
-            reverse("admin:store_storesettings_changelist"),
+            # store_storesettings_changelist now redirects to the edit form — tested separately
             reverse("admin:store_homesection_changelist"),
             reverse("admin:store_banner_changelist"),
             reverse("admin:store_popup_changelist"),
@@ -661,3 +661,135 @@ class BulkUploadViewTests(TestCase):
         resp = self.client.post(url, {"zipfile": SimpleUploadedFile("up.zip", data, content_type="application/zip")})
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Test Toy")
+
+
+# ── StoreSettings admin redirect tests ───────────────────────────────────────
+
+class StoreSettingsAdminTests(TestCase):
+    """StoreSettings changelist redirects to the singleton edit form directly."""
+
+    def setUp(self):
+        self.admin = User.objects.create_superuser("admin_ss", "ss@x.com", "AdminPass1!")
+        self.client.force_login(self.admin)
+        StoreSettings.objects.all().delete()
+
+    def test_changelist_redirects_to_add_when_no_settings(self):
+        resp = self.client.get(reverse("admin:store_storesettings_changelist"))
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn("add", resp["Location"])
+
+    def test_changelist_redirects_to_change_when_settings_exist(self):
+        settings = StoreSettings.objects.create()
+        resp = self.client.get(reverse("admin:store_storesettings_changelist"))
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn(f"/{settings.pk}/change/", resp["Location"])
+
+    def test_change_page_loads(self):
+        settings = StoreSettings.objects.create()
+        resp = self.client.get(reverse("admin:store_storesettings_change", args=[settings.pk]))
+        self.assertEqual(resp.status_code, 200)
+
+    def test_non_staff_cannot_access_settings(self):
+        self.client.logout()
+        resp = self.client.get(reverse("admin:store_storesettings_changelist"))
+        self.assertNotEqual(resp.status_code, 200)
+
+
+# ── Multi-photo upload admin tests ────────────────────────────────────────────
+
+class MultiPhotoUploadTests(TestCase):
+    """Uploading multiple extra photos via the product admin creates ProductPhoto rows."""
+
+    def setUp(self):
+        self.staff = User.objects.create_superuser("admin_ph", "ph@x.com", "AdminPass1!")
+        self.client.force_login(self.staff)
+        self.cat = Category.objects.create(name="Motor2")
+        self.product = Product.objects.create(
+            category=self.cat, name="Photo Toy", price=1000, stock=5, summary="z",
+        )
+
+    def test_extra_photos_creates_product_photo_rows(self):
+        from store.admin import ProductAdmin
+        from store.models import ProductPhoto
+        from django.contrib.admin import site as admin_site
+        from django.test import RequestFactory
+        from django.utils.datastructures import MultiValueDict
+        from unittest.mock import MagicMock
+
+        png = _make_png_bytes()
+        f1 = SimpleUploadedFile("extra1.png", png, content_type="image/png")
+        f2 = SimpleUploadedFile("extra2.png", png, content_type="image/png")
+
+        # Build a minimal mock request with FILES containing two photos
+        request = MagicMock()
+        request.FILES = MultiValueDict({"extra_photos": [f1, f2]})
+
+        form = MagicMock()
+        form.instance = self.product
+
+        admin_instance = ProductAdmin(Product, admin_site)
+        admin_instance.save_related(request, form, [], True)
+
+        count = ProductPhoto.objects.filter(product=self.product).count()
+        self.assertEqual(count, 2)
+
+    def test_no_extra_photos_creates_no_rows(self):
+        from store.admin import ProductAdmin
+        from store.models import ProductPhoto
+        from django.contrib.admin import site as admin_site
+        from django.utils.datastructures import MultiValueDict
+        from unittest.mock import MagicMock
+
+        request = MagicMock()
+        request.FILES = MultiValueDict({})  # no files
+
+        form = MagicMock()
+        form.instance = self.product
+
+        admin_instance = ProductAdmin(Product, admin_site)
+        admin_instance.save_related(request, form, [], True)
+
+        self.assertEqual(ProductPhoto.objects.filter(product=self.product).count(), 0)
+
+
+# ── Packing slip tests ────────────────────────────────────────────────────────
+
+class PackingSlipTests(TestCase):
+    """Packing slip renders for staff only and includes order details."""
+
+    def setUp(self):
+        from orders.models import Order
+        self.staff = User.objects.create_superuser("admin_sl", "sl@x.com", "AdminPass1!")
+        self.regular = User.objects.create_user("user_sl", password="UserPass1!")
+        self.order = Order.objects.create(
+            full_name="Ali Hassan", phone="03001234567", city="Lahore",
+            address="123 Main St", payment_method=Order.Payment.COD,
+            subtotal=1000, delivery_fee=250, total=1250,
+        )
+
+    def test_staff_can_view_packing_slip(self):
+        self.client.force_login(self.staff)
+        url = reverse("admin:orders_order_packing_slip", args=[self.order.pk])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, self.order.number)
+        self.assertContains(resp, "Ali Hassan")
+        self.assertContains(resp, "Lahore")
+
+    def test_packing_slip_shows_cod_box_for_cod_orders(self):
+        self.client.force_login(self.staff)
+        url = reverse("admin:orders_order_packing_slip", args=[self.order.pk])
+        resp = self.client.get(url)
+        self.assertContains(resp, "Collect")
+        self.assertContains(resp, "1,250")
+
+    def test_anonymous_cannot_view_packing_slip(self):
+        url = reverse("admin:orders_order_packing_slip", args=[self.order.pk])
+        resp = self.client.get(url)
+        self.assertNotEqual(resp.status_code, 200)
+
+    def test_non_staff_cannot_view_packing_slip(self):
+        self.client.force_login(self.regular)
+        url = reverse("admin:orders_order_packing_slip", args=[self.order.pk])
+        resp = self.client.get(url)
+        self.assertNotEqual(resp.status_code, 200)

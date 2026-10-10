@@ -72,6 +72,12 @@ def dashboard_callback(request, context):
         .order_by("stock", "name")[:10]
     )
 
+    # Products with no main photo
+    context["no_photo_count"] = Product.objects.filter(is_active=True, image="").count()
+
+    # Whether the 30-day chart has any data
+    context["has_30day_orders"] = sum(chart_orders) > 0
+
     return context
 
 
