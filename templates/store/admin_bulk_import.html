@@ -75,8 +75,8 @@
   {% endwith %}
 
   <div style="margin-top:24px;display:flex;gap:12px;flex-wrap:wrap">
-    <a href="{% url 'admin:store_product_changelist' %}" class="button default">View all products</a>
-    <a href="{% url 'admin:store_product_bulk_import' %}" style="padding:8px 16px;border:1px solid #d1d5db;border-radius:6px;text-decoration:none;color:#374151;font-weight:600;font-size:.875rem">Import another file</a>
+    <a href="{% url 'admin:store_product_changelist' %}" class="button" style="background:transparent;color:#374151;border:1px solid #d1d5db">View all products</a>
+    <a href="{% url 'admin:store_product_bulk_import' %}" class="button">Import another file</a>
   </div>
 
 {# ── PREVIEW PAGE ─────────────────────────────────────────────────────────────── #}
@@ -188,12 +188,11 @@
     <input type="hidden" name="import_as_hidden" value="{% if session_options.import_as_hidden %}on{% endif %}">
     <input type="hidden" name="replace_photos" value="{% if session_options.replace_photos %}on{% endif %}">
     <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
-      <button type="submit" class="button default"
+      <button type="submit" class="button"
               {% if not preview.will_create and not preview.will_update %}disabled{% endif %}>
         Confirm import ({{ preview.will_create|add:preview.will_update }} rows)
       </button>
-      <a href="{% url 'admin:store_product_bulk_import' %}"
-         style="padding:8px 16px;border:1px solid #d1d5db;border-radius:6px;text-decoration:none;color:#374151;font-weight:600;font-size:.875rem">
+      <a href="{% url 'admin:store_product_bulk_import' %}" class="button" style="background:transparent;color:#374151;border:1px solid #d1d5db">
         ← Upload a different file
       </a>
     </div>
@@ -279,7 +278,7 @@
       </div>
     </fieldset>
 
-    <button type="submit" class="button default">Preview import</button>
+    <button type="submit" class="button">Preview import</button>
   </form>
 
 {% endif %}

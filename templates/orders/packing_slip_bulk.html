@@ -1,4 +1,4 @@
-{% load humanize %}<!DOCTYPE html>
+{% load humanize static %}<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -42,7 +42,7 @@
 {% for order in orders %}
 <div class="slip">
   <div class="slip-header">
-    <div><div class="logo">LittleMove</div><div class="site-sub">littlemove.pk</div></div>
+    <div><div class="logo"><img src="{% static 'img/icon-192.png' %}" alt="" style="width:32px;height:32px;border-radius:8px;vertical-align:middle;margin-right:6px">{{ shop.store_name }}</div><div class="site-sub">{{ request.get_host }}</div></div>
     <div class="slip-meta"><strong>{{ order.number }}</strong>{{ order.created_at|date:"d M Y, g:i A" }}</div>
   </div>
   <h2>Customer</h2>

@@ -60,16 +60,35 @@
 </div>
 
 {# ── Quick action buttons ──────────────────────────────────────────────────── #}
+{% if perms.orders.view_order or perms.store.add_product or perms.store.change_product or perms.store.change_banner or perms.store.change_storesettings or request.user.is_superuser %}
 <div class="lm-quick">
+  {% if perms.orders.view_order %}
   <a href="{% url 'admin:orders_order_changelist' %}?status=pending">📦 New orders{% if kpi_pending %} ({{ kpi_pending }}){% endif %}</a>
+  {% endif %}
+  {% if perms.store.add_product %}
   <a href="{% url 'admin:store_product_add' %}">➕ Add product</a>
+  {% endif %}
+  {% if perms.store.add_product %}
+  <a href="{% url 'admin:store_product_bulk_import' %}">📊 Bulk import</a>
+  {% endif %}
+  {% if perms.store.change_product %}
   <a href="{% url 'admin:store_product_bulk_upload' %}">📁 Bulk photo upload</a>
+  {% endif %}
+  {% if perms.store.change_banner %}
   <a href="{% url 'admin:store_banner_changelist' %}">🖼 Edit banners</a>
+  {% endif %}
+  {% if perms.store.change_botanswer %}
+  <a href="{% url 'admin:store_botanswer_changelist' %}">💬 Chatbot answers</a>
+  {% endif %}
+  {% if perms.store.change_storesettings or request.user.is_superuser %}
   <a href="{% url 'admin:store_storesettings_changelist' %}">⚙️ Store settings</a>
+  {% endif %}
 </div>
+{% endif %}
 
 {# ── KPI cards ─────────────────────────────────────────────────────────────── #}
 <div class="lm-kpi-grid">
+  {% if perms.orders.view_order %}
   <a href="{% url 'admin:orders_order_changelist' %}?status=pending" class="lm-kpi" style="text-decoration:none;color:inherit">
     <span class="lm-kpi-icon">🆕</span>
     <span class="lm-kpi-value" style="color:{% if kpi_pending %}#b54708{% else %}#067647{% endif %}">{{ kpi_pending }}</span>
@@ -78,7 +97,7 @@
   <a href="{% url 'admin:orders_order_changelist' %}?status=packed" class="lm-kpi" style="text-decoration:none;color:inherit">
     <span class="lm-kpi-icon">📦</span>
     <span class="lm-kpi-value">{{ kpi_ready_ship }}</span>
-    <span class="lm-kpi-label">Ready to ship</span>
+    <span class="lm-kpi-label">Packed – ready to dispatch</span>
   </a>
   <a href="{% url 'admin:orders_order_changelist' %}?status=shipped" class="lm-kpi" style="text-decoration:none;color:inherit">
     <span class="lm-kpi-icon">🚚</span>
@@ -95,11 +114,14 @@
     <span class="lm-kpi-value" style="color:#067647">{{ kpi_delivered_month }}</span>
     <span class="lm-kpi-label">Delivered this month</span>
   </a>
+  {% endif %}
+  {% if perms.store.view_product %}
   <div class="lm-kpi">
     <span class="lm-kpi-icon">⚠️</span>
     <span class="lm-kpi-value" style="color:{% if kpi_low_stock %}#b42318{% else %}#067647{% endif %}">{{ kpi_low_stock }}</span>
     <span class="lm-kpi-label">Low / sold-out products</span>
   </div>
+  {% endif %}
 </div>
 
 {# ── 30-day chart ─────────────────────────────────────────────────────────── #}
@@ -125,6 +147,7 @@
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
 
 {# ── Latest orders ─────────────────────────────────────────────────────────── #}
+{% if perms.orders.view_order %}
 <div class="lm-card">
   <h2 class="lm-card-title">Latest 10 orders
     <a href="{% url 'admin:orders_order_changelist' %}" style="font-size:.8rem;font-weight:400;color:#3BA4E6;float:right">See all →</a>
@@ -147,8 +170,10 @@
     </tbody>
   </table>
 </div>
+{% endif %}
 
 {# ── Low stock ─────────────────────────────────────────────────────────────── #}
+{% if perms.store.view_product %}
 <div class="lm-card">
   <h2 class="lm-card-title">Low / sold-out products
     <a href="{% url 'admin:store_product_changelist' %}?stock=low" style="font-size:.8rem;font-weight:400;color:#3BA4E6;float:right">See all →</a>
@@ -166,6 +191,7 @@
     {% endfor %}
   </div>
 </div>
+{% endif %}
 
 </div>{# end grid #}
 

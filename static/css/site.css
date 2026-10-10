@@ -781,7 +781,8 @@ body { background: transparent; }
 }
 .mila-x:hover { opacity: 1; }
 .mila-msgs {
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
   padding: 14px 14px 6px;
   scroll-behavior: smooth;
@@ -826,8 +827,9 @@ body { background: transparent; }
   display: flex;
   flex-direction: column;
   gap: 6px;
-  flex-shrink: 0;
-  max-height: 180px;
+  flex: 0 0 auto;
+  overflow-x: auto;
+  max-height: 96px;
   overflow-y: auto;
 }
 .mila-opt {
@@ -1096,7 +1098,7 @@ body { background: transparent; }
 .mila-toggle img.mila-av-img { width: 34px; height: 34px; }
 
 /* ---------- header logo — no border or box ---------- */
-.brand-logo { border: none; box-shadow: none; background: transparent; }
+.brand-logo { border-radius: 10px; border: none; box-shadow: none; background: transparent; }
 
 /* ---------- bundles row ---------- */
 .bundle-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
@@ -2001,6 +2003,9 @@ body.has-hero .header.is-scrolled {
   padding: 0 !important;
 }
 .mila-input button[type=submit]:hover { background: var(--brand-dark, #2a8fd4) !important; }
+
+/* Mila input row — always visible at bottom of flex column */
+.mila-input { flex: 0 0 auto; }
 
 /* Mila product card placeholder: show SVG */
 .mpc-ph {

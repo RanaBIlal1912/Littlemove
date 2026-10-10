@@ -10,6 +10,8 @@ from django.utils.safestring import mark_safe
 from unfold.admin import ModelAdmin, TabularInline
 from unfold.decorators import display
 
+from store.models import StoreSettings
+
 from .models import (
     Order, OrderEvent, OrderItem,
     PAYMENT_COLORS, STATUS_COLORS, VALID_TRANSITIONS,
@@ -522,6 +524,7 @@ class OrderAdmin(ModelAdmin):
         order = get_object_or_404(Order, pk=order_id)
         return render(request, "orders/packing_slip.html", {
             "order": order, "items": order.items.all(), "title": f"Packing slip — {order.number}",
+            "shop": StoreSettings.load(),
         })
 
     def multi_packing_slip_view(self, request):
@@ -529,6 +532,7 @@ class OrderAdmin(ModelAdmin):
         orders = Order.objects.prefetch_related("items").filter(pk__in=order_ids)
         return render(request, "orders/packing_slip_bulk.html", {
             "orders": orders, "title": "Packing slips",
+            "shop": StoreSettings.load(),
         })
 
     # ── Bulk actions ──────────────────────────────────────────────────────────
