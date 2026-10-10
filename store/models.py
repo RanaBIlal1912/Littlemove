@@ -141,6 +141,8 @@ class Category(models.Model):
         "One-line description", max_length=120, blank=True,
         help_text="Shown on the home page, e.g. 'Grip, stack, thread and pinch'",
     )
+    name_ur = models.CharField(max_length=100, blank=True, default="", verbose_name="Name (Urdu)")
+    description_ur = models.TextField(blank=True, default="", verbose_name="Description (Urdu)")
     color = models.CharField(max_length=10, choices=COLOR_CHOICES, default="mint")
     image = models.ImageField(
         upload_to="categories/", blank=True,
@@ -171,6 +173,8 @@ class Need(models.Model):
     name = models.CharField(max_length=60, unique=True)
     slug = models.SlugField(max_length=70, unique=True, blank=True)
     short = models.CharField("One-line description", max_length=120, blank=True)
+    name_ur = models.CharField(max_length=100, blank=True, default="", verbose_name="Name (Urdu)")
+    description_ur = models.TextField(blank=True, default="", verbose_name="Description (Urdu)")
     color = models.CharField(max_length=10, choices=Category.COLOR_CHOICES, default="lilac")
     order = models.PositiveSmallIntegerField(default=0)
     is_active = models.BooleanField(default=True)
@@ -234,6 +238,13 @@ class Product(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    # Urdu content
+    name_ur = models.CharField(max_length=200, blank=True, default="", verbose_name="Name (Urdu)")
+    summary_ur = models.TextField(blank=True, default="", verbose_name="Summary (Urdu)")
+    description_ur = models.TextField(blank=True, default="", verbose_name="Description (Urdu)")
+    helps_with_ur = models.TextField(blank=True, default="", verbose_name="Helps with (Urdu)")
+    in_the_box_ur = models.TextField(blank=True, default="", verbose_name="In the box (Urdu)")
 
     objects = ProductQuerySet.as_manager()
 
@@ -312,6 +323,8 @@ class Banner(models.Model):
 
     title = models.CharField(max_length=80, help_text="Big line, e.g. 'Sensory toys for little explorers'")
     subtitle = models.CharField(max_length=160, blank=True)
+    title_ur = models.CharField(max_length=200, blank=True, default="", verbose_name="Title (Urdu)")
+    subtitle_ur = models.CharField(max_length=300, blank=True, default="", verbose_name="Subtitle (Urdu)")
     button_text = models.CharField(max_length=30, default="Shop now")
     link = models.CharField(max_length=200, default="/shop/", help_text="Where the banner goes, e.g. /shop/?sale=1")
     image = models.ImageField(
@@ -422,6 +435,8 @@ class HomeSection(models.Model):
     title = models.CharField(max_length=120, blank=True,
                              help_text="Custom heading — leave blank to use the default.")
     subtitle = models.CharField(max_length=200, blank=True)
+    title_ur = models.CharField(max_length=200, blank=True, default="", verbose_name="Title (Urdu)")
+    subtitle_ur = models.CharField(max_length=300, blank=True, default="", verbose_name="Subtitle (Urdu)")
     enabled = models.BooleanField(
         default=True,
         help_text="Untick to hide this section from the home page.",
@@ -646,6 +661,8 @@ class FAQ(models.Model):
 
     question = models.CharField(max_length=200)
     answer = models.TextField()
+    question_ur = models.CharField(max_length=500, blank=True, default="", verbose_name="Question (Urdu)")
+    answer_ur = models.TextField(blank=True, default="", verbose_name="Answer (Urdu)")
     order = models.PositiveSmallIntegerField(default=0)
     active = models.BooleanField(default=True)
 
@@ -742,6 +759,9 @@ class BotAnswer(models.Model):
         related_name="+", help_text="Optional: link to a category mentioned in the answer.",
     )
     active = models.BooleanField(default=True)
+    question_ur = models.CharField(max_length=500, blank=True, default="", verbose_name="Question keywords (Urdu)")
+    answer_ur = models.TextField(blank=True, default="", verbose_name="Answer (Urdu)")
+    quick_label_ur = models.CharField(max_length=100, blank=True, default="", verbose_name="Quick button label (Urdu)")
     show_as_quick = models.BooleanField(
         "Show as quick button", default=False,
         help_text="Show this Q&A as a quick-reply chip in the chat widget (max 6 total).",

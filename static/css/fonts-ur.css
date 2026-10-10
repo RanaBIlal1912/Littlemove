@@ -1,0 +1,14 @@
+@font-face {
+  font-family: 'Noto Nastaliq Urdu';
+  src: url('../fonts/noto-nastaliq-urdu-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+[lang="ur"] body, [lang="ur"] p, [lang="ur"] h1, [lang="ur"] h2, [lang="ur"] h3,
+[lang="ur"] .card-name, [lang="ur"] .mila-msg, [lang="ur"] .mila-opt,
+[lang="ur"] .nav-link, [lang="ur"] .drawer-panel a,
+[lang="ur"] button, [lang="ur"] label, [lang="ur"] input, [lang="ur"] textarea {
+  font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif;
+  line-height: 2.2;
+}

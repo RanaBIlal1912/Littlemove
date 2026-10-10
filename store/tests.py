@@ -1936,3 +1936,75 @@ class OrderWorkflowTests(TestCase):
         order = self._make_order("returned")
         resp = self.client.get(reverse("orders:track") + f"?number={order.number}&phone={order.phone}")
         self.assertContains(resp, "returned")
+
+
+class LanguageSwitcherTests(TestCase):
+    """Language switcher: cookie, dir attribute, translated text, fallback."""
+
+    def _set_lang(self, lang):
+        self.client.cookies['django_language'] = lang
+
+    def test_default_is_english(self):
+        resp = self.client.get("/")
+        self.assertContains(resp, 'lang="en"')
+        self.assertContains(resp, 'dir="ltr"')
+
+    def test_set_language_post_sets_cookie(self):
+        resp = self.client.post(
+            reverse("set_language"),
+            {"language": "ur", "next": "/"},
+            follow=True,
+        )
+        self.assertEqual(self.client.cookies.get("django_language").value, "ur")
+
+    def test_ur_renders_rtl(self):
+        self._set_lang("ur")
+        resp = self.client.get("/")
+        self.assertContains(resp, 'dir="rtl"')
+        self.assertContains(resp, 'lang="ur"')
+
+    def test_ar_renders_rtl(self):
+        self._set_lang("ar")
+        resp = self.client.get("/")
+        self.assertContains(resp, 'dir="rtl"')
+
+    def test_en_renders_ltr(self):
+        self._set_lang("en")
+        resp = self.client.get("/")
+        self.assertContains(resp, 'dir="ltr"')
+
+    def test_roman_urdu_renders_ltr(self):
+        self._set_lang("ur-latn")
+        resp = self.client.get("/")
+        self.assertContains(resp, 'dir="ltr"')
+
+    def test_invalid_language_falls_back_to_english(self):
+        self._set_lang("xx")
+        resp = self.client.get("/")
+        self.assertContains(resp, 'lang="en"')
+
+    def test_ur_translated_navigation(self):
+        self._set_lang("ur")
+        resp = self.client.get("/")
+        # Should contain some Urdu text
+        self.assertContains(resp, "کھلونے")  # from "Shop" or navigation
+
+    def test_no_url_changes(self):
+        """Existing URLs must still work with language cookie."""
+        self._set_lang("ur")
+        urls = ["/", reverse("store:shop"), reverse("orders:track")]
+        for url in urls:
+            resp = self.client.get(url)
+            self.assertIn(resp.status_code, [200, 302])
+
+    def test_tracking_page_ur(self):
+        self._set_lang("ur")
+        resp = self.client.get(reverse("orders:track"))
+        self.assertContains(resp, 'dir="rtl"')
+
+    def test_set_language_view_exists(self):
+        resp = self.client.post(
+            reverse("set_language"),
+            {"language": "en", "next": "/"},
+        )
+        self.assertIn(resp.status_code, [200, 302])

@@ -1,0 +1,202 @@
+# LittleMove translations
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ur-latn\n"
+"MIME-Version: 1.0\n"
+
+msgid "Search toys"
+msgstr "Khilone talash karen"
+
+msgid "Search toys, e.g. stacking rings"
+msgstr "Khilone talash karen, maslan stacking rings"
+
+msgid "Need help?"
+msgstr "Madad chahiye?"
+
+msgid "WhatsApp us"
+msgstr "WhatsApp karen"
+
+msgid "Where is it?"
+msgstr "Order kahan hai?"
+
+msgid "Track order"
+msgstr "Order track karen"
+
+msgid "Your cart"
+msgstr "Apki cart"
+
+msgid "Cart"
+msgstr "Cart"
+
+msgid "Shop by skill"
+msgstr "Maharat ke mutabiq kharidari"
+
+msgid "Shop by age"
+msgstr "Umer ke mutabiq kharidari"
+
+msgid "Shop by need"
+msgstr "Zaroorat ke mutabiq kharidari"
+
+msgid "Sale"
+msgstr "Sale"
+
+msgid "New arrivals"
+msgstr "Naye khilone"
+
+msgid "Therapist picks"
+msgstr "Therapist ki pasand"
+
+msgid "Chosen with therapists"
+msgstr "Therapist ke sath chuney gaye"
+
+msgid "All toys"
+msgstr "Tamam khilone"
+
+msgid "Open menu"
+msgstr "Menu kholen"
+
+msgid "Close menu"
+msgstr "Menu band karen"
+
+msgid "Track your order"
+msgstr "Apna order track karen"
+
+msgid "Delivery and returns"
+msgstr "Delivery aur wapsi"
+
+msgid "Skip to content"
+msgstr "Content tak jayein"
+
+msgid "Shop"
+msgstr "Kharidari"
+
+msgid "Help"
+msgstr "Madad"
+
+msgid "Contact"
+msgstr "Rabta"
+
+msgid "Questions and answers"
+msgstr "Sawalat aur jawabat"
+
+msgid "Your cart is empty."
+msgstr "Apki cart khali hai."
+
+msgid "View cart & checkout"
+msgstr "Cart dekhein aur kharidari mukammal karen"
+
+msgid "Total"
+msgstr "Kul"
+
+msgid "items in cart"
+msgstr "Cart mein ashya"
+
+msgid "New – needs confirming"
+msgstr "Naya – tasdeeq ki zaroorat hai"
+
+msgid "Confirmed"
+msgstr "Tasdeeq shuda"
+
+msgid "Packed – ready for pickup"
+msgstr "Packed – pickup ke liye tayyar"
+
+msgid "Picked up – on the way"
+msgstr "Utha liya gaya – rastay mein hai"
+
+msgid "Delivered"
+msgstr "Pahuncha diya gaya"
+
+msgid "Cancelled"
+msgstr "Mansookh"
+
+msgid "On hold"
+msgstr "Rok diya gaya"
+
+msgid "Returned"
+msgstr "Wapas kiya gaya"
+
+msgid "Unpaid"
+msgstr "Ghair ada shuda"
+
+msgid "Customer says paid - check"
+msgstr "Gahak ne adaigi ki baat ki – tasdeeq karen"
+
+msgid "Paid"
+msgstr "Ada shuda"
+
+msgid "Refunded"
+msgstr "Raqam wapas ki gayi"
+
+msgid "Cash on delivery"
+msgstr "Cash on delivery"
+
+msgid "Bank transfer"
+msgstr "Bank transfer"
+
+msgid "Received"
+msgstr "Moosool hua"
+
+msgid "Packed"
+msgstr "Pack hua"
+
+msgid "On the way"
+msgstr "Rastay mein"
+
+msgid "Hi, I'm Mila! 🌟 I help you find the right toy for your child.\n\nWhat can I help you with?"
+msgstr "Hello, main Mila hoon! 🌟 Main aap ke bachay ke liye sahi khilona dhoondhne mein madad karti hoon.\n\nMain aap ki kya madad kar sakti hoon?"
+
+msgid "🧸 Find a toy"
+msgstr "🧸 Khilona dhoondhein"
+
+msgid "🚚 Delivery & shipping"
+msgstr "🚚 Delivery"
+
+msgid "💳 Payment methods"
+msgstr "💳 Adaigi ke tareeqay"
+
+msgid "📦 Track my order"
+msgstr "📦 Order track karen"
+
+msgid "💬 Talk to our team"
+msgstr "💬 Hum se baat karen"
+
+msgid "How old is your child?"
+msgstr "Aap ke bachay ki umar kitni hai?"
+
+msgid "👶 0–2 years (Baby)"
+msgstr "👶 0-2 saal (Baby)"
+
+msgid "🐣 2–4 years (Toddler)"
+msgstr "🐣 2-4 saal (Chhota bacha)"
+
+msgid "🌱 4–6 years (Preschool)"
+msgstr "🌱 4-6 saal (Preschool)"
+
+msgid "⭐ 6+ years"
+msgstr "⭐ 6+ saal"
+
+msgid "← Back"
+msgstr "← Wapas"
+
+msgid "All payments are safe and secure."
+msgstr "Tamam adaigian mehfooz hain."
+
+msgid "Dashboard"
+msgstr "Dashboard"
+
+msgid "Orders"
+msgstr "Orders"
+
+msgid "New orders"
+msgstr "Naye orders"
+
+msgid "All orders"
+msgstr "Tamam orders"
+
+msgid "Products"
+msgstr "Products"
+
+msgid "Settings"
+msgstr "Settings"

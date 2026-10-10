@@ -1,0 +1,202 @@
+# LittleMove translations
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ur\n"
+"MIME-Version: 1.0\n"
+
+msgid "Search toys"
+msgstr "کھلونے تلاش کریں"
+
+msgid "Search toys, e.g. stacking rings"
+msgstr "کھلونے تلاش کریں، مثلاً اسٹیکنگ رِنگز"
+
+msgid "Need help?"
+msgstr "مدد چاہیے؟"
+
+msgid "WhatsApp us"
+msgstr "واٹس ایپ کریں"
+
+msgid "Where is it?"
+msgstr "آرڈر کہاں ہے؟"
+
+msgid "Track order"
+msgstr "آرڈر ٹریک کریں"
+
+msgid "Your cart"
+msgstr "آپ کی کارٹ"
+
+msgid "Cart"
+msgstr "کارٹ"
+
+msgid "Shop by skill"
+msgstr "مہارت کے مطابق خریداری"
+
+msgid "Shop by age"
+msgstr "عمر کے مطابق خریداری"
+
+msgid "Shop by need"
+msgstr "ضرورت کے مطابق خریداری"
+
+msgid "Sale"
+msgstr "سیل"
+
+msgid "New arrivals"
+msgstr "نئے کھلونے"
+
+msgid "Therapist picks"
+msgstr "تھیراپسٹ کی پسند"
+
+msgid "Chosen with therapists"
+msgstr "تھیراپسٹ کے ساتھ چُنے گئے"
+
+msgid "All toys"
+msgstr "تمام کھلونے"
+
+msgid "Open menu"
+msgstr "مینو کھولیں"
+
+msgid "Close menu"
+msgstr "مینو بند کریں"
+
+msgid "Track your order"
+msgstr "اپنا آرڈر ٹریک کریں"
+
+msgid "Delivery and returns"
+msgstr "ڈیلیوری اور واپسی"
+
+msgid "Skip to content"
+msgstr "مواد تک جائیں"
+
+msgid "Shop"
+msgstr "خریداری"
+
+msgid "Help"
+msgstr "مدد"
+
+msgid "Contact"
+msgstr "رابطہ"
+
+msgid "Questions and answers"
+msgstr "سوالات اور جوابات"
+
+msgid "Your cart is empty."
+msgstr "آپ کی کارٹ خالی ہے۔"
+
+msgid "View cart & checkout"
+msgstr "کارٹ دیکھیں اور خریداری مکمل کریں"
+
+msgid "Total"
+msgstr "کل"
+
+msgid "items in cart"
+msgstr "کارٹ میں اشیاء"
+
+msgid "New – needs confirming"
+msgstr "نیا – تصدیق کی ضرورت ہے"
+
+msgid "Confirmed"
+msgstr "تصدیق شدہ"
+
+msgid "Packed – ready for pickup"
+msgstr "پیک کیا گیا – پک اپ کے لیے تیار"
+
+msgid "Picked up – on the way"
+msgstr "اٹھا لیا گیا – راستے میں ہے"
+
+msgid "Delivered"
+msgstr "پہنچا دیا گیا"
+
+msgid "Cancelled"
+msgstr "منسوخ"
+
+msgid "On hold"
+msgstr "روک دیا گیا"
+
+msgid "Returned"
+msgstr "واپس کیا گیا"
+
+msgid "Unpaid"
+msgstr "غیر ادا شدہ"
+
+msgid "Customer says paid - check"
+msgstr "گاہک نے ادائیگی کی بات کی – تصدیق کریں"
+
+msgid "Paid"
+msgstr "ادا شدہ"
+
+msgid "Refunded"
+msgstr "رقم واپس کی گئی"
+
+msgid "Cash on delivery"
+msgstr "کیش آن ڈیلیوری"
+
+msgid "Bank transfer"
+msgstr "بینک ٹرانسفر"
+
+msgid "Received"
+msgstr "موصول ہوا"
+
+msgid "Packed"
+msgstr "پیک ہوا"
+
+msgid "On the way"
+msgstr "راستے میں"
+
+msgid "Hi, I'm Mila! 🌟 I help you find the right toy for your child.\n\nWhat can I help you with?"
+msgstr "ہیلو، میں میلا ہوں! 🌟 میں آپ کے بچے کے لیے صحیح کھلونا ڈھونڈنے میں مدد کرتی ہوں۔\n\nمیں آپ کی کیا مدد کر سکتی ہوں؟"
+
+msgid "🧸 Find a toy"
+msgstr "🧸 کھلونا ڈھونڈیں"
+
+msgid "🚚 Delivery & shipping"
+msgstr "🚚 ڈیلیوری"
+
+msgid "💳 Payment methods"
+msgstr "💳 ادائیگی کے طریقے"
+
+msgid "📦 Track my order"
+msgstr "📦 آرڈر ٹریک کریں"
+
+msgid "💬 Talk to our team"
+msgstr "💬 ہم سے بات کریں"
+
+msgid "How old is your child?"
+msgstr "آپ کے بچے کی عمر کتنی ہے؟"
+
+msgid "👶 0–2 years (Baby)"
+msgstr "👶 ۰–۲ سال (بچہ)"
+
+msgid "🐣 2–4 years (Toddler)"
+msgstr "🐣 ۲–۴ سال (چھوٹا بچہ)"
+
+msgid "🌱 4–6 years (Preschool)"
+msgstr "🌱 ۴–۶ سال (اسکول سے پہلے)"
+
+msgid "⭐ 6+ years"
+msgstr "⭐ ۶+ سال"
+
+msgid "← Back"
+msgstr "← واپس"
+
+msgid "All payments are safe and secure."
+msgstr "تمام ادائیگیاں محفوظ ہیں۔"
+
+msgid "Dashboard"
+msgstr "ڈیش بورڈ"
+
+msgid "Orders"
+msgstr "آرڈرز"
+
+msgid "New orders"
+msgstr "نئے آرڈرز"
+
+msgid "All orders"
+msgstr "تمام آرڈرز"
+
+msgid "Products"
+msgstr "مصنوعات"
+
+msgid "Settings"
+msgstr "ترتیبات"

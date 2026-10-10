@@ -1,5 +1,7 @@
-{% load static store_tags %}<!doctype html>
-<html lang="en" class="js-off">
+{% load static store_tags i18n %}<!doctype html>
+{% get_current_language as LANGUAGE_CODE %}
+{% get_current_language_bidi as LANGUAGE_BIDI %}
+<html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_BIDI and LANGUAGE_CODE != 'ur-latn' %}rtl{% else %}ltr{% endif %}" class="js-off">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -8,6 +10,13 @@
   <meta name="theme-color" content="#3BA4E6">
   <link rel="preload" href="{% static 'fonts/fredoka-latin-600-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="{% static 'fonts/nunito-sans-latin-400-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
+  {% if LANGUAGE_CODE == 'ur' %}
+  <link rel="preload" href="{% static 'fonts/noto-nastaliq-urdu-400.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{% static 'css/fonts-ur.css' %}">
+  {% elif LANGUAGE_CODE == 'ar' %}
+  <link rel="preload" href="{% static 'fonts/noto-naskh-arabic-400.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{% static 'css/fonts-ar.css' %}">
+  {% endif %}
   <link rel="stylesheet" href="{% static 'vendor/swiper.min.css' %}">
   <link rel="stylesheet" href="{% static 'css/site.css' %}">
   {% if shop.favicon %}<link rel="icon" href="{{ shop.favicon.url }}" type="image/x-icon">{% else %}
@@ -26,7 +35,7 @@
 <body class="{% block body_class %}{% endblock %}{% with msgs=shop.announcements %}{% if msgs %} has-topbar{% endif %}{% endwith %}"{% block body_attrs %}{% endblock %}>
   <div id="loader-overlay" class="loader-overlay" aria-hidden="true"><img src="{% static 'img/littlemove-logo.png' %}" alt="" width="120"></div>
   <div id="bg-wrap" aria-hidden="true" data-anim="{{ shop.animated_bg|yesno:'1,0' }}"><canvas id="bg-cv"></canvas></div>
-  <a class="sr-only" href="#main">Skip to content</a>
+  <a class="sr-only" href="#main">{% trans "Skip to content" %}</a>
 
   {% with msgs=shop.announcements %}{% if msgs %}
   <div class="topbar">
@@ -35,8 +44,8 @@
         {% for a in msgs %}<span class="{% if forloop.first %}on{% endif %}">{{ a }}</span>{% endfor %}
       </div>
       <div class="topbar-links">
-        <a href="{% url 'orders:track' %}">Track order</a>
-        <a href="{% url 'store:delivery' %}">Delivery and returns</a>
+        <a href="{% url 'orders:track' %}">{% trans "Track order" %}</a>
+        <a href="{% url 'store:delivery' %}">{% trans "Delivery and returns" %}</a>
         <a href="https://wa.me/{{ shop.whatsapp_number }}" target="_blank" rel="noopener">WhatsApp +{{ shop.whatsapp_number }}</a>
       </div>
     </div>
@@ -45,28 +54,46 @@
 
   <header class="header" id="site-header">
     <div class="wrap header-main">
-      <button class="menu-btn" type="button" data-open-drawer aria-label="Open menu">{% icon 'menu' 22 2.2 %}</button>
+      <button class="menu-btn" type="button" data-open-drawer aria-label="{% trans 'Open menu' %}">{% icon 'menu' 22 2.2 %}</button>
       <a class="brand" href="{% url 'store:home' %}" aria-label="{{ shop.store_name }} home">
         <img src="{% static 'img/littlemove-logo.png' %}" alt="" width="48" height="48" class="brand-logo"><span class="brand-name">Little<b>Move</b></span>
       </a>
       <form class="search" action="{% url 'store:shop' %}" role="search">
         {% icon 'search' 20 2.2 %}
-        <label class="sr-only" for="q">Search toys</label>
-        <input id="q" name="q" type="search" placeholder="Search toys, e.g. stacking rings" value="{{ q|default:'' }}">
+        <label class="sr-only" for="q">{% trans "Search toys" %}</label>
+        <input id="q" name="q" type="search" placeholder="{% trans 'Search toys, e.g. stacking rings' %}" value="{{ q|default:'' }}">
         <button type="submit">Search</button>
       </form>
       <div class="header-icons">
         <a class="icon-link hide-sm" href="https://wa.me/{{ shop.whatsapp_number }}" target="_blank" rel="noopener">
           <span class="ico" style="color:var(--wa)">{% whatsapp_icon 22 'currentColor' %}</span>
-          <span class="lbl"><small>Need help?</small>WhatsApp us</span>
+          <span class="lbl"><small>{% trans "Need help?" %}</small>{% trans "WhatsApp us" %}</span>
         </a>
         <a class="icon-link hide-sm" href="{% url 'orders:track' %}">
           <span class="ico">{% icon 'truck' 22 %}</span>
-          <span class="lbl"><small>Where is it?</small>Track order</span>
+          <span class="lbl"><small>{% trans "Where is it?" %}</small>{% trans "Track order" %}</span>
         </a>
+        <div class="lang-switcher" id="lang-switcher">
+          {% get_current_language as cur_lang %}
+          {% get_available_languages as avail_langs %}
+          <button class="lang-btn" type="button" aria-expanded="false" aria-controls="lang-menu" aria-label="Change language">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            <span class="lang-name">{% for lc, ln in avail_langs %}{% if lc == cur_lang %}{{ ln }}{% endif %}{% endfor %}</span>
+          </button>
+          <div class="lang-menu" id="lang-menu" role="listbox" aria-label="Select language" hidden>
+            {% for lc, ln in avail_langs %}
+            <form action="{% url 'set_language' %}" method="post" class="lang-opt {% if lc == cur_lang %}lang-opt--active{% endif %}" role="option" aria-selected="{% if lc == cur_lang %}true{% else %}false{% endif %}">
+              {% csrf_token %}
+              <input type="hidden" name="language" value="{{ lc }}">
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <button type="submit">{{ ln }}</button>
+            </form>
+            {% endfor %}
+          </div>
+        </div>
         <a class="icon-link" href="{% url 'store:cart' %}" data-open-cart>
-          <span class="ico">{% icon 'cart' 22 2.2 %}<span class="badge-count" aria-label="{{ cart_count }} items in cart">{{ cart_count }}</span></span>
-          <span class="lbl hide-sm"><small>Your</small>Cart</span>
+          <span class="ico">{% icon 'cart' 22 2.2 %}<span class="badge-count" aria-label="{{ cart_count }} {% trans 'items in cart' %}">{{ cart_count }}</span></span>
+          <span class="lbl hide-sm"><small>{% trans "Your cart" %}</small>{% trans "Cart" %}</span>
         </a>
       </div>
     </div>
@@ -74,7 +101,7 @@
     <nav class="navbar" aria-label="Main">
       <div class="wrap">
         <div class="nav-item">
-          <button class="nav-link nav-all" type="button" aria-haspopup="true">{% icon 'grid' 18 2.2 %} Shop by skill {% icon 'chev-d' 16 2.4 %}</button>
+          <button class="nav-link nav-all" type="button" aria-haspopup="true">{% icon 'grid' 18 2.2 %} {% trans "Shop by skill" %} {% icon 'chev-d' 16 2.4 %}</button>
           <div class="dropdown">
             {% for c in nav_categories %}
             <a class="t-{{ c.color }}" href="{{ c.get_absolute_url }}">
@@ -82,25 +109,25 @@
               <span>{{ c.name }}{% if c.short %}<small>{{ c.short }}</small>{% endif %}</span>
             </a>
             {% endfor %}
-            <a href="{% url 'store:shop' %}"><span class="mini">{% icon 'grid' 20 %}</span><span>All toys</span></a>
+            <a href="{% url 'store:shop' %}"><span class="mini">{% icon 'grid' 20 %}</span><span>{% trans "All toys" %}</span></a>
           </div>
         </div>
         <div class="nav-item">
-          <button class="nav-link" type="button" aria-haspopup="true">Shop by age {% icon 'chev-d' 16 2.4 %}</button>
+          <button class="nav-link" type="button" aria-haspopup="true">{% trans "Shop by age" %} {% icon 'chev-d' 16 2.4 %}</button>
           <div class="dropdown dropdown-ages">
             {% for key, band in nav_ages.items %}<a href="{% url 'store:shop' %}?age={{ key }}">{{ band.0 }}</a>{% endfor %}
           </div>
         </div>
         <div class="nav-item">
-          <button class="nav-link" type="button" aria-haspopup="true">Shop by need {% icon 'chev-d' 16 2.4 %}</button>
+          <button class="nav-link" type="button" aria-haspopup="true">{% trans "Shop by need" %} {% icon 'chev-d' 16 2.4 %}</button>
           <div class="dropdown">
             {% for n in nav_needs %}<a class="t-{{ n.color }}" href="{{ n.get_absolute_url }}"><span class="mini need-dot"></span><span>{{ n.name }}{% if n.short %}<small>{{ n.short }}</small>{% endif %}</span></a>{% endfor %}
           </div>
         </div>
-        <a class="nav-link nav-sale" href="{% url 'store:shop' %}?sale=1"><span class="dot-live"></span>Sale</a>
-        <a class="nav-link" href="{% url 'store:shop' %}?sort=new">New arrivals</a>
-        <a class="nav-link" href="{% url 'store:shop' %}?pick=1">Therapist picks</a>
-        <span class="nav-right">{% icon 'shield' 18 2.2 %} Chosen with therapists</span>
+        <a class="nav-link nav-sale" href="{% url 'store:shop' %}?sale=1"><span class="dot-live"></span>{% trans "Sale" %}</a>
+        <a class="nav-link" href="{% url 'store:shop' %}?sort=new">{% trans "New arrivals" %}</a>
+        <a class="nav-link" href="{% url 'store:shop' %}?pick=1">{% trans "Therapist picks" %}</a>
+        <span class="nav-right">{% icon 'shield' 18 2.2 %} {% trans "Chosen with therapists" %}</span>
       </div>
     </nav>
   </header>
@@ -110,22 +137,35 @@
     <div class="drawer-panel" role="dialog" aria-label="Menu">
       <div class="drawer-head">
         <a class="brand" href="{% url 'store:home' %}"><img src="{% static 'img/littlemove-logo.png' %}" alt="" width="34" height="34" class="brand-logo"><span class="brand-name">Little<b>Move</b></span></a>
-        <button class="close-btn" type="button" data-close-drawer aria-label="Close menu">{% icon 'x' 20 2.4 %}</button>
+        <button class="close-btn" type="button" data-close-drawer aria-label="{% trans 'Close menu' %}">{% icon 'x' 20 2.4 %}</button>
       </div>
-      <h3>Shop by skill</h3>
+      <div class="drawer-lang">
+        <span>Language</span>
+        {% get_available_languages as avail_langs %}
+        {% get_current_language as cur_lang %}
+        {% for lc, ln in avail_langs %}
+        <form action="{% url 'set_language' %}" method="post" style="display:inline">
+          {% csrf_token %}
+          <input type="hidden" name="language" value="{{ lc }}">
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button type="submit" class="drawer-lang-btn {% if lc == cur_lang %}active{% endif %}">{{ ln }}</button>
+        </form>
+        {% endfor %}
+      </div>
+      <h3>{% trans "Shop by skill" %}</h3>
       {% for c in nav_categories %}
       <a class="t-{{ c.color }}" href="{{ c.get_absolute_url }}"><span class="mini">{% if c.image %}<img src="{{ c.image.url }}" alt="">{% else %}{% with first=c.products.first %}{% illus first.illustration|default:'blocks' %}{% endwith %}{% endif %}</span>{{ c.name }}</a>
       {% endfor %}
-      <h3>Shop by need</h3>
+      <h3>{% trans "Shop by need" %}</h3>
       {% for n in nav_needs %}<a class="t-{{ n.color }}" href="{{ n.get_absolute_url }}"><span class="mini need-dot"></span>{{ n.name }}</a>{% endfor %}
-      <h3>Shop by age</h3>
+      <h3>{% trans "Shop by age" %}</h3>
       {% for key, band in nav_ages.items %}<a href="{% url 'store:shop' %}?age={{ key }}">{{ band.0 }}</a>{% endfor %}
       <h3>More</h3>
-      <a href="{% url 'store:shop' %}?sale=1" style="color:#C4473D">Sale</a>
-      <a href="{% url 'store:shop' %}?pick=1">Therapist picks</a>
-      <a href="{% url 'orders:track' %}">Track your order</a>
-      <a href="{% url 'store:delivery' %}">Delivery and returns</a>
-      <a href="https://wa.me/{{ shop.whatsapp_number }}" target="_blank" rel="noopener">WhatsApp us</a>
+      <a href="{% url 'store:shop' %}?sale=1" style="color:#C4473D">{% trans "Sale" %}</a>
+      <a href="{% url 'store:shop' %}?pick=1">{% trans "Therapist picks" %}</a>
+      <a href="{% url 'orders:track' %}">{% trans "Track your order" %}</a>
+      <a href="{% url 'store:delivery' %}">{% trans "Delivery and returns" %}</a>
+      <a href="https://wa.me/{{ shop.whatsapp_number }}" target="_blank" rel="noopener">{% trans "WhatsApp us" %}</a>
     </div>
   </div>
 
@@ -149,22 +189,22 @@
           <div class="pay-chips" style="margin-top:18px"><span>Cash on delivery</span>{% if shop.jazzcash_number %}<span>JazzCash</span>{% endif %}{% if shop.easypaisa_number %}<span>EasyPaisa</span>{% endif %}{% if shop.bank_details %}<span>Bank transfer</span>{% endif %}</div>
         </div>
         <div>
-          <h2>Shop</h2>
+          <h2>{% trans "Shop" %}</h2>
           <ul>
             {% for c in nav_categories %}<li><a href="{{ c.get_absolute_url }}">{{ c.name }}</a></li>{% endfor %}
-            <li><a href="{% url 'store:shop' %}?sale=1">Sale</a></li>
+            <li><a href="{% url 'store:shop' %}?sale=1">{% trans "Sale" %}</a></li>
           </ul>
         </div>
         <div>
-          <h2>Help</h2>
+          <h2>{% trans "Help" %}</h2>
           <ul>
-            <li><a href="{% url 'orders:track' %}">Track your order</a></li>
-            <li><a href="{% url 'store:delivery' %}">Delivery and returns</a></li>
-            <li><a href="{% url 'store:home' %}#faq">Questions and answers</a></li>
+            <li><a href="{% url 'orders:track' %}">{% trans "Track your order" %}</a></li>
+            <li><a href="{% url 'store:delivery' %}">{% trans "Delivery and returns" %}</a></li>
+            <li><a href="{% url 'store:home' %}#faq">{% trans "Questions and answers" %}</a></li>
           </ul>
         </div>
         <div>
-          <h2>Contact</h2>
+          <h2>{% trans "Contact" %}</h2>
           <ul>
             <li><a href="https://wa.me/{{ shop.whatsapp_number }}" target="_blank" rel="noopener">WhatsApp +{{ shop.whatsapp_number }}</a></li>
             <li><a href="mailto:{{ shop.email }}">{{ shop.email }}</a></li>
@@ -213,19 +253,19 @@
 
   {# ── Cart drawer (populated by app.js after AJAX add-to-cart) ── #}
   <div id="cart-drawer-bg" class="cart-drawer-bg" aria-hidden="true"></div>
-  <div id="cart-drawer" class="cart-drawer" role="dialog" aria-modal="true" aria-label="Your cart" aria-hidden="true">
+  <div id="cart-drawer" class="cart-drawer" role="dialog" aria-modal="true" aria-label="{% trans 'Your cart' %}" aria-hidden="true">
     <div class="cart-drawer-head">
-      <h2>Your cart</h2>
+      <h2>{% trans "Your cart" %}</h2>
       <button class="cart-drawer-close" type="button" data-close-cart aria-label="Close cart">&#x2715;</button>
     </div>
     <div class="cart-drawer-items" id="cart-drawer-items">
-      <p class="cart-drawer-empty">Your cart is empty.</p>
+      <p class="cart-drawer-empty">{% trans "Your cart is empty." %}</p>
     </div>
     <div class="cart-drawer-foot">
       <div class="free-bar"><span id="cart-free-bar"></span></div>
       <p class="free-bar-note" id="cart-free-note"></p>
-      <div class="cart-drawer-total"><span>Total</span><span id="cart-drawer-total">Rs 0</span></div>
-      <a class="btn btn-block" href="{% url 'store:cart' %}">View cart &amp; checkout</a>
+      <div class="cart-drawer-total"><span>{% trans "Total" %}</span><span id="cart-drawer-total">Rs 0</span></div>
+      <a class="btn btn-block" href="{% url 'store:cart' %}">{% trans "View cart & checkout" %}</a>
     </div>
   </div>
 
@@ -253,6 +293,30 @@
     </div>
   </div>
   {% endif %}
+
+  <script>
+(function () {
+  var sw = document.getElementById('lang-switcher');
+  if (!sw) return;
+  var btn = sw.querySelector('.lang-btn');
+  var menu = sw.querySelector('.lang-menu');
+  function close() { btn.setAttribute('aria-expanded','false'); menu.hidden = true; }
+  function open()  { btn.setAttribute('aria-expanded','true');  menu.hidden = false; menu.querySelector('button').focus(); }
+  btn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    menu.hidden ? open() : close();
+  });
+  document.addEventListener('click', close);
+  sw.addEventListener('click', function(e) { e.stopPropagation(); });
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close(); });
+  // keyboard nav inside menu
+  menu.addEventListener('keydown', function(e) {
+    var btns = menu.querySelectorAll('button'), i = Array.from(btns).indexOf(document.activeElement);
+    if (e.key === 'ArrowDown') { e.preventDefault(); btns[(i+1)%btns.length].focus(); }
+    if (e.key === 'ArrowUp')   { e.preventDefault(); btns[(i-1+btns.length)%btns.length].focus(); }
+  });
+})();
+  </script>
 
   <script>
     (function () {

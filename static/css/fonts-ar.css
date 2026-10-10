@@ -1,0 +1,14 @@
+@font-face {
+  font-family: 'Noto Naskh Arabic';
+  src: url('../fonts/noto-naskh-arabic-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+[lang="ar"] body, [lang="ar"] p, [lang="ar"] h1, [lang="ar"] h2, [lang="ar"] h3,
+[lang="ar"] .card-name, [lang="ar"] .mila-msg, [lang="ar"] .mila-opt,
+[lang="ar"] .nav-link, [lang="ar"] .drawer-panel a,
+[lang="ar"] button, [lang="ar"] label, [lang="ar"] input, [lang="ar"] textarea {
+  font-family: 'Noto Naskh Arabic', 'Traditional Arabic', serif;
+  line-height: 1.9;
+}

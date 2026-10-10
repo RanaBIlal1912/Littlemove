@@ -217,3 +217,13 @@ def logo(size=40):
 def first_name(value):
     parts = str(value or "").split()
     return parts[0] if parts else ""
+
+
+@register.filter
+def ur_or(value_ur, value_en):
+    """Return value_ur if non-empty and current language is ur, otherwise value_en."""
+    from django.utils.translation import get_language
+    lang = get_language() or 'en'
+    if lang == 'ur' and value_ur:
+        return value_ur
+    return value_en

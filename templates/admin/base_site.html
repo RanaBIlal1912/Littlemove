@@ -1,0 +1,28 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+.lm-admin-lang { display:inline-flex; align-items:center; gap:4px; }
+.lm-admin-lang select { font-size:.8125rem; border:1px solid rgba(255,255,255,.25); background:transparent; color:inherit; border-radius:4px; padding:3px 6px; cursor:pointer; }
+.lm-admin-lang select:focus { outline:2px solid rgba(255,255,255,.5); }
+</style>
+{% endblock %}
+
+{% block userlinks %}
+<div class="lm-admin-lang">
+  {% get_current_language as cur_lang %}
+  {% get_available_languages as avail_langs %}
+  <form action="{% url 'set_language' %}" method="post" style="display:inline-flex;align-items:center;gap:6px">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+    <select name="language" onchange="this.form.submit()" aria-label="Admin language">
+      {% for lc, ln in avail_langs %}
+      <option value="{{ lc }}" {% if lc == cur_lang %}selected{% endif %}>{{ ln }}</option>
+      {% endfor %}
+    </select>
+  </form>
+</div>
+{{ block.super }}
+{% endblock %}

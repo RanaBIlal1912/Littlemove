@@ -1,0 +1,202 @@
+# LittleMove translations
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+
+msgid "Search toys"
+msgstr "Search toys"
+
+msgid "Search toys, e.g. stacking rings"
+msgstr "Search toys, e.g. stacking rings"
+
+msgid "Need help?"
+msgstr "Need help?"
+
+msgid "WhatsApp us"
+msgstr "WhatsApp us"
+
+msgid "Where is it?"
+msgstr "Where is it?"
+
+msgid "Track order"
+msgstr "Track order"
+
+msgid "Your cart"
+msgstr "Your cart"
+
+msgid "Cart"
+msgstr "Cart"
+
+msgid "Shop by skill"
+msgstr "Shop by skill"
+
+msgid "Shop by age"
+msgstr "Shop by age"
+
+msgid "Shop by need"
+msgstr "Shop by need"
+
+msgid "Sale"
+msgstr "Sale"
+
+msgid "New arrivals"
+msgstr "New arrivals"
+
+msgid "Therapist picks"
+msgstr "Therapist picks"
+
+msgid "Chosen with therapists"
+msgstr "Chosen with therapists"
+
+msgid "All toys"
+msgstr "All toys"
+
+msgid "Open menu"
+msgstr "Open menu"
+
+msgid "Close menu"
+msgstr "Close menu"
+
+msgid "Track your order"
+msgstr "Track your order"
+
+msgid "Delivery and returns"
+msgstr "Delivery and returns"
+
+msgid "Skip to content"
+msgstr "Skip to content"
+
+msgid "Shop"
+msgstr "Shop"
+
+msgid "Help"
+msgstr "Help"
+
+msgid "Contact"
+msgstr "Contact"
+
+msgid "Questions and answers"
+msgstr "Questions and answers"
+
+msgid "Your cart is empty."
+msgstr "Your cart is empty."
+
+msgid "View cart & checkout"
+msgstr "View cart & checkout"
+
+msgid "Total"
+msgstr "Total"
+
+msgid "items in cart"
+msgstr "items in cart"
+
+msgid "New – needs confirming"
+msgstr "New – needs confirming"
+
+msgid "Confirmed"
+msgstr "Confirmed"
+
+msgid "Packed – ready for pickup"
+msgstr "Packed – ready for pickup"
+
+msgid "Picked up – on the way"
+msgstr "Picked up – on the way"
+
+msgid "Delivered"
+msgstr "Delivered"
+
+msgid "Cancelled"
+msgstr "Cancelled"
+
+msgid "On hold"
+msgstr "On hold"
+
+msgid "Returned"
+msgstr "Returned"
+
+msgid "Unpaid"
+msgstr "Unpaid"
+
+msgid "Customer says paid - check"
+msgstr "Customer says paid - check"
+
+msgid "Paid"
+msgstr "Paid"
+
+msgid "Refunded"
+msgstr "Refunded"
+
+msgid "Cash on delivery"
+msgstr "Cash on delivery"
+
+msgid "Bank transfer"
+msgstr "Bank transfer"
+
+msgid "Received"
+msgstr "Received"
+
+msgid "Packed"
+msgstr "Packed"
+
+msgid "On the way"
+msgstr "On the way"
+
+msgid "Hi, I'm Mila! 🌟 I help you find the right toy for your child.\n\nWhat can I help you with?"
+msgstr "Hi, I'm Mila! 🌟 I help you find the right toy for your child.\n\nWhat can I help you with?"
+
+msgid "🧸 Find a toy"
+msgstr "🧸 Find a toy"
+
+msgid "🚚 Delivery & shipping"
+msgstr "🚚 Delivery & shipping"
+
+msgid "💳 Payment methods"
+msgstr "💳 Payment methods"
+
+msgid "📦 Track my order"
+msgstr "📦 Track my order"
+
+msgid "💬 Talk to our team"
+msgstr "💬 Talk to our team"
+
+msgid "How old is your child?"
+msgstr "How old is your child?"
+
+msgid "👶 0–2 years (Baby)"
+msgstr "👶 0–2 years (Baby)"
+
+msgid "🐣 2–4 years (Toddler)"
+msgstr "🐣 2–4 years (Toddler)"
+
+msgid "🌱 4–6 years (Preschool)"
+msgstr "🌱 4–6 years (Preschool)"
+
+msgid "⭐ 6+ years"
+msgstr "⭐ 6+ years"
+
+msgid "← Back"
+msgstr "← Back"
+
+msgid "All payments are safe and secure."
+msgstr "All payments are safe and secure."
+
+msgid "Dashboard"
+msgstr "Dashboard"
+
+msgid "Orders"
+msgstr "Orders"
+
+msgid "New orders"
+msgstr "New orders"
+
+msgid "All orders"
+msgstr "All orders"
+
+msgid "Products"
+msgstr "Products"
+
+msgid "Settings"
+msgstr "Settings"

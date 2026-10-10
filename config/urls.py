@@ -20,6 +20,7 @@ def robots(request):
 
 
 urlpatterns = [
+    path("i18n/", include("django.conf.urls.i18n")),
     path(settings.ADMIN_URL, admin.site.urls),
     path("sitemap.xml", sitemap, {"sitemaps": {"static": StaticSitemap, "products": ProductSitemap}}),
     path("robots.txt", robots),

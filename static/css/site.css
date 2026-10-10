@@ -2160,3 +2160,130 @@ body.has-hero.has-topbar .hero-fullbleed {
   body.has-hero .hero-fullbleed,
   body.has-hero.has-topbar .hero-fullbleed { padding-top: 0 !important; }
 }
+
+/* ── RTL overrides (dir=rtl) ── */
+
+[dir="rtl"] {
+  --start: right;
+  --end: left;
+}
+
+/* Header & nav */
+[dir="rtl"] .header-main { flex-direction: row-reverse; }
+[dir="rtl"] .header-icons { flex-direction: row-reverse; }
+[dir="rtl"] .navbar .wrap { flex-direction: row-reverse; }
+[dir="rtl"] .search { flex-direction: row-reverse; }
+[dir="rtl"] .search input { text-align: right; }
+[dir="rtl"] .nav-right { margin-inline-start: auto; margin-inline-end: 0; }
+[dir="rtl"] .dropdown { inset-inline-start: auto; inset-inline-end: 0; }
+[dir="rtl"] .nav-item .dropdown { left: auto; right: 0; }
+
+/* Brand */
+[dir="rtl"] .brand { flex-direction: row-reverse; }
+
+/* Drawer */
+[dir="rtl"] .drawer-panel { left: auto; right: 0; transform: translateX(100%); }
+[dir="rtl"] .drawer.open .drawer-panel { transform: translateX(0); }
+[dir="rtl"] .drawer-head { flex-direction: row-reverse; }
+
+/* Cart drawer */
+[dir="rtl"] .cart-drawer { left: auto; right: 0; transform: translateX(100%); }
+[dir="rtl"] .cart-drawer.open { transform: translateX(0); }
+[dir="rtl"] .cart-drawer-head { flex-direction: row-reverse; }
+
+/* Product cards */
+[dir="rtl"] .card { text-align: right; }
+[dir="rtl"] .card .badge { right: auto; left: 8px; }
+[dir="rtl"] .sale-pct { right: auto; left: 8px; }
+[dir="rtl"] .price { flex-direction: row-reverse; }
+
+/* Footer */
+[dir="rtl"] .footer-grid { direction: rtl; }
+[dir="rtl"] .footer-bottom { flex-direction: row-reverse; }
+
+/* Bottom nav */
+[dir="rtl"] .bottom-nav { direction: rtl; }
+
+/* Forms */
+[dir="rtl"] input, [dir="rtl"] textarea, [dir="rtl"] select {
+  text-align: right;
+  direction: rtl;
+}
+[dir="rtl"] .form-row { flex-direction: row-reverse; }
+
+/* WA float — swap sides */
+[dir="rtl"] .wa-float { left: 20px; right: auto; }
+
+/* Mila chatbot — swap sides */
+[dir="rtl"] .mila-bot { left: 20px; right: auto; }
+[dir="rtl"] .mila-window { left: 0; right: auto; }
+
+/* Swiper RTL */
+[dir="rtl"] .swiper { direction: rtl; }
+
+/* Arrow icons flip */
+[dir="rtl"] .icon-chev-r,
+[dir="rtl"] [data-scroll] { transform: scaleX(-1); }
+
+/* Text align */
+[dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3,
+[dir="rtl"] p, [dir="rtl"] li { text-align: right; }
+[dir="rtl"] .wrap { direction: rtl; }
+
+/* Language switcher */
+.lang-switcher { position: relative; }
+.lang-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  border: 1.5px solid rgba(0,0,0,.12);
+  border-radius: 6px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: .8125rem;
+  font-weight: 600;
+  color: inherit;
+  white-space: nowrap;
+}
+.lang-btn:hover { background: rgba(0,0,0,.04); }
+.lang-name { max-width: 80px; overflow: hidden; text-overflow: ellipsis; }
+.lang-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  inset-inline-end: 0;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.12);
+  min-width: 140px;
+  z-index: 200;
+  padding: 4px 0;
+}
+.lang-opt { display: block; margin: 0; }
+.lang-opt button {
+  width: 100%;
+  padding: 9px 16px;
+  text-align: start;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: .875rem;
+  color: #374151;
+  display: block;
+}
+.lang-opt button:hover { background: #f3f4f6; }
+.lang-opt--active button { font-weight: 700; color: var(--primary, #3BA4E6); }
+[dir="rtl"] .lang-menu { inset-inline-start: 0; inset-inline-end: auto; }
+
+/* Drawer language switcher */
+.drawer-lang { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 8px 16px 14px; border-bottom: 1px solid #f3f4f6; }
+.drawer-lang > span { font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: #9ca3af; }
+.drawer-lang-btn { padding: 4px 10px; border: 1.5px solid #e5e7eb; border-radius: 99px; background: transparent; cursor: pointer; font-size: .8125rem; font-weight: 600; color: #374151; }
+.drawer-lang-btn.active { background: var(--primary, #3BA4E6); color: #fff; border-color: var(--primary, #3BA4E6); }
+
+/* Urdu font */
+.lang-ur { font-family: 'Noto Nastaliq Urdu', serif; line-height: 2; }
+
+/* Arabic font */
+.lang-ar { font-family: 'Noto Naskh Arabic', 'Noto Sans Arabic', serif; line-height: 1.8; }
