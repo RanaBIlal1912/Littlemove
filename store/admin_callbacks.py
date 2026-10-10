@@ -10,73 +10,79 @@ def dashboard_callback(request, context):
     from orders.models import Order
     from store.models import Product
 
+    u = request.user
+    can_orders = u.is_superuser or u.has_perm("orders.view_order")
+    can_products = u.is_superuser or u.has_perm("store.view_product")
+
     now = timezone.localtime()
     today = now.date()
     month_start = today.replace(day=1)
     thirty_days_ago = today - datetime.timedelta(days=29)
 
-    # KPI cards
-    context["kpi_orders_today"] = Order.objects.filter(
-        created_at__date=today
-    ).count()
+    if can_orders:
+        context["kpi_orders_today"] = Order.objects.filter(
+            created_at__date=today
+        ).count()
 
-    context["kpi_revenue_month"] = (
-        Order.objects.filter(
-            created_at__date__gte=month_start,
-        ).exclude(status=Order.Status.CANCELLED)
-        .aggregate(r=Sum("total"))["r"] or 0
-    )
+        context["kpi_revenue_month"] = (
+            Order.objects.filter(created_at__date__gte=month_start)
+            .exclude(status=Order.Status.CANCELLED)
+            .aggregate(r=Sum("total"))["r"] or 0
+        )
 
-    context["kpi_pending"] = Order.objects.filter(
-        status=Order.Status.PENDING
-    ).count()
+        context["kpi_pending"] = Order.objects.filter(
+            status=Order.Status.PENDING
+        ).count()
 
-    context["kpi_low_stock"] = Product.objects.filter(
-        is_active=True, stock__lte=3
-    ).count()
+        daily = (
+            Order.objects.filter(created_at__date__gte=thirty_days_ago)
+            .exclude(status=Order.Status.CANCELLED)
+            .values("created_at__date")
+            .annotate(orders=Count("id"), revenue=Sum("total"))
+            .order_by("created_at__date")
+        )
+        daily_map = {row["created_at__date"]: row for row in daily}
 
-    # 30-day chart: daily orders and revenue
-    daily = (
-        Order.objects.filter(
-            created_at__date__gte=thirty_days_ago,
-        ).exclude(status=Order.Status.CANCELLED)
-        .values("created_at__date")
-        .annotate(orders=Count("id"), revenue=Sum("total"))
-        .order_by("created_at__date")
-    )
-    daily_map = {row["created_at__date"]: row for row in daily}
+        chart_labels, chart_orders, chart_revenue = [], [], []
+        for i in range(30):
+            d = thirty_days_ago + datetime.timedelta(days=i)
+            chart_labels.append(d.strftime("%b %d"))
+            row = daily_map.get(d, {})
+            chart_orders.append(row.get("orders", 0))
+            chart_revenue.append(row.get("revenue", 0))
 
-    chart_labels = []
-    chart_orders = []
-    chart_revenue = []
-    for i in range(30):
-        d = thirty_days_ago + datetime.timedelta(days=i)
-        chart_labels.append(d.strftime("%b %d"))
-        row = daily_map.get(d, {})
-        chart_orders.append(row.get("orders", 0))
-        chart_revenue.append(row.get("revenue", 0))
+        context["chart_labels"] = chart_labels
+        context["chart_orders"] = chart_orders
+        context["chart_revenue"] = chart_revenue
+        context["has_30day_orders"] = sum(chart_orders) > 0
+        context["latest_orders"] = (
+            Order.objects.select_related().order_by("-created_at")[:10]
+        )
+    else:
+        context["kpi_orders_today"] = None
+        context["kpi_revenue_month"] = None
+        context["kpi_pending"] = None
+        context["chart_labels"] = []
+        context["chart_orders"] = []
+        context["chart_revenue"] = []
+        context["has_30day_orders"] = False
+        context["latest_orders"] = []
 
-    context["chart_labels"] = chart_labels
-    context["chart_orders"] = chart_orders
-    context["chart_revenue"] = chart_revenue
-
-    # Latest 10 orders
-    context["latest_orders"] = (
-        Order.objects.select_related()
-        .order_by("-created_at")[:10]
-    )
-
-    # Low stock list
-    context["low_stock_products"] = (
-        Product.objects.filter(is_active=True, stock__lte=3)
-        .order_by("stock", "name")[:10]
-    )
-
-    # Products with no main photo
-    context["no_photo_count"] = Product.objects.filter(is_active=True, image="").count()
-
-    # Whether the 30-day chart has any data
-    context["has_30day_orders"] = sum(chart_orders) > 0
+    if can_products:
+        context["kpi_low_stock"] = Product.objects.filter(
+            is_active=True, stock__lte=3
+        ).count()
+        context["low_stock_products"] = (
+            Product.objects.filter(is_active=True, stock__lte=3)
+            .order_by("stock", "name")[:10]
+        )
+        context["no_photo_count"] = Product.objects.filter(
+            is_active=True, image=""
+        ).count()
+    else:
+        context["kpi_low_stock"] = None
+        context["low_stock_products"] = []
+        context["no_photo_count"] = None
 
     return context
 

@@ -1,3 +1,4 @@
+from django.contrib.auth.models import Group, User
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
@@ -795,3 +796,71 @@ class ChatLog(models.Model):
 
     def __str__(self):
         return f"{self.question[:60]} ({self.created_at:%Y-%m-%d %H:%M})"
+
+
+# ── RBAC helpers ──────────────────────────────────────────────────────────────
+
+class RoleProfile(models.Model):
+    """Extra metadata (description, default flag) for a Django Group."""
+
+    group = models.OneToOneField(Group, on_delete=models.CASCADE, related_name="profile")
+    description = models.CharField(max_length=200, blank=True)
+    is_default = models.BooleanField(
+        default=False,
+        help_text="Default roles are reset by setup_roles on every deploy.",
+    )
+
+    class Meta:
+        verbose_name = "Role profile"
+        verbose_name_plural = "Role profiles"
+
+    def __str__(self):
+        return self.group.name
+
+
+class RoleProxy(Group):
+    """Proxy of auth.Group — used as the 'Roles' admin page."""
+
+    class Meta:
+        proxy = True
+        verbose_name = "Role"
+        verbose_name_plural = "Roles"
+
+
+class StaffProfile(User):
+    """Proxy of auth.User — used as the 'Staff users' admin page."""
+
+    class Meta:
+        proxy = True
+        verbose_name = "Staff user"
+        verbose_name_plural = "Staff users"
+
+
+# ── Proxy models for split Store Settings pages ───────────────────────────────
+
+class StoreInfo(StoreSettings):
+    class Meta:
+        proxy = True
+        verbose_name = "Store info"
+        verbose_name_plural = "Store info"
+
+
+class PaymentSettings(StoreSettings):
+    class Meta:
+        proxy = True
+        verbose_name = "Payment settings"
+        verbose_name_plural = "Payment settings"
+
+
+class DeliverySettings(StoreSettings):
+    class Meta:
+        proxy = True
+        verbose_name = "Delivery settings"
+        verbose_name_plural = "Delivery settings"
+
+
+class BrandingSettings(StoreSettings):
+    class Meta:
+        proxy = True
+        verbose_name = "Branding & logo"
+        verbose_name_plural = "Branding & logo"

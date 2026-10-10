@@ -69,6 +69,12 @@ class Order(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        permissions = [
+            ("confirm_orders", "Can confirm, hold, and cancel orders"),
+            ("dispatch_orders", "Can pack, ship, deliver, and return orders"),
+            ("verify_payments", "Can change payment status and transaction ID"),
+            ("export_orders", "Can export orders to CSV"),
+        ]
 
     def __str__(self):
         return self.number

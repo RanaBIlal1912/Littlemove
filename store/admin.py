@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib import admin
-from django.db.models import Max
+from django.contrib.auth.models import Group, User
+from django.db.models import Count, Max
 from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
@@ -8,10 +9,12 @@ from unfold.admin import ModelAdmin, TabularInline
 from unfold.decorators import action, display
 
 from .models import (
-    Banner, BotAnswer, BotSettings, Bundle, Category, ChatLog, FAQ,
-    HomeSection, MediaItem, Need, OurStory, Popup, Product, ProductPhoto,
-    StoreSettings, Testimonial,
+    Banner, BotAnswer, BotSettings, BrandingSettings, Bundle, Category,
+    ChatLog, DeliverySettings, FAQ, HomeSection, MediaItem, Need, OurStory,
+    PaymentSettings, Popup, Product, ProductPhoto, RoleProfile, RoleProxy,
+    StaffProfile, StoreInfo, StoreSettings, Testimonial,
 )
+from .roles import ROLE_CAPABILITIES, codenames_from_capabilities, permissions_for_codenames
 
 
 # ── Store settings ─────────────────────────────────────────────────────────────
@@ -247,6 +250,36 @@ class ProductAdmin(ModelAdmin):
         ),
     ]
     prepopulated_fields = {"slug": ["name"]}
+
+    # Therapist Reviewer: has change_product but not add_product.
+    THERAPIST_ALLOWED = frozenset([
+        "description", "helps_with", "in_the_box",
+        "therapist_pick", "age_from", "age_to", "summary",
+    ])
+
+    @staticmethod
+    def _is_therapist(request):
+        return (
+            not request.user.is_superuser
+            and request.user.has_perm("store.change_product")
+            and not request.user.has_perm("store.add_product")
+        )
+
+    def get_readonly_fields(self, request, obj=None):
+        ro = list(super().get_readonly_fields(request, obj))
+        if self._is_therapist(request) and obj:
+            all_fields = {f.name for f in Product._meta.get_fields()
+                          if not f.many_to_many and not f.one_to_many}
+            ro.extend(all_fields - self.THERAPIST_ALLOWED - {"id"})
+        return ro
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        if self._is_therapist(request):
+            for field_name in list(form.base_fields.keys()):
+                if field_name not in self.THERAPIST_ALLOWED:
+                    del form.base_fields[field_name]
+        return form
 
     class Media:
         js = ["admin/js/product_price_preview.js"]
@@ -773,3 +806,260 @@ class ChatLogAdmin(ModelAdmin):
     @display(description="Bot answer")
     def short_answer(self, obj):
         return obj.answer[:70]
+
+
+# ── Proxy settings pages ───────────────────────────────────────────────────────
+
+class _SingletonProxyAdmin(ModelAdmin):
+    """Each proxy settings page redirects to the one StoreSettings row."""
+    save_on_top = True
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_view_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def has_change_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def changelist_view(self, request, extra_context=None):
+        from django.shortcuts import redirect
+        obj = StoreSettings.objects.first()
+        mn = self.model._meta.model_name
+        al = self.model._meta.app_label
+        if obj:
+            return redirect(reverse(f"admin:{al}_{mn}_change", args=[obj.pk]))
+        return redirect(reverse("admin:store_storesettings_add"))
+
+
+@admin.register(StoreInfo)
+class StoreInfoAdmin(_SingletonProxyAdmin):
+    fieldsets = [(None, {"fields": [
+        "store_name", "tagline", "city",
+        "whatsapp_number", "email",
+        "instagram_url", "facebook_url", "tiktok_url", "youtube_url",
+    ], "description": "Your shop name and how customers can reach you."})]
+
+
+@admin.register(PaymentSettings)
+class PaymentSettingsAdmin(_SingletonProxyAdmin):
+    fieldsets = [(None, {"fields": [
+        "cod_enabled", "jazzcash_number", "easypaisa_number",
+        "account_title", "bank_details",
+    ], "description": "Cash on delivery is the default. Add JazzCash / EasyPaisa numbers to let customers pay online."})]
+
+
+@admin.register(DeliverySettings)
+class DeliverySettingsAdmin(_SingletonProxyAdmin):
+    fieldsets = [(None, {"fields": [
+        "delivery_fee", "free_delivery_over",
+    ], "description": "Flat delivery fee per order. Set free_delivery_over to 0 to never offer free delivery."})]
+
+
+@admin.register(BrandingSettings)
+class BrandingSettingsAdmin(_SingletonProxyAdmin):
+    fieldsets = [(None, {"fields": [
+        "logo", "white_logo", "favicon",
+        ("primary_color", "secondary_color"),
+        ("accent_color", "background_color"),
+        "announcement", "footer_text",
+        "animated_bg", "hero_height",
+        "seo_title", "seo_description", "share_image",
+    ], "description": "Upload your logo, pick brand colours, and write the announcement bar. Separate messages with |"})]
+
+
+# ── Roles ──────────────────────────────────────────────────────────────────────
+
+admin.site.unregister(Group)
+
+
+class RoleCapabilityForm(forms.ModelForm):
+    """Replaces raw Permission m2m with plain-English capability checkboxes."""
+
+    class Meta:
+        model = RoleProxy
+        fields = ["name"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        current = set()
+        if self.instance and self.instance.pk:
+            current = {
+                f"{al}.{cn}"
+                for al, cn in self.instance.permissions.values_list(
+                    "content_type__app_label", "codename"
+                )
+            }
+        for _gk, _gl, caps in ROLE_CAPABILITIES:
+            for cap_key, cap_label, perm_list in caps:
+                initial = bool(set(perm_list).issubset(current)) if current else False
+                self.fields[cap_key] = forms.BooleanField(
+                    label=cap_label, required=False, initial=initial,
+                )
+
+    def save(self, commit=True):
+        group = super().save(commit=False)
+        if commit:
+            group.save()
+            selected = [
+                key
+                for _gk, _gl, caps in ROLE_CAPABILITIES
+                for key, _label, _perms in caps
+                if self.cleaned_data.get(key)
+            ]
+            group.permissions.set(
+                permissions_for_codenames(codenames_from_capabilities(selected))
+            )
+            RoleProfile.objects.get_or_create(group=group, defaults={"is_default": False})
+        return group
+
+
+@admin.register(RoleProxy)
+class RolesAdmin(ModelAdmin):
+    form = RoleCapabilityForm
+    list_display = ["name", "role_description", "user_count", "type_badge"]
+    search_fields = ["name"]
+
+    def get_fieldsets(self, request, obj=None):
+        fs = [(None, {"fields": ["name"]})]
+        for _gk, group_label, caps in ROLE_CAPABILITIES:
+            fs.append((group_label, {"fields": [k for k, _, _ in caps]}))
+        return fs
+
+    def has_view_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def has_add_permission(self, request):
+        return request.user.is_superuser
+
+    def has_change_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def has_delete_permission(self, request, obj=None):
+        if not request.user.is_superuser:
+            return False
+        if obj is None:
+            return True
+        try:
+            return not obj.profile.is_default
+        except Exception:
+            return True
+
+    @display(description="Description")
+    def role_description(self, obj):
+        try:
+            return obj.profile.description
+        except Exception:
+            return "—"
+
+    @display(description="Users")
+    def user_count(self, obj):
+        return obj.user_set.count()
+
+    @display(description="Type")
+    def type_badge(self, obj):
+        try:
+            if obj.profile.is_default:
+                return format_html(
+                    '<span style="color:#1d4ed8;font-weight:600">Built-in</span>'
+                )
+        except Exception:
+            pass
+        return format_html('<span style="color:#667085">Custom</span>')
+
+
+# ── Staff users ────────────────────────────────────────────────────────────────
+
+class StaffProfileForm(forms.ModelForm):
+    password1 = forms.CharField(
+        label="Password", widget=forms.PasswordInput, required=False,
+        help_text="Required for new staff. Leave blank to keep the existing password.",
+    )
+    password2 = forms.CharField(
+        label="Confirm password", widget=forms.PasswordInput, required=False,
+    )
+    role = forms.ModelChoiceField(
+        queryset=Group.objects.none(),
+        widget=forms.RadioSelect,
+        required=False,
+        empty_label="No role assigned",
+        help_text="Assign exactly one role.",
+    )
+
+    class Meta:
+        model = StaffProfile
+        fields = ["username", "first_name", "last_name", "email", "is_active"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["role"].queryset = Group.objects.all()
+        if self.instance.pk:
+            g = self.instance.groups.first()
+            if g:
+                self.fields["role"].initial = g
+
+    def clean(self):
+        cd = super().clean()
+        p1, p2 = cd.get("password1"), cd.get("password2")
+        if p1 or p2:
+            if p1 != p2:
+                self.add_error("password2", "Passwords don't match.")
+        if not self.instance.pk and not p1:
+            self.add_error("password1", "Password is required for new staff members.")
+        return cd
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.is_staff = True
+        p = self.cleaned_data.get("password1")
+        if p:
+            user.set_password(p)
+        if commit:
+            user.save()
+            role = self.cleaned_data.get("role")
+            user.groups.set([role] if role else [])
+        return user
+
+
+@admin.register(StaffProfile)
+class StaffProfileAdmin(ModelAdmin):
+    form = StaffProfileForm
+    list_display = ["username", "full_name_col", "email", "staff_role", "is_active"]
+    list_editable = ["is_active"]
+    search_fields = ["username", "first_name", "last_name", "email"]
+    fieldsets = [
+        (None, {"fields": ["username", ("first_name", "last_name"), "email", "is_active"]}),
+        ("Password", {"fields": ["password1", "password2"]}),
+        ("Role", {
+            "fields": ["role"],
+            "description": "Assign exactly one role to determine what this staff member can access.",
+        }),
+    ]
+
+    def has_view_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def has_add_permission(self, request):
+        return request.user.is_superuser
+
+    def has_change_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(is_superuser=False)
+
+    @display(description="Full name")
+    def full_name_col(self, obj):
+        return obj.get_full_name() or "—"
+
+    @display(description="Role")
+    def staff_role(self, obj):
+        g = obj.groups.first()
+        return g.name if g else format_html('<span style="color:#667085">—</span>')

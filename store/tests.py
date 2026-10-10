@@ -1439,3 +1439,305 @@ class QuickButtonTests(TestCase):
         resp = self.client.get(reverse("admin:store_botanswer_changelist"))
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "quick buttons active")
+
+
+# ── RBAC tests ────────────────────────────────────────────────────────────────
+
+from django.contrib.auth.models import Group, Permission
+from django.contrib.contenttypes.models import ContentType
+
+
+def _make_staff(username, password="pass12345!", **kwargs):
+    u = User.objects.create_user(username, password=password, is_staff=True, **kwargs)
+    return u
+
+
+def _assign_role(user, role_name):
+    g = Group.objects.get(name=role_name)
+    user.groups.set([g])
+
+
+def _perm(app, codename):
+    ct = ContentType.objects.get(app_label=app, model__isnull=False)
+    return Permission.objects.filter(codename=codename).first()
+
+
+class SetupRolesCommandTests(TestCase):
+    """setup_roles is idempotent and creates all 10 default groups."""
+
+    def test_creates_all_default_roles(self):
+        from store.management.commands.setup_roles import Command
+        from store.roles import ROLES
+        Command().handle()
+        for name in ROLES:
+            self.assertTrue(Group.objects.filter(name=name).exists(), f"Missing: {name}")
+
+    def test_idempotent_second_run(self):
+        from store.management.commands.setup_roles import Command
+        Command().handle()
+        count1 = Group.objects.count()
+        Command().handle()
+        self.assertEqual(Group.objects.count(), count1)
+
+    def test_default_roles_marked_is_default(self):
+        from store.management.commands.setup_roles import Command
+        from store.models import RoleProfile
+        from store.roles import ROLES
+        Command().handle()
+        for name in ROLES:
+            g = Group.objects.get(name=name)
+            self.assertTrue(g.profile.is_default, f"{name} not marked is_default")
+
+    def test_custom_role_not_touched(self):
+        from store.management.commands.setup_roles import Command
+        custom = Group.objects.create(name="Custom Team")
+        Command().handle()
+        self.assertTrue(Group.objects.filter(name="Custom Team").exists())
+
+
+class RBACOrderPermissionTests(TestCase):
+    """Restricted order views return 403 for users without the right permissions."""
+
+    def setUp(self):
+        from store.management.commands.setup_roles import Command
+        from orders.models import Order
+        Command().handle()
+        self.order = Order.objects.create(
+            full_name="Test Customer", phone="03001234567", city="Karachi",
+            address="1 Main St", payment_method=Order.Payment.COD,
+            subtotal=1000, delivery_fee=200, total=1200,
+        )
+
+    def test_viewer_cannot_confirm_order(self):
+        from orders.models import Order
+        staff = _make_staff("viewer1")
+        _assign_role(staff, "Viewer")
+        self.client.force_login(staff)
+        url = reverse("admin:orders_order_change_status",
+                      args=[self.order.pk, "confirmed"])
+        resp = self.client.get(url)
+        # Viewer has no change_order → redirect with error message (still a redirect, not 200)
+        self.order.refresh_from_db()
+        self.assertNotEqual(self.order.status, Order.Status.CONFIRMED)
+
+    def test_dispatch_role_cannot_confirm_order(self):
+        from orders.models import Order
+        staff = _make_staff("dispatch1")
+        _assign_role(staff, "Dispatch & Delivery")
+        self.client.force_login(staff)
+        url = reverse("admin:orders_order_change_status",
+                      args=[self.order.pk, "confirmed"])
+        self.client.get(url)
+        self.order.refresh_from_db()
+        self.assertNotEqual(self.order.status, Order.Status.CONFIRMED)
+
+    def test_confirm_role_can_confirm_order(self):
+        from orders.models import Order
+        staff = _make_staff("confirmer1")
+        _assign_role(staff, "Order Confirmation")
+        self.client.force_login(staff)
+        url = reverse("admin:orders_order_change_status",
+                      args=[self.order.pk, "confirmed"])
+        self.client.get(url)
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.status, Order.Status.CONFIRMED)
+
+    def test_non_superuser_cannot_delete_order(self):
+        from orders.admin import OrderAdmin
+        from orders.models import Order as OrderModel
+        from django.contrib.admin import site as admin_site
+        staff = _make_staff("nodelete1")
+        _assign_role(staff, "Manager")
+        req = RequestFactory().get("/")
+        req.user = staff
+        oa = OrderAdmin(OrderModel, admin_site)
+        self.assertFalse(oa.has_delete_permission(req))
+
+    def test_superuser_can_delete_order(self):
+        from orders.admin import OrderAdmin
+        from orders.models import Order as OrderModel
+        from django.contrib.admin import site as admin_site
+        su = User.objects.create_superuser("supertest1", "su@x.com", "SuperPass1!")
+        req = RequestFactory().get("/")
+        req.user = su
+        oa = OrderAdmin(OrderModel, admin_site)
+        self.assertTrue(oa.has_delete_permission(req))
+
+
+class RBACTherapistTests(TestCase):
+    """Therapist Reviewer can only edit the allowed product fields."""
+
+    def setUp(self):
+        from store.management.commands.setup_roles import Command
+        Command().handle()
+        self.therapist = _make_staff("therapist1")
+        _assign_role(self.therapist, "Therapist Reviewer")
+        cat = make_category("Sensory")
+        self.product = make_product(cat, "Test Toy")
+
+    def test_therapist_get_readonly_fields_restricts_non_allowed(self):
+        from store.admin import ProductAdmin
+        from django.contrib.admin import site as admin_site
+        req = RequestFactory().get("/")
+        req.user = self.therapist
+        pa = ProductAdmin(Product, admin_site)
+        ro = pa.get_readonly_fields(req, obj=self.product)
+        # Non-allowed fields must be in readonly
+        self.assertIn("name", ro)
+        self.assertIn("price", ro)
+
+    def test_therapist_allowed_fields_not_readonly(self):
+        from store.admin import ProductAdmin
+        from django.contrib.admin import site as admin_site
+        req = RequestFactory().get("/")
+        req.user = self.therapist
+        pa = ProductAdmin(Product, admin_site)
+        ro = pa.get_readonly_fields(req, obj=self.product)
+        # Allowed fields must NOT be read-only
+        for f in ProductAdmin.THERAPIST_ALLOWED:
+            self.assertNotIn(f, ro, f"{f} should be editable for therapist")
+
+    def test_non_therapist_not_restricted(self):
+        from store.admin import ProductAdmin
+        from django.contrib.admin import site as admin_site
+        su = User.objects.create_superuser("supertest2", "su2@x.com", "SuperPass2!")
+        req = RequestFactory().get("/")
+        req.user = su
+        pa = ProductAdmin(Product, admin_site)
+        ro = pa.get_readonly_fields(req, obj=self.product)
+        self.assertNotIn("name", ro)
+
+
+class RBACViewerMaskingTests(TestCase):
+    """Viewer sees masked phone/address in the order detail."""
+
+    def setUp(self):
+        from store.management.commands.setup_roles import Command
+        from orders.models import Order
+        Command().handle()
+        self.viewer = _make_staff("viewer2")
+        _assign_role(self.viewer, "Viewer")
+        self.order = Order.objects.create(
+            full_name="Ali Khan", phone="03009876543", city="Lahore",
+            address="55 Park Ave", payment_method=Order.Payment.COD,
+            subtotal=2000, delivery_fee=200, total=2200,
+        )
+
+    def test_viewer_fieldset_uses_masked_phone(self):
+        from orders.admin import OrderAdmin
+        from django.contrib.admin import site as admin_site
+        req = RequestFactory().get("/")
+        req.user = self.viewer
+        oa = OrderAdmin(self.order.__class__, admin_site)
+        fs = oa.get_fieldsets(req, self.order)
+        customer_fs = next(f for name, f in fs if name == "Customer")
+        all_fields = [f for row in customer_fs["fields"] for f in (row if isinstance(row, (list, tuple)) else [row])]
+        self.assertIn("masked_phone_ro", all_fields)
+        self.assertNotIn("phone", all_fields)
+
+    def test_full_perms_user_sees_real_phone(self):
+        from orders.admin import OrderAdmin
+        from django.contrib.admin import site as admin_site
+        manager = _make_staff("manager1")
+        _assign_role(manager, "Manager")
+        req = RequestFactory().get("/")
+        req.user = manager
+        oa = OrderAdmin(self.order.__class__, admin_site)
+        fs = oa.get_fieldsets(req, self.order)
+        customer_fs = next(f for name, f in fs if name == "Customer")
+        all_fields = [f for row in customer_fs["fields"] for f in (row if isinstance(row, (list, tuple)) else [row])]
+        self.assertIn("phone", all_fields)
+
+
+class RBACStaffProfileTests(TestCase):
+    """StaffProfileAdmin is superuser-only; is_superuser cannot be set through it."""
+
+    def setUp(self):
+        from store.management.commands.setup_roles import Command
+        Command().handle()
+        self.su = User.objects.create_superuser("su_staff", "su_s@x.com", "SuperPass1!")
+        self.regular_staff = _make_staff("reg_staff1")
+
+    def test_non_superuser_cannot_access_staff_list(self):
+        self.client.force_login(self.regular_staff)
+        resp = self.client.get(reverse("admin:store_staffprofile_changelist"))
+        self.assertNotEqual(resp.status_code, 200)
+
+    def test_superuser_can_access_staff_list(self):
+        self.client.force_login(self.su)
+        resp = self.client.get(reverse("admin:store_staffprofile_changelist"))
+        self.assertEqual(resp.status_code, 200)
+
+    def test_superuser_not_in_staff_list(self):
+        from store.admin import StaffProfileAdmin
+        from store.models import StaffProfile
+        from django.contrib.admin import site as admin_site
+        req = RequestFactory().get("/")
+        req.user = self.su
+        spa = StaffProfileAdmin(StaffProfile, admin_site)
+        qs = spa.get_queryset(req)
+        self.assertFalse(qs.filter(is_superuser=True).exists())
+
+    def test_staff_form_sets_is_staff_true(self):
+        from store.admin import StaffProfileForm
+        data = {
+            "username": "newstaff1",
+            "first_name": "", "last_name": "",
+            "email": "ns@x.com",
+            "is_active": True,
+            "password1": "NewPass123!",
+            "password2": "NewPass123!",
+            "role": "",
+        }
+        form = StaffProfileForm(data=data)
+        self.assertTrue(form.is_valid(), form.errors)
+        user = form.save()
+        self.assertTrue(user.is_staff)
+
+    def test_staff_form_password_mismatch_errors(self):
+        from store.admin import StaffProfileForm
+        data = {
+            "username": "newstaff2",
+            "first_name": "", "last_name": "",
+            "email": "ns2@x.com",
+            "is_active": True,
+            "password1": "NewPass123!",
+            "password2": "WrongPass!",
+            "role": "",
+        }
+        form = StaffProfileForm(data=data)
+        self.assertFalse(form.is_valid())
+        self.assertIn("password2", form.errors)
+
+
+class RBACProxySettingsTests(TestCase):
+    """Proxy settings pages redirect to the same StoreSettings row."""
+
+    def setUp(self):
+        self.su = User.objects.create_superuser("su_proxy", "sp@x.com", "SuperPass1!")
+        self.settings = StoreSettings.objects.create()
+
+    def test_storeinfo_redirects_to_settings_change(self):
+        self.client.force_login(self.su)
+        resp = self.client.get(reverse("admin:store_storeinfo_changelist"))
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn(f"/{self.settings.pk}/change/", resp["Location"])
+
+    def test_paymentsettings_redirects_to_settings_change(self):
+        self.client.force_login(self.su)
+        resp = self.client.get(reverse("admin:store_paymentsettings_changelist"))
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn(f"/{self.settings.pk}/change/", resp["Location"])
+
+    def test_non_superuser_cannot_access_storeinfo(self):
+        staff = _make_staff("staffproxy1")
+        self.client.force_login(staff)
+        resp = self.client.get(reverse("admin:store_storeinfo_changelist"))
+        self.assertNotEqual(resp.status_code, 200)
+
+    def test_proxy_change_page_loads_for_superuser(self):
+        self.client.force_login(self.su)
+        resp = self.client.get(
+            reverse("admin:store_storeinfo_change", args=[self.settings.pk])
+        )
+        self.assertEqual(resp.status_code, 200)
