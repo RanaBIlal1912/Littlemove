@@ -2333,3 +2333,102 @@ body.has-hero.has-topbar .hero-fullbleed {
   [dir="rtl"] .header-main { gap: 8px; }
   [dir="rtl"] .search { max-width: 100%; }
 }
+
+/* ── Extended language dropdown (GT) ── */
+.lang-menu--extended {
+  width: 320px;
+  max-height: 480px;
+  display: flex;
+  flex-direction: column;
+}
+.lang-menu-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+.lang-group-label {
+  padding: 8px 16px 4px;
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #9ca3af;
+}
+.lang-group-sep {
+  border-top: 1px solid #f3f4f6;
+  margin: 6px 0;
+}
+.lang-search-wrap {
+  padding: 6px 12px;
+}
+.lang-search {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 10px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: .85rem;
+  outline: none;
+}
+.lang-search:focus { border-color: var(--primary, #3BA4E6); }
+.lang-gt-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0;
+  max-height: 240px;
+}
+.lang-gt-opt {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  width: 100%;
+  padding: 7px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: .875rem;
+  color: #374151;
+  text-align: start;
+}
+.lang-gt-opt:hover { background: #f3f4f6; }
+.lang-gt-opt.lang-opt--active { font-weight: 700; color: var(--primary, #3BA4E6); background: #eff6ff; }
+.lang-gt-en {
+  font-size: .76rem;
+  color: #9ca3af;
+  margin-inline-start: 2px;
+}
+.lang-menu-footer {
+  border-top: 1px solid #f3f4f6;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.lang-reset {
+  font-size: .82rem;
+  color: var(--primary, #3BA4E6);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: start;
+  padding: 2px 0;
+  font-weight: 600;
+}
+.lang-reset:hover { text-decoration: underline; }
+.lang-gt-notice {
+  font-size: .72rem;
+  color: #9ca3af;
+  line-height: 1.4;
+}
+
+/* Admin language dropdown */
+.lm-admin-lang select {
+  font-size: .8125rem;
+  background: transparent;
+  color: inherit;
+  border: 1px solid rgba(255,255,255,.3);
+  border-radius: 4px;
+  padding: 3px 6px;
+  cursor: pointer;
+}

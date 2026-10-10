@@ -94,6 +94,7 @@ TEMPLATES = [
                 "django.template.context_processors.i18n",
                 "store.context_processors.store",
                 "store.context_processors.site_context",
+                "store.context_processors.lang_context",
             ],
         },
     },
@@ -138,6 +139,17 @@ LANGUAGES = [
     ("ar",      "العربية"),
 ]
 LOCALE_PATHS = [BASE_DIR / "locale"]
+
+ENABLE_GOOGLE_TRANSLATE = env_bool("ENABLE_GOOGLE_TRANSLATE", True)
+
+# ── Content Security Policy (if used) ─────────────────────────────────────────
+# When ENABLE_GOOGLE_TRANSLATE is True, allow these external origins:
+# script-src: translate.googleapis.com
+# style-src:  translate.googleapis.com fonts.googleapis.com
+# img-src:    www.gstatic.com translate.googleapis.com
+# connect-src: translate.googleapis.com translate.google.com
+# font-src:   fonts.gstatic.com
+# Add these only to your CSP header if you configure one.
 TIME_ZONE = "Asia/Karachi"
 USE_TZ = True
 

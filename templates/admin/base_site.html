@@ -3,26 +3,72 @@
 
 {% block extrahead %}
 {{ block.super }}
+{% if ENABLE_GOOGLE_TRANSLATE and current_gt_lang %}
+<div id="google_translate_element" style="display:none" aria-hidden="true"></div>
+<script>
+window._lm_gt_active = '{{ current_gt_lang }}';
+window.googleTranslateElementInit = function() {
+  new google.translate.TranslateElement({pageLanguage:'en',autoDisplay:false},'google_translate_element');
+};
+</script>
+<script src="//translate.googleapis.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+{% endif %}
+{% if ENABLE_GOOGLE_TRANSLATE %}
+<style>
+.goog-te-banner-frame,.skiptranslate,#google_translate_element,.goog-te-gadget{display:none!important}
+body{top:0!important}
+font{font-family:inherit}
+</style>
+{% else %}
 <style>
 .lm-admin-lang { display:inline-flex; align-items:center; gap:4px; }
 .lm-admin-lang select { font-size:.8125rem; border:1px solid rgba(255,255,255,.25); background:transparent; color:inherit; border-radius:4px; padding:3px 6px; cursor:pointer; }
 .lm-admin-lang select:focus { outline:2px solid rgba(255,255,255,.5); }
 </style>
+{% endif %}
 {% endblock %}
 
 {% block userlinks %}
-<div class="lm-admin-lang">
+<div class="lm-admin-lang" style="display:inline-flex;align-items:center;gap:6px;margin-inline-end:8px">
   {% get_current_language as cur_lang %}
   {% get_available_languages as avail_langs %}
-  <form action="{% url 'set_language' %}" method="post" style="display:inline-flex;align-items:center;gap:6px">
+  <form action="{% url 'set_language' %}" method="post" style="display:inline-flex;align-items:center;gap:4px">
     {% csrf_token %}
     <input type="hidden" name="next" value="{{ request.get_full_path }}">
-    <select name="language" onchange="this.form.submit()" aria-label="Admin language">
+    <select name="language" onchange="this.form.submit()" aria-label="Admin language"
+            style="font-size:.8125rem;background:transparent;color:inherit;border:1px solid rgba(255,255,255,.3);border-radius:4px;padding:3px 6px;cursor:pointer">
       {% for lc, ln in avail_langs %}
-      <option value="{{ lc }}" {% if lc == cur_lang %}selected{% endif %}>{{ ln }}</option>
+      <option value="{{ lc }}" {% if lc == cur_lang %}selected{% endif %} class="notranslate">{{ ln }}</option>
       {% endfor %}
     </select>
   </form>
+  {% if ENABLE_GOOGLE_TRANSLATE %}
+  <select id="admin-gt-select" aria-label="More languages" onchange="adminGTChange(this.value)"
+          style="font-size:.8125rem;background:transparent;color:inherit;border:1px solid rgba(255,255,255,.3);border-radius:4px;padding:3px 6px;cursor:pointer">
+    <option value="" class="notranslate">&#x1F310; More languages</option>
+    {% for code, native, english, rtl in GT_LANGUAGES %}
+    <option value="{{ code }}" {% if code == current_gt_lang %}selected{% endif %} class="notranslate">{{ native }} — {{ english }}</option>
+    {% endfor %}
+    {% if current_gt_lang %}<option value="__reset__" class="notranslate">&#x21A9; Show original</option>{% endif %}
+  </select>
+  <script>
+  function adminGTChange(code) {
+    if (!code) return;
+    if (code === '__reset__') {
+      document.cookie='lm_gt_lang=;path=/;max-age=0';
+      document.cookie='googtrans=;path=/;max-age=0';
+      document.cookie='django_language=en;path=/;max-age='+(365*24*3600);
+      location.reload(); return;
+    }
+    var d=location.hostname;
+    document.cookie='googtrans=/en/'+code+';path=/';
+    document.cookie='googtrans=/en/'+code+';path=/;domain='+d;
+    document.cookie='lm_gt_lang='+code+';path=/;max-age='+(365*24*3600)+';samesite=Lax';
+    document.cookie='django_language=en;path=/;max-age='+(365*24*3600);
+    location.reload();
+  }
+  </script>
+  {% endif %}
 </div>
 {{ block.super }}
 {% endblock %}

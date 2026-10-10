@@ -14,7 +14,7 @@
         </a>
         <div>
           <h3><a href="{{ p.get_absolute_url }}">{{ p.name }}</a></h3>
-          <p class="small muted">{{ p.price|rs }} each</p>
+          <p class="small muted notranslate" translate="no">{{ p.price|rs }} each</p>
           <div class="line-actions">
             <form method="post" action="{% url 'store:cart_update' p.pk %}">
               {% csrf_token %}
@@ -31,7 +31,7 @@
           </div>
           {% if line.over_stock %}<p class="warn" style="margin-top:6px">Only {{ p.stock }} left — lower the quantity to check out.</p>{% endif %}
         </div>
-        <div class="line-total">{{ line.line_total|rs }}</div>
+        <div class="line-total notranslate" translate="no">{{ line.line_total|rs }}</div>
       </div>
       {% endwith %}{% endfor %}
       <a class="link" href="{% url 'store:shop' %}" style="margin-top:8px">{% trans "Continue shopping" %}</a>
@@ -40,9 +40,9 @@
     <aside class="box" aria-label="Order summary">
       <h2>{% trans "Order summary" %}</h2>
       <div class="rows">
-        <div><span>{% trans "Subtotal" %}</span><span>{{ subtotal|rs }}</span></div>
-        <div><span>{% trans "Delivery fee" %}</span><span>{% if delivery %}{{ delivery|rs }}{% else %}{% trans "Free delivery" %}{% endif %}</span></div>
-        <div class="total"><span>{% trans "Total" %}</span><span>{{ total|rs }}</span></div>
+        <div><span>{% trans "Subtotal" %}</span><span class="notranslate" translate="no">{{ subtotal|rs }}</span></div>
+        <div><span>{% trans "Delivery fee" %}</span><span class="notranslate" translate="no">{% if delivery %}{{ delivery|rs }}{% else %}{% trans "Free delivery" %}{% endif %}</span></div>
+        <div class="total"><span>{% trans "Total" %}</span><span class="notranslate" translate="no">{{ total|rs }}</span></div>
       </div>
       {% if to_free_delivery %}
       <div class="free-meter">Add <b>{{ to_free_delivery|rs }}</b> more for free delivery.

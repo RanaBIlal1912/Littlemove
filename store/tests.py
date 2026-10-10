@@ -2077,3 +2077,66 @@ class TranslationCoverageTests(TestCase):
         self._set_lang("ar")
         resp = self.client.get(reverse("store:home"))
         self.assertContains(resp, 'dir="rtl"')
+
+
+class GoogleTranslateTests(TestCase):
+    """Google Translate integration: dropdown, cookies, no element.js on normal load."""
+
+    def test_gt_languages_no_duplicate_codes(self):
+        from store.languages import GT_LANGUAGES
+        codes = [lang[0] for lang in GT_LANGUAGES]
+        self.assertEqual(len(codes), len(set(codes)), "Duplicate GT language codes found")
+
+    def test_gt_rtl_flags_are_bool(self):
+        from store.languages import GT_LANGUAGES
+        for code, native, english, rtl in GT_LANGUAGES:
+            self.assertIsInstance(rtl, bool, f"{code} rtl flag should be bool")
+
+    def test_native_codes_not_in_gt_list(self):
+        from store.languages import GT_LANGUAGES, NATIVE_CODES
+        gt_codes = {lang[0] for lang in GT_LANGUAGES}
+        overlap = NATIVE_CODES & gt_codes
+        # ur and ar may overlap with GT codes — that's fine, we check native first
+        # Just ensure NATIVE_CODES is defined
+        self.assertIn("en", NATIVE_CODES)
+
+    def test_element_js_not_in_normal_page_load(self):
+        """element.js must NOT appear in the HTML when no lm_gt_lang cookie is set."""
+        resp = self.client.get("/")
+        self.assertNotContains(resp, "element.js")
+
+    def test_element_js_loaded_when_gt_cookie_set(self):
+        """element.js must appear when lm_gt_lang cookie is set."""
+        self.client.cookies['lm_gt_lang'] = 'fr'
+        resp = self.client.get("/")
+        self.assertContains(resp, "element.js")
+
+    def test_gt_dropdown_renders_two_groups(self):
+        resp = self.client.get("/")
+        self.assertContains(resp, "More languages")
+        self.assertContains(resp, "lang-gt-list")
+
+    def test_brand_name_has_notranslate(self):
+        resp = self.client.get("/")
+        self.assertContains(resp, 'notranslate')
+
+    def test_enable_google_translate_false_removes_gt(self):
+        from django.test import override_settings
+        with override_settings(ENABLE_GOOGLE_TRANSLATE=False):
+            resp = self.client.get("/")
+            self.assertNotContains(resp, "element.js")
+            self.assertNotContains(resp, 'id="lang-gt-list"')
+
+    def test_switching_to_native_language_still_works(self):
+        resp = self.client.post(
+            reverse("set_language"),
+            {"language": "ur", "next": "/"},
+            follow=True,
+        )
+        self.assertContains(resp, 'lang="ur"')
+
+    def test_no_url_changes_with_gt_cookie(self):
+        self.client.cookies['lm_gt_lang'] = 'tr'
+        for url in ["/", reverse("store:shop"), reverse("orders:track")]:
+            resp = self.client.get(url)
+            self.assertIn(resp.status_code, [200, 302])

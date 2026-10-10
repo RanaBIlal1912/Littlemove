@@ -28,8 +28,8 @@
     <h3><a href="{{ p.get_absolute_url }}">{{ p.name }}</a></h3>
     <span class="pcard-age">Ages {{ p.age_label }}</span>
     <div class="price-row">
-      <span class="price{% if p.on_sale %} price-sale{% endif %}">{{ p.price|rs }}</span>
-      {% if p.on_sale %}<span class="price-old">{{ p.compare_at_price|rs }}</span>{% endif %}
+      <span class="price{% if p.on_sale %} price-sale{% endif %} notranslate" translate="no">{{ p.price|rs }}</span>
+      {% if p.on_sale %}<span class="price-old notranslate" translate="no">{{ p.compare_at_price|rs }}</span>{% endif %}
     </div>
     {% with tags=p.helps_with_list|slice:":3" %}{% if tags %}
     <div class="pcard-skills">{% for tag in tags %}<span class="skill-tag">{{ tag }}</span>{% endfor %}</div>

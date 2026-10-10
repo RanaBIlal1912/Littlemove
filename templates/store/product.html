@@ -55,8 +55,8 @@
       <h1>{{ product.name }}</h1>
 
       <div class="price-box">
-        <span class="price{% if product.on_sale %} price-sale{% endif %}">{{ product.price|rs }}</span>
-        {% if product.on_sale %}<span class="price-old">{{ product.compare_at_price|rs }}</span><span class="save">{% blocktrans with amount=product.saving|rs %}Save Rs {{ amount }}{% endblocktrans %}</span>{% endif %}
+        <span class="price{% if product.on_sale %} price-sale{% endif %} notranslate" translate="no">{{ product.price|rs }}</span>
+        {% if product.on_sale %}<span class="price-old notranslate" translate="no">{{ product.compare_at_price|rs }}</span><span class="save notranslate" translate="no">{% blocktrans with amount=product.saving|rs %}Save Rs {{ amount }}{% endblocktrans %}</span>{% endif %}
       </div>
 
       {% if product.in_stock %}
@@ -148,7 +148,7 @@
 
 {% if product.in_stock %}
 <div class="sticky-buy" aria-label="Quick buy">
-  <div><small>{{ product.name|truncatechars:26 }}</small><span class="price{% if product.on_sale %} price-sale{% endif %}">{{ product.price|rs }}</span></div>
+  <div><small>{{ product.name|truncatechars:26 }}</small><span class="price{% if product.on_sale %} price-sale{% endif %} notranslate" translate="no">{{ product.price|rs }}</span></div>
   <button class="btn" type="submit" form="buy-form">{% icon 'cart' 18 2.2 %} {% trans "Add to cart" %}</button>
 </div>
 {% endif %}

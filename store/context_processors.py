@@ -1,3 +1,5 @@
+import json
+
 from .cart import Cart
 from .models import BotAnswer, Category, Need, Popup, StoreSettings
 from .views import AGE_BANDS
@@ -40,4 +42,26 @@ def site_context(request):
     return {
         "popup": popup,
         "wishlist_count": len(request.session.get("wishlist", [])),
+    }
+
+
+def lang_context(request):
+    """Inject language list and Google Translate state into every template."""
+    from django.conf import settings
+    try:
+        from store.languages import NATIVE_LANGUAGES, GT_LANGUAGES, GT_RTL_CODES
+    except ImportError:
+        NATIVE_LANGUAGES = []
+        GT_LANGUAGES = []
+        GT_RTL_CODES = set()
+
+    gt_lang = request.COOKIES.get('lm_gt_lang', '')
+
+    return {
+        'NATIVE_LANGUAGES': NATIVE_LANGUAGES,
+        'GT_LANGUAGES': GT_LANGUAGES,
+        # Comma-separated string for safe data-attribute usage in JS
+        'GT_RTL_CODES': ','.join(sorted(GT_RTL_CODES)),
+        'ENABLE_GOOGLE_TRANSLATE': getattr(settings, 'ENABLE_GOOGLE_TRANSLATE', True),
+        'current_gt_lang': gt_lang,  # empty string if native mode
     }
