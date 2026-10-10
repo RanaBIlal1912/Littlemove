@@ -98,3 +98,37 @@ orders/      checkout, orders, tracking, admin order tools, tests
 templates/   all page templates
 static/      CSS, fonts, favicon
 ```
+
+## Cloudinary setup
+
+Upload storage on Render. Set this env var in the Render dashboard (never commit it):
+
+```
+CLOUDINARY_URL=cloudinary://API_KEY:API_SECRET@CLOUD_NAME
+```
+
+Without it, uploaded files are stored on the ephemeral disk and will be lost on redeploy.
+
+## Render free-tier notes
+
+- Cold starts: the first request after inactivity takes ~30 seconds.
+- Ephemeral disk: all files written to disk (including uploads) are deleted on each deploy unless Cloudinary is configured.
+- Free Postgres: expires after 30 days on Render free tier. Upgrade or back up regularly.
+
+## Upload rules
+
+- Images: jpg, png, webp, gif, avif, heic — max 10 MB. Content is verified by magic bytes; renaming a script to .jpg is rejected.
+- Videos: mp4, webm, mov — max 50 MB.
+- Documents: pdf — max 10 MB.
+- Archives (bulk): zip — max 200 MB, 2000 files, 500 MB uncompressed.
+
+## Language
+
+The storefront is English with Google Translate for all other languages. The globe icon in the header lets visitors choose from ~100 languages. No hand-written translations are used.
+
+## Bulk product import
+
+1. Go to admin → Products → Bulk import (or Products → Bulk photo upload for photos only).
+2. Download the CSV template.
+3. Fill in products (one per row) and zip photos named exactly as the SKU column.
+4. Upload the CSV (and optionally the ZIP).
