@@ -64,7 +64,6 @@
         {% for a in msgs %}<span class="{% if forloop.first %}on{% endif %}">{{ a }}</span>{% endfor %}
       </div>
       <div class="topbar-links">
-        <a href="{% url 'orders:track' %}">Track order</a>
         <a href="{% url 'store:delivery' %}">Delivery and returns</a>
         <a href="https://wa.me/{{ shop.whatsapp_number }}" target="_blank" rel="noopener">WhatsApp +{{ shop.whatsapp_number }}</a>
       </div>
@@ -723,6 +722,15 @@
         });
       }, 700);
     }
+  })();
+  </script>
+
+  <script>
+  (function(){
+    var h = document.querySelector('.header');
+    if (!h) return;
+    function tick() { h.classList.toggle('js-scrolled', scrollY > 60); }
+    addEventListener('scroll', tick, {passive: true});
   })();
   </script>
 

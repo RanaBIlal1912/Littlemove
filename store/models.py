@@ -77,8 +77,12 @@ class StoreSettings(models.Model):
         help_text="Slow-moving colour gradient mesh in the page background. Turn off for a plain look.",
     )
     hero_height = models.CharField(
-        "Hero banner height", max_length=8, default="full",
-        choices=[("full", "Full screen (100vh)"), ("medium", "Medium (55vh)")],
+        "Hero banner height", max_length=8, default="compact",
+        choices=[
+            ("compact", "Compact (recommended — ~380px)"),
+            ("medium",  "Medium (~480px)"),
+            ("full",    "Full screen (~520px)"),
+        ],
         help_text="Height of the home page hero banner.",
     )
 

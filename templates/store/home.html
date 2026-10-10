@@ -11,7 +11,7 @@
 
 {# ── HERO SLIDER (full-bleed 100vh) ──────────────────────────────── #}
 {% if section_type == "hero_slider" %}{% with s=sections.hero_slider %}{% if not s or s.enabled %}
-<section class="hero hero-fullbleed{% if shop.hero_height == 'medium' %} hero-medium{% endif %}">
+<section class="hero hero-fullbleed{% if shop.hero_height == 'compact' %} hero-compact{% elif shop.hero_height == 'medium' %} hero-medium{% endif %}">
   <div class="swiper hero-swiper" aria-roledescription="carousel" aria-label="Offers">
     <div class="swiper-wrapper slides" id="slides">
       {% for b in banners %}
