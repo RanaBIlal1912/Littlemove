@@ -2155,6 +2155,18 @@ class GoogleTranslateTests(TestCase):
             self.assertIn(resp.status_code, [200, 302])
 
 
+class MilaChipsTests(TestCase):
+    def test_chips_default_not_empty(self):
+        from store.models import BotSettings
+        bot = BotSettings()
+        self.assertGreater(len(bot.quick_replies_list), 0)
+
+    def test_chips_capped_at_6(self):
+        from store.models import BotSettings
+        bot = BotSettings(quick_replies="\n".join([f"Q{i}" for i in range(20)]))
+        self.assertLessEqual(len(bot.quick_replies_list), 6)
+
+
 class OgImageTests(TestCase):
     def test_absolute_url_filter_local(self):
         from store.templatetags.store_tags import absolute_url

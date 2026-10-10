@@ -818,11 +818,22 @@ class BotSettings(models.Model):
         obj, _ = cls.objects.get_or_create(pk=1)
         return obj
 
-    def quick_replies(self):
+    quick_replies = models.TextField(
+        "Conversation starter chips",
+        blank=True,
+        default="Toys for age 2–4\nSpeech therapy toys\nDelivery charges\nTrack my order\nTalk on WhatsApp",
+        help_text="One suggestion per line. Shown as clickable chips at the start of every Mila conversation.",
+    )
+
+    def get_quick_reply_buttons(self):
         return [r for r in [
             self.quick_reply_1, self.quick_reply_2, self.quick_reply_3,
             self.quick_reply_4, self.quick_reply_5, self.quick_reply_6,
         ] if r.strip()]
+
+    @property
+    def quick_replies_list(self):
+        return [r.strip() for r in self.quick_replies.splitlines() if r.strip()][:6]
 
 
 class BotAnswer(models.Model):

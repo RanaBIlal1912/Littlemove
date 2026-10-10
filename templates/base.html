@@ -324,6 +324,13 @@
       </div>
       <div class="mila-msgs" id="mila-msgs"></div>
       <div class="mila-opts" id="mila-opts"></div>
+      {% if bot.quick_replies %}
+      <div class="mila-chips" id="mila-chips" role="group" aria-label="Suggested questions">
+        {% for chip in bot.quick_replies_list %}
+        <button type="button" class="mila-chip notranslate" translate="no">{{ chip }}</button>
+        {% endfor %}
+      </div>
+      {% endif %}
     </div>
   </div>
 

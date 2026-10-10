@@ -1,7 +1,7 @@
 import json
 
 from .cart import Cart
-from .models import BotAnswer, Category, Need, Popup, StoreSettings
+from .models import BotAnswer, BotSettings, Category, Need, Popup, StoreSettings
 from .views import AGE_BANDS
 
 
@@ -21,6 +21,7 @@ def store(request):
     ]
     return {
         "shop": StoreSettings.load(),
+        "bot": BotSettings.load(),
         "cart_count": Cart(request).count,
         "nav_categories": Category.objects.filter(is_active=True),
         "nav_ages": AGE_BANDS,

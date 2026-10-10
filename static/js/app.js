@@ -522,6 +522,21 @@
     }
     toggle.addEventListener("click", function () { open(!bot.classList.contains("open")); });
     if (xbtn) xbtn.addEventListener("click", function () { open(false); });
+
+    // Conversation starter chips (server-rendered from BotSettings.quick_replies)
+    document.querySelectorAll('.mila-chip').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        var text = chip.textContent.trim();
+        if (!text) return;
+        // Open bot window if not already open
+        if (!bot.classList.contains('open')) open(true);
+        // Hide chips after first use
+        var chipsEl = document.getElementById('mila-chips');
+        if (chipsEl) chipsEl.style.display = 'none';
+        // Send the chip text as a message
+        send(text);
+      });
+    });
   }
 
   /* ---------------- 11. Search suggestions ---------------- */
@@ -529,32 +544,86 @@
     var input = document.getElementById("q");
     var form = input && input.closest("form");
     if (!input || !form) return;
+
+    input.setAttribute("role", "combobox");
+    input.setAttribute("aria-autocomplete", "list");
+    input.setAttribute("aria-haspopup", "listbox");
+    input.setAttribute("autocomplete", "off");
+
     var box = document.createElement("div");
     box.className = "search-suggest";
     box.setAttribute("role", "listbox");
+    box.id = "search-suggest-list";
+    input.setAttribute("aria-controls", "search-suggest-list");
+    form.style.position = "relative";
     form.appendChild(box);
-    var t = null;
-    function hide() { box.classList.remove("open"); box.innerHTML = ""; }
-    input.addEventListener("input", function () {
+
+    var t = null, activeIdx = -1;
+
+    function hide() {
+      box.classList.remove("open");
+      box.innerHTML = "";
+      activeIdx = -1;
+      input.removeAttribute("aria-activedescendant");
+    }
+
+    function getItems() { return Array.from(box.querySelectorAll("a[role='option']")); }
+
+    function setActive(idx) {
+      var items = getItems();
+      items.forEach(function(a, i) {
+        a.classList.toggle("active", i === idx);
+        if (i === idx) {
+          a.setAttribute("aria-selected", "true");
+          input.setAttribute("aria-activedescendant", a.id || "");
+          a.scrollIntoView({ block: "nearest" });
+        } else {
+          a.removeAttribute("aria-selected");
+        }
+      });
+      activeIdx = idx;
+    }
+
+    input.addEventListener("keydown", function(e) {
+      if (!box.classList.contains("open")) return;
+      var items = getItems();
+      if (e.key === "ArrowDown") { e.preventDefault(); setActive(Math.min(activeIdx + 1, items.length - 1)); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); setActive(Math.max(activeIdx - 1, 0)); }
+      else if (e.key === "Enter" && activeIdx >= 0) { e.preventDefault(); items[activeIdx].click(); }
+      else if (e.key === "Escape") { hide(); }
+    });
+
+    input.addEventListener("input", function() {
       var q = input.value.trim();
       clearTimeout(t);
       if (q.length < 2) { hide(); return; }
-      t = setTimeout(function () {
+      t = setTimeout(function() {
         fetch("/api/search/?q=" + encodeURIComponent(q))
-          .then(function (r) { return r.json(); })
-          .then(function (data) {
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
             if (!data.results || !data.results.length) { hide(); return; }
-            box.innerHTML = data.results.map(function (p) {
-              var img = p.image ? '<img src="' + p.image + '" alt="">' : '<span class="ph"></span>';
-              return '<a href="' + p.url + '">' + img +
-                '<span><b>' + escapeHtml(p.name) + '</b><small>' + escapeHtml(p.category) + '</small></span>' +
-                '<span class="ss-price">' + rs(p.price) + '</span></a>';
+            var html = data.results.map(function(p, i) {
+              var img = p.image
+                ? '<img src="' + escapeHtml(p.image) + '" alt="" loading="lazy">'
+                : '<span class="ph"></span>';
+              var price = p.price ? '<span class="ss-price">' + rs(p.price) + '</span>' : '';
+              var cat = p.category ? '<small>' + escapeHtml(p.category) + '</small>' : '';
+              return '<a href="' + escapeHtml(p.url) + '" role="option" id="ss-opt-' + i + '">'
+                + img
+                + '<span><b>' + escapeHtml(p.name) + '</b>' + cat + '</span>'
+                + price + '</a>';
             }).join("");
+            // "See all" row
+            html += '<a href="/shop/?q=' + encodeURIComponent(input.value.trim())
+              + '" class="ss-all" role="option" id="ss-opt-all">See all results →</a>';
+            box.innerHTML = html;
             box.classList.add("open");
+            activeIdx = -1;
           }).catch(hide);
-      }, 300);
+      }, 200);
     });
-    document.addEventListener("click", function (e) {
+
+    document.addEventListener("click", function(e) {
       if (!form.contains(e.target)) hide();
     });
   }

@@ -692,6 +692,7 @@ class OurStoryAdmin(ModelAdmin):
 class BotSettingsAdmin(ModelAdmin):
     fieldsets = [
         ("General", {"fields": ["enabled", "bot_name", "welcome_message"]}),
+        ("Conversation starter chips", {"fields": ["quick_replies"]}),
         ("Fallback & AI", {"fields": ["fallback_message", "use_ai"]}),
     ]
 

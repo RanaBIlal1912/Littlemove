@@ -2381,6 +2381,20 @@ body.has-hero.has-topbar .hero-fullbleed {
 .pcard-name { font-size: .95rem; -webkit-line-clamp: 2; }
 .pcard-price { font-size: .95rem; font-weight: 800; }
 
+/* ── E3: Mila conversation starter chips ────────────────────────────── */
+.mila-chips {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  padding: 8px 12px; border-top: 1px solid #f3f4f6;
+  flex-shrink: 0;
+}
+.mila-chip {
+  padding: 5px 12px; border-radius: 16px; font-size: .8rem;
+  background: #f0f9ff; border: 1px solid #bae6fd; color: #0369a1;
+  cursor: pointer; white-space: nowrap;
+  transition: background .15s;
+}
+.mila-chip:hover { background: #e0f2fe; }
+
 /* ── D1: Mobile hero height ──────────────────────────────────────────── */
 @media (max-width: 767px) {
   .hero { height: clamp(260px, 42vh, 380px) !important; }
