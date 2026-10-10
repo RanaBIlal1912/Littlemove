@@ -112,9 +112,12 @@ def dashboard_callback(request, context):
         context["low_stock_products"] = []
         context["no_photo_count"] = None
 
-    context["cloudinary_warning"] = (
-        not os.environ.get("CLOUDINARY_URL") and not getattr(settings_module, "DEBUG", False)
-    )
+    import os as _os
+    _cu = _os.environ.get("CLOUDINARY_URL", "")
+    _invalid_cu = bool(_cu) and not _cu.startswith("cloudinary://")
+    _missing_cu = not _cu and not getattr(settings_module, "DEBUG", False)
+    context["cloudinary_warning"] = _missing_cu or _invalid_cu
+    context["cloudinary_url_invalid"] = _invalid_cu
 
     return context
 

@@ -310,6 +310,66 @@ class UploadValidationTests(TestCase):
         self.assertIn("photo.jpg", names)
 
 
+class StorageErrorResilienceTests(TestCase):
+    """
+    Saving an existing object whose stored file is missing from storage must NOT raise 500.
+    Regression for: OSError escaping hasattr(f, "file") in clean() methods.
+    """
+
+    def test_saving_product_with_missing_file_does_not_raise(self):
+        """
+        Calling full_clean() then save() on a product whose image is committed to storage
+        (but the file is missing/on old disk) must not raise OSError or ValidationError.
+        """
+        cat = Category.objects.create(name="Test Cat 500", slug="test-cat-500")
+        p = Product.objects.create(
+            category=cat,
+            name="Test Product 500",
+            slug="test-product-500",
+            price=100,
+            summary="test",
+        )
+        # Manually set the name on the FieldFile to simulate an existing committed file
+        p.image.name = "products/nonexistent_photo.jpg"
+        # DON'T save — the name is already on the field; full_clean just needs to not crash
+        p.price = 200
+        p.full_clean()  # would 500 before fix
+        p.save()
+        self.assertEqual(Product.objects.get(pk=p.pk).price, 200)
+
+    def test_new_valid_image_still_validates(self):
+        """A real new upload (not committed) still passes validation."""
+        from store.uploads import is_new_upload
+
+        class FakeFieldFile:
+            _committed = False
+            def __bool__(self):
+                return True
+
+        self.assertTrue(is_new_upload(FakeFieldFile()))
+
+    def test_is_new_upload_false_for_committed(self):
+        """is_new_upload returns False for a committed (saved) FieldFile — never touches storage."""
+        from store.uploads import is_new_upload
+
+        class FakeFieldFile:
+            _committed = True
+            def __bool__(self):
+                return True
+
+        self.assertFalse(is_new_upload(FakeFieldFile()))
+
+    def test_is_new_upload_false_for_empty(self):
+        from store.uploads import is_new_upload
+
+        class EmptyFieldFile:
+            _committed = False
+            def __bool__(self):
+                return False
+
+        self.assertFalse(is_new_upload(EmptyFieldFile()))
+
+
 # ── Chatbot tests ─────────────────────────────────────────────────────────────
 
 @override_settings(

@@ -125,10 +125,10 @@ class StoreSettings(models.Model):
         return "Store settings"
 
     def clean(self):
-        from store.uploads import validate_upload
+        from store.uploads import validate_upload, is_new_upload
         for field_name in ("logo", "white_logo", "favicon", "share_image"):
             f = getattr(self, field_name)
-            if f and hasattr(f, "file"):
+            if is_new_upload(f):
                 try:
                     validate_upload(f, allow_kinds=("image",))
                 except ValidationError as exc:
@@ -189,8 +189,8 @@ class Category(models.Model):
         return self.name
 
     def clean(self):
-        if self.image and hasattr(self.image, "file"):
-            from store.uploads import validate_upload
+        from store.uploads import validate_upload, is_new_upload
+        if is_new_upload(self.image):
             try:
                 validate_upload(self.image, allow_kinds=("image",))
             except ValidationError as exc:
@@ -288,8 +288,8 @@ class Product(models.Model):
         return self.name
 
     def clean(self):
-        if self.image and hasattr(self.image, "file"):
-            from store.uploads import validate_upload
+        from store.uploads import validate_upload, is_new_upload
+        if is_new_upload(self.image):
             try:
                 validate_upload(self.image, allow_kinds=("image",))
             except ValidationError as exc:
@@ -357,8 +357,8 @@ class ProductPhoto(models.Model):
         return self.alt or f"Photo of {self.product}"
 
     def clean(self):
-        if self.image and hasattr(self.image, "file"):
-            from store.uploads import validate_upload
+        from store.uploads import validate_upload, is_new_upload
+        if is_new_upload(self.image):
             try:
                 validate_upload(self.image, allow_kinds=("image",))
             except ValidationError as exc:
@@ -401,28 +401,21 @@ class Banner(models.Model):
         return self.title
 
     def clean(self):
-        from store.uploads import validate_upload
+        from store.uploads import validate_upload, is_new_upload
         # Validate image fields
         for field_name in ("image", "mobile_image"):
             f = getattr(self, field_name)
-            if f and hasattr(f, "file"):
+            if is_new_upload(f):
                 try:
                     validate_upload(f, allow_kinds=("image",))
                 except ValidationError as exc:
                     raise ValidationError({field_name: exc.message})
-        # Validate video field using magic bytes + legacy extension/size checks
-        if self.video and hasattr(self.video, "file"):
+        # Validate video field using magic bytes
+        if is_new_upload(self.video):
             try:
                 validate_upload(self.video, allow_kinds=("video",))
             except ValidationError as exc:
                 raise ValidationError({"video": exc.message})
-        elif self.video:
-            name = getattr(self.video, 'name', '') or ''
-            if name and not any(name.lower().endswith(ext) for ext in ('.mp4', '.webm', '.mov')):
-                raise ValidationError({"video": "Only mp4, webm or mov video files are accepted."})
-            size = getattr(self.video.file, 'size', None) if hasattr(self.video, 'file') else None
-            if size and size > 15 * 1024 * 1024:
-                raise ValidationError({"video": "Video file must be under 15 MB."})
 
 
 class Testimonial(models.Model):
@@ -517,8 +510,8 @@ class HomeSection(models.Model):
         return self.get_type_display()
 
     def clean(self):
-        if self.bg_image and hasattr(self.bg_image, "file"):
-            from store.uploads import validate_upload
+        from store.uploads import validate_upload, is_new_upload
+        if is_new_upload(self.bg_image):
             try:
                 validate_upload(self.bg_image, allow_kinds=("image",))
             except ValidationError as exc:
@@ -555,8 +548,8 @@ class Bundle(models.Model):
         return self.name
 
     def clean(self):
-        if self.image and hasattr(self.image, "file"):
-            from store.uploads import validate_upload
+        from store.uploads import validate_upload, is_new_upload
+        if is_new_upload(self.image):
             try:
                 validate_upload(self.image, allow_kinds=("image",))
             except ValidationError as exc:
@@ -613,8 +606,8 @@ class OurStory(models.Model):
         return "Our story"
 
     def clean(self):
-        if self.photo and hasattr(self.photo, "file"):
-            from store.uploads import validate_upload
+        from store.uploads import validate_upload, is_new_upload
+        if is_new_upload(self.photo):
             try:
                 validate_upload(self.photo, allow_kinds=("image",))
             except ValidationError as exc:
@@ -676,8 +669,8 @@ class Popup(models.Model):
         return self.name
 
     def clean(self):
-        if self.image and hasattr(self.image, "file"):
-            from store.uploads import validate_upload
+        from store.uploads import validate_upload, is_new_upload
+        if is_new_upload(self.image):
             try:
                 validate_upload(self.image, allow_kinds=("image",))
             except ValidationError as exc:
@@ -732,25 +725,27 @@ class MediaItem(models.Model):
         return self.title
 
     def clean(self):
-        if self.file and self.file.name:
-            name = self.file.name.lower()
-            size = self.file.size if hasattr(self.file, "size") else 0
-            # Magic-byte check: block executables/programs regardless of extension
-            if hasattr(self.file, "file"):
-                from store.uploads import detect_kind
-                kind = detect_kind(self.file)
-                if kind == "blocked":
-                    raise ValidationError({"file": "This looks like a program or script file. Please upload an image or video."})
-            if self.type == self.TYPE_IMAGE:
-                if not any(name.endswith(ext) for ext in (".jpg", ".jpeg", ".png", ".webp")):
-                    raise ValidationError({"file": "Images must be jpg, png or webp."})
-                if size > 5 * 1024 * 1024:
-                    raise ValidationError({"file": "Images must be smaller than 5 MB."})
-            elif self.type == self.TYPE_VIDEO:
-                if not any(name.endswith(ext) for ext in (".mp4", ".webm")):
-                    raise ValidationError({"file": "Videos must be mp4 or webm."})
-                if size > 50 * 1024 * 1024:
-                    raise ValidationError({"file": "Videos must be smaller than 50 MB."})
+        from store.uploads import detect_kind, is_new_upload
+        if not is_new_upload(self.file):
+            return  # existing saved file — skip all validation
+        name = (self.file.name or "").lower()
+        # Use the underlying upload file's size (not storage.size())
+        underlying = self.file.file  # safe because _committed=False means file is InMemoryUploadedFile
+        size = getattr(underlying, "size", 0) or 0
+        # Block executables by magic bytes
+        kind = detect_kind(self.file)
+        if kind == "blocked":
+            raise ValidationError({"file": "This looks like a program or script file. Please upload an image or video."})
+        if self.type == self.TYPE_IMAGE:
+            if not any(name.endswith(ext) for ext in (".jpg", ".jpeg", ".png", ".webp")):
+                raise ValidationError({"file": "Images must be jpg, png or webp."})
+            if size > 5 * 1024 * 1024:
+                raise ValidationError({"file": "Images must be smaller than 5 MB."})
+        elif self.type == self.TYPE_VIDEO:
+            if not any(name.endswith(ext) for ext in (".mp4", ".webm")):
+                raise ValidationError({"file": "Videos must be mp4 or webm."})
+            if size > 50 * 1024 * 1024:
+                raise ValidationError({"file": "Videos must be smaller than 50 MB."})
 
 
 class FAQ(models.Model):

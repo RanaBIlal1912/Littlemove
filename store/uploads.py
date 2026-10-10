@@ -288,6 +288,15 @@ def auto_process_image(file, name=None):
     return ContentFile(buf.read()), new_name
 
 
+def is_new_upload(fieldfile):
+    """
+    True only when the user has just attached a NEW file that hasn't been saved yet.
+    Checks _committed=False (set by Django on InMemoryUploadedFile/TemporaryUploadedFile).
+    NEVER touches storage — safe to call on any FieldFile, even with missing Cloudinary files.
+    """
+    return bool(fieldfile) and getattr(fieldfile, "_committed", True) is False
+
+
 def validate_zip_safety(zip_file):
     """
     Validate a ZIP file for safe extraction. Raises ValidationError if unsafe.

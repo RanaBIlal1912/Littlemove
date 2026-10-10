@@ -193,11 +193,21 @@ if _render_host:
     CSRF_TRUSTED_ORIGINS.append(f"https://{_render_host}")
 
 # ── Cloudinary media storage (set CLOUDINARY_URL env var on Render) ───────────
-if os.environ.get("CLOUDINARY_URL"):
-    INSTALLED_APPS = list(INSTALLED_APPS) + ["cloudinary_storage", "cloudinary"]
-    STORAGES["default"] = {
-        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage"
-    }
+_cloudinary_url = os.environ.get("CLOUDINARY_URL", "")
+if _cloudinary_url:
+    if not _cloudinary_url.startswith("cloudinary://"):
+        import logging as _logging
+        _logging.getLogger("django").warning(
+            "CLOUDINARY_URL is set but does not start with 'cloudinary://' — "
+            "ignoring it and falling back to local media storage. "
+            "It must look like cloudinary://API_KEY:API_SECRET@CLOUD_NAME"
+        )
+        _cloudinary_url = ""  # ignore invalid value
+    else:
+        INSTALLED_APPS = list(INSTALLED_APPS) + ["cloudinary_storage", "cloudinary"]
+        STORAGES["default"] = {
+            "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage"
+        }
 
 # ── django-unfold admin configuration ─────────────────────────────────────────
 
