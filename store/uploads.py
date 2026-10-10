@@ -13,8 +13,9 @@ Image processing (auto-applied on save, not on validate):
 """
 import io
 import struct
+import uuid as _uuid
 import zipfile
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -137,6 +138,32 @@ _ALLOWED_DOC_EXTS = {"pdf"}
 _ALLOWED_ARCHIVE_EXTS = {"zip"}
 
 
+def _contains_script_content(file):
+    """Return True if the first 2KB looks like a script/HTML/PHP file."""
+    try:
+        file.seek(0)
+        head = file.read(2048)
+        file.seek(0)
+        # Strip UTF-8 BOM and whitespace
+        sample = head.lstrip(b'\xef\xbb\xbf').lstrip()
+        lower = sample[:200].lower()
+        patterns = [b'<?php', b'<script', b'<html', b'<!doctype', b'#!/', b'<svg']
+        return any(lower.startswith(p) or p in lower[:200] for p in patterns)
+    except Exception:
+        return False
+
+
+def safe_filename(original_name):
+    """Return a safe uuid-based filename with only the last valid extension."""
+    p = PurePosixPath(original_name or "upload")
+    exts = p.suffixes
+    # Take only the last extension; discard all others
+    last_ext = exts[-1].lower() if exts else ""
+    if last_ext.lstrip(".") in _BLOCKED_EXTS:
+        last_ext = ""
+    return str(_uuid.uuid4()) + last_ext
+
+
 def validate_upload(file, allow_kinds=("image",)):
     """
     Validate an uploaded file. Raises ValidationError on failure.
@@ -147,9 +174,33 @@ def validate_upload(file, allow_kinds=("image",)):
         return None
 
     limits = _get_limits()
-    ext = Path(getattr(file, "name", "") or "").suffix.lstrip(".").lower()
+    filename = getattr(file, "name", "") or ""
 
-    # 1. Blocked extensions always rejected
+    # 0. Zero-byte files rejected
+    size_check = getattr(file, "size", None)
+    if size_check is None:
+        try:
+            file.seek(0, 2)
+            size_check = file.tell()
+            file.seek(0)
+        except Exception:
+            size_check = 0
+    if size_check == 0:
+        raise ValidationError(
+            "This file is empty (0 bytes). Please upload a valid file."
+        )
+
+    # 1a. Double-extension attack: "shell.php.png" — check ALL intermediate extensions
+    all_exts = [s.lstrip(".").lower() for s in PurePosixPath(filename).suffixes]
+    for e in all_exts[:-1]:  # intermediate extensions must not be blocked
+        if e in _BLOCKED_EXTS:
+            raise ValidationError(
+                f"This filename contains a blocked extension (.{e}). "
+                f"Please rename your file and upload again."
+            )
+
+    # 1b. Blocked last extension always rejected
+    ext = Path(filename).suffix.lstrip(".").lower()
     if ext in _BLOCKED_EXTS:
         raise ValidationError(
             f"This file type (.{ext}) is not allowed. Please upload a photo, video, or document."
@@ -158,7 +209,34 @@ def validate_upload(file, allow_kinds=("image",)):
     # 2. Detect by content
     kind = detect_kind(file)
 
-    # 3. Check kind-specific extension whitelist (extension must match content)
+    # 3. Script content sniff for image and document slots
+    if kind in ("image", "document") and _contains_script_content(file):
+        raise ValidationError(
+            "This file looks like a script or web page, not an image. Upload rejected."
+        )
+
+    # 4. Strict positive identification for images — unknown is rejected
+    if "image" in allow_kinds and kind == "unknown":
+        raise ValidationError(
+            "This file could not be identified as an image. "
+            "Please upload a jpg, png, webp, or gif."
+        )
+
+    # 5. Pillow verify for confirmed image kind
+    if kind == "image":
+        try:
+            from PIL import Image as _PILImage
+            file.seek(0)
+            img = _PILImage.open(file)
+            img.verify()
+            file.seek(0)
+        except Exception:
+            raise ValidationError(
+                "This image file appears to be corrupt or truncated. "
+                "Please upload a valid image."
+            )
+
+    # 6. Check kind-specific extension whitelist (extension must match content)
     if kind == "image" and ext and ext not in _ALLOWED_IMAGE_EXTS:
         raise ValidationError(
             f"This looks like an image but has an unexpected extension (.{ext}). "
@@ -180,43 +258,36 @@ def validate_upload(file, allow_kinds=("image",)):
             f"Accepted: pdf."
         )
 
-    # 4. ZIP (archive) — check if it's actually a macro-enabled Office doc by extension
+    # 7. ZIP (archive) — check if it's actually a macro-enabled Office doc by extension
     if kind == "archive" and ext in {"docm", "xlsm", "pptm", "xltm", "dotm"}:
         raise ValidationError(
             f"Macro-enabled Office files (.{ext}) are not allowed for security reasons."
         )
 
-    # 5. Blocked kind
+    # 8. Blocked kind
     if kind == "blocked":
         raise ValidationError(
             f"This looks like a program or script file. Please upload a photo, video, or document."
         )
 
-    # 6. Check allowed kinds
-    if kind not in allow_kinds and kind != "unknown":
+    # 9. Check allowed kinds — unknown is rejected for all slot types
+    if kind == "unknown":
+        kind_names = " or ".join(allow_kinds)
+        raise ValidationError(
+            f"This file could not be identified. Please upload a valid {kind_names} file."
+        )
+
+    if kind not in allow_kinds:
         # Build a friendly message based on what IS allowed
         allowed_str = " or ".join(allow_kinds)
         raise ValidationError(
             f"This file is a {kind}. Only {allowed_str} files are accepted here."
         )
 
-    if kind == "unknown" and "image" in allow_kinds and ext not in _ALLOWED_IMAGE_EXTS:
-        raise ValidationError(
-            f"Could not recognise this file type (.{ext}). "
-            f"Please upload a jpg, png, webp, or gif."
-        )
-
-    # 7. Size check
+    # 10. Size check
     effective_kind = kind if kind in limits else "image"
     limit = limits.get(effective_kind, limits["image"])
-    size = getattr(file, "size", None)
-    if size is None:
-        try:
-            file.seek(0, 2)  # seek to end
-            size = file.tell()
-            file.seek(0)
-        except Exception:
-            size = 0
+    size = size_check
     if size and size > limit:
         limit_mb = limit // (1024 * 1024)
         size_mb = size / (1024 * 1024)
