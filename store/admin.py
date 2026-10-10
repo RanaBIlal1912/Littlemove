@@ -101,18 +101,7 @@ class StoreSettingsAdmin(ModelAdmin):
 @admin.register(Category)
 class CategoryAdmin(ModelAdmin):
     list_display = ["name", "short", "color", "order", "is_active", "product_count"]
-    tabs = True
-    fieldsets = [
-        (None, {
-            "fields": ["name", "slug", "short", "color", "image", "order", "is_active"],
-            "classes": ["tab"],
-        }),
-        ("Urdu content", {
-            "classes": ["tab"],
-            "fields": ["name_ur", "description_ur"],
-            "description": "Optional. Shown when the customer chooses Urdu. Leave blank to fall back to English.",
-        }),
-    ]
+    fields = ["name", "slug", "short", "color", "image", "order", "is_active"]
     list_editable = ["order", "is_active"]
     prepopulated_fields = {"slug": ["name"]}
     search_fields = ["name"]
@@ -125,18 +114,7 @@ class CategoryAdmin(ModelAdmin):
 @admin.register(Need)
 class NeedAdmin(ModelAdmin):
     list_display = ["name", "short", "color", "order", "is_active"]
-    tabs = True
-    fieldsets = [
-        (None, {
-            "fields": ["name", "slug", "short", "color", "order", "is_active"],
-            "classes": ["tab"],
-        }),
-        ("Urdu content", {
-            "classes": ["tab"],
-            "fields": ["name_ur", "description_ur"],
-            "description": "Optional. Shown when the customer chooses Urdu. Leave blank to fall back to English.",
-        }),
-    ]
+    fields = ["name", "slug", "short", "color", "order", "is_active"]
     list_editable = ["order", "is_active"]
     prepopulated_fields = {"slug": ["name"]}
     search_fields = ["name"]
@@ -261,14 +239,6 @@ class ProductAdmin(ModelAdmin):
             {
                 "fields": ["description", "helps_with", "in_the_box", "needs"],
                 "classes": ["tab"],
-            },
-        ),
-        (
-            "Urdu content",
-            {
-                "classes": ["tab"],
-                "fields": [("name_ur",), "summary_ur", "description_ur", "helps_with_ur", "in_the_box_ur"],
-                "description": "Optional. Shown when the customer chooses Urdu. Leave blank to fall back to English.",
             },
         ),
         (
@@ -576,10 +546,6 @@ class BannerAdmin(ModelAdmin):
                            "with a toy drawing is shown.",
         }),
         ("Without a picture", {"fields": [("style", "illustration")]}),
-        ("Urdu content", {
-            "fields": ["title_ur", "subtitle_ur"],
-            "description": "Optional. Shown when the customer chooses Urdu. Leave blank to fall back to English.",
-        }),
         ("Show", {"fields": [("order", "is_active")]}),
     ]
 
@@ -684,18 +650,7 @@ class FAQAdmin(ModelAdmin):
     list_display = ["question", "active", "order"]
     list_editable = ["active", "order"]
     search_fields = ["question", "answer"]
-    tabs = True
-    fieldsets = [
-        (None, {
-            "fields": ["question", "answer", "order", "active"],
-            "classes": ["tab"],
-        }),
-        ("Urdu content", {
-            "classes": ["tab"],
-            "fields": ["question_ur", "answer_ur"],
-            "description": "Optional. Shown when the customer chooses Urdu. Leave blank to fall back to English.",
-        }),
-    ]
+    fields = ["question", "answer", "order", "active"]
 
 
 # ── Bundles ────────────────────────────────────────────────────────────────────
@@ -781,10 +736,6 @@ class BotAnswerAdmin(ModelAdmin):
         ("Quick button", {
             "fields": ["show_as_quick", "quick_label", "quick_order", "action"],
             "description": "Show this Q&A as a chip in the chat widget (max 6 total).",
-        }),
-        ("Urdu content", {
-            "fields": ["question_ur", "answer_ur", "quick_label_ur"],
-            "description": "Optional. Shown when the customer chooses Urdu. Leave blank to fall back to English.",
         }),
     ]
 

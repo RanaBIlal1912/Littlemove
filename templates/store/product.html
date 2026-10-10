@@ -1,4 +1,4 @@
-{% extends "base.html" %}{% load store_tags i18n %}
+{% extends "base.html" %}{% load store_tags %}
 {% block title %}{{ product.name }} — {{ shop.store_name }}{% endblock %}
 {% block description %}{{ product.summary }}{% endblock %}
 {% block og_title %}{{ product.name }}{% endblock %}
@@ -30,7 +30,7 @@
         </div>
         <div class="badges">
           <span>{% if product.on_sale and product.in_stock %}<span class="badge badge-sale">-{{ product.discount_percent }}%</span>{% endif %}</span>
-          {% if product.therapist_pick %}<span class="badge badge-pick">{% icon 'star' 13 2.4 %} {% trans "Therapist pick" %}</span>{% endif %}
+          {% if product.therapist_pick %}<span class="badge badge-pick">{% icon 'star' 13 2.4 %} Therapist pick</span>{% endif %}
         </div>
       </div>
       {% if product.image and photos %}
@@ -56,7 +56,7 @@
 
       <div class="price-box">
         <span class="price{% if product.on_sale %} price-sale{% endif %} notranslate" translate="no">{{ product.price|rs }}</span>
-        {% if product.on_sale %}<span class="price-old notranslate" translate="no">{{ product.compare_at_price|rs }}</span><span class="save notranslate" translate="no">{% blocktrans with amount=product.saving|rs %}Save Rs {{ amount }}{% endblocktrans %}</span>{% endif %}
+        {% if product.on_sale %}<span class="price-old notranslate" translate="no">{{ product.compare_at_price|rs }}</span><span class="save notranslate" translate="no">Save Rs {{ product.saving|rs }}</span>{% endif %}
       </div>
 
       {% if product.in_stock %}
@@ -74,8 +74,8 @@
           <input id="qty" name="qty" type="number" value="1" min="1" max="{{ product.stock }}" inputmode="numeric">
           <button type="button" data-step="1" aria-label="One more">+</button>
         </div>
-        <button class="btn" type="submit">{% icon 'cart' 18 2.2 %} {% trans "Add to cart" %}</button>
-        <button class="btn btn-pink" type="submit" name="buy_now" value="1">{% trans "Buy now" %}</button>
+        <button class="btn" type="submit">{% icon 'cart' 18 2.2 %} Add to cart</button>
+        <button class="btn btn-pink" type="submit" name="buy_now" value="1">Buy now</button>
       </form>
       <a class="btn btn-wa-ghost btn-block wa-order" target="_blank" rel="noopener"
          href="https://wa.me/{{ shop.whatsapp_number }}?text={{ 'Assalam o Alaikum! I want to order: '|urlencode }}{{ product.name|urlencode }}{{ ' ('|urlencode }}{{ product.price|rs|urlencode }}{{ ')'|urlencode }}">{% whatsapp_icon 20 'currentColor' %} Order on WhatsApp</a>
@@ -115,10 +115,10 @@
 
       <div class="panel pdp-tabswrap">
         <div class="pdp-tabs" role="tablist">
-          {% if product.description %}<button type="button" class="active" data-tab="about" role="tab">{% trans "Description" %}</button>{% endif %}
-          {% if product.helps_with_list %}<button type="button" class="{% if not product.description %}active{% endif %}" data-tab="helps" role="tab">{% trans "Helps with" %}</button>{% endif %}
-          {% if product.in_the_box_list %}<button type="button" class="{% if not product.description and not product.helps_with_list %}active{% endif %}" data-tab="box" role="tab">{% trans "In the box" %}</button>{% endif %}
-          <button type="button" data-tab="delivery" role="tab">{% trans "Delivery" %}</button>
+          {% if product.description %}<button type="button" class="active" data-tab="about" role="tab">Description</button>{% endif %}
+          {% if product.helps_with_list %}<button type="button" class="{% if not product.description %}active{% endif %}" data-tab="helps" role="tab">Helps with</button>{% endif %}
+          {% if product.in_the_box_list %}<button type="button" class="{% if not product.description and not product.helps_with_list %}active{% endif %}" data-tab="box" role="tab">In the box</button>{% endif %}
+          <button type="button" data-tab="delivery" role="tab">Delivery</button>
         </div>
         {% if product.description %}
         <div class="pdp-tab-panel active" data-panel="about"><div class="prose">{{ product.description|linebreaks }}</div></div>
@@ -137,7 +137,7 @@
   </div>
 </div>
 
-{% include "store/_row.html" with items=related title=_("You might also like") link=product.category.get_absolute_url rid="row-related" soft=True %}
+{% include "store/_row.html" with items=related title="You might also like" link=product.category.get_absolute_url rid="row-related" soft=True %}
 
 <section class="section" id="recently-viewed" hidden>
   <div class="wrap">
@@ -149,7 +149,7 @@
 {% if product.in_stock %}
 <div class="sticky-buy" aria-label="Quick buy">
   <div><small>{{ product.name|truncatechars:26 }}</small><span class="price{% if product.on_sale %} price-sale{% endif %} notranslate" translate="no">{{ product.price|rs }}</span></div>
-  <button class="btn" type="submit" form="buy-form">{% icon 'cart' 18 2.2 %} {% trans "Add to cart" %}</button>
+  <button class="btn" type="submit" form="buy-form">{% icon 'cart' 18 2.2 %} Add to cart</button>
 </div>
 {% endif %}
 {% endblock %}

@@ -1,9 +1,9 @@
-{% extends "base.html" %}{% load i18n %}
+{% extends "base.html" %}
 {% block title %}Page not found — {{ shop.store_name }}{% endblock %}
 {% block content %}
 <div class="wrap" style="padding:80px var(--gutter) 120px;text-align:center">
-  <h1 class="page-title">{% trans "Page not found" %}</h1>
+  <h1 class="page-title">Page not found</h1>
   <p class="lede" style="margin:14px auto 28px">The link may be old or mistyped. The toys are all still here.</p>
-  <a class="btn" href="{% url 'store:home' %}">{% trans "Go home" %}</a>
+  <a class="btn" href="{% url 'store:home' %}">Go home</a>
 </div>
 {% endblock %}

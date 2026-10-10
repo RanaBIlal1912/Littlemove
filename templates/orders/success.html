@@ -1,4 +1,4 @@
-{% extends "base.html" %}{% load store_tags i18n %}
+{% extends "base.html" %}{% load store_tags %}
 {% block title %}Order {{ order.number }} placed — {{ shop.store_name }}{% endblock %}
 {% block head %}<meta name="robots" content="noindex">{% endblock %}
 {% block content %}
@@ -30,8 +30,8 @@
         {% for i in order.items.all %}<div><span>{{ i.qty }} × {{ i.name }}</span><span>{{ i.line_total|rs }}</span></div>{% endfor %}
       </div>
       <div class="rows">
-        <div><span>{% trans "Subtotal" %}</span><span>{{ order.subtotal|rs }}</span></div>
-        <div><span>{% trans "Delivery fee" %}</span><span>{% if order.delivery_fee %}{{ order.delivery_fee|rs }}{% else %}{% trans "Free delivery" %}{% endif %}</span></div>
+        <div><span>Subtotal</span><span>{{ order.subtotal|rs }}</span></div>
+        <div><span>Delivery fee</span><span>{% if order.delivery_fee %}{{ order.delivery_fee|rs }}{% else %}Free delivery{% endif %}</span></div>
         <div class="total"><span>Total ({{ order.get_payment_method_display }})</span><span>{{ order.total|rs }}</span></div>
       </div>
     </div>
@@ -41,7 +41,7 @@
       <p>{{ order.full_name }}<br>{{ order.address|linebreaksbr }}<br>{{ order.city }}</p>
     </div>
 
-    <div class="actions"><a class="link" href="{% url 'store:shop' %}">{% trans "Continue shopping" %}</a></div>
+    <div class="actions"><a class="link" href="{% url 'store:shop' %}">Continue shopping</a></div>
   </div>
 </div>
 {% endblock %}

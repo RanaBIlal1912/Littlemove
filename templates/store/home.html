@@ -1,4 +1,4 @@
-{% extends "base.html" %}{% load static store_tags i18n %}
+{% extends "base.html" %}{% load static store_tags %}
 {% comment %}
   Home page — full-image animated redesign.
   Sections are rendered in the order defined in HomeSection admin.
@@ -29,7 +29,7 @@
               {% if b.subtitle %}<p class="hero-sub">{{ b.subtitle }}</p>{% endif %}
               <div class="hero-cta-row">
                 <a class="btn btn-white" href="{{ b.link }}">{{ b.button_text }} {% icon 'arrow-r' 18 2.4 %}</a>
-                <button class="btn btn-hero-ghost" type="button" data-mila-guide>{% trans "Find the right toy" %}</button>
+                <button class="btn btn-hero-ghost" type="button" data-mila-guide>Find the right toy</button>
               </div>
             </div>
             {% endif %}
@@ -49,7 +49,7 @@
               {% if b.subtitle %}<p class="hero-sub">{{ b.subtitle }}</p>{% endif %}
               <div class="hero-cta-row">
                 <a class="btn btn-white" href="{{ b.link }}">{{ b.button_text }} {% icon 'arrow-r' 18 2.4 %}</a>
-                <button class="btn btn-hero-ghost" type="button" data-mila-guide>{% trans "Find the right toy" %}</button>
+                <button class="btn btn-hero-ghost" type="button" data-mila-guide>Find the right toy</button>
               </div>
             </div>
             {% endif %}
@@ -64,7 +64,7 @@
               {% if b.subtitle %}<p class="hero-sub">{{ b.subtitle }}</p>{% endif %}
               <div class="hero-cta-row">
                 <a class="btn btn-white" href="{{ b.link }}">{{ b.button_text }} {% icon 'arrow-r' 18 2.4 %}</a>
-                <button class="btn btn-hero-ghost" type="button" data-mila-guide>{% trans "Find the right toy" %}</button>
+                <button class="btn btn-hero-ghost" type="button" data-mila-guide>Find the right toy</button>
               </div>
             </div>
             <div class="slide-art">{% illus b.illustration %}</div>
@@ -80,8 +80,8 @@
               <h1 class="hero-headline">Toys that help<br>little ones grow</h1>
               <p class="hero-sub">Sensory, motor and speech toys chosen with therapists.<br>Cash on delivery across Pakistan.</p>
               <div class="hero-cta-row">
-                <a class="btn btn-white" href="{% url 'store:shop' %}">{% trans "Shop all toys" %} {% icon 'arrow-r' 18 2.4 %}</a>
-                <button class="btn btn-hero-ghost" type="button" data-mila-guide>{% trans "Find the right toy" %}</button>
+                <a class="btn btn-white" href="{% url 'store:shop' %}">Shop all toys {% icon 'arrow-r' 18 2.4 %}</a>
+                <button class="btn btn-hero-ghost" type="button" data-mila-guide>Find the right toy</button>
               </div>
             </div>
             <div class="slide-art">{% illus 'rings' %}</div>
@@ -110,7 +110,7 @@
 
   {# Scroll cue #}
   <div class="scroll-cue" aria-hidden="true">
-    <span>{% trans "Scroll" %}</span>
+    <span>Scroll</span>
     <div class="scroll-cue-dot"></div>
   </div>
 {% endif %}{% endwith %}{% endif %}
@@ -121,15 +121,15 @@
     <div class="wrap">
       <div class="side-promos side-promos-strip">
         <a class="promo promo-yellow" href="{% url 'store:shop' %}?max=1000">
-          <h3>{% trans "Toys under Rs 1,000" %}</h3>
-          <p>{% trans "Small gifts that still teach something" %}</p>
-          <span class="go">{% trans "Shop now" %} {% icon 'arrow-r' 16 2.4 %}</span>
+          <h3>Toys under Rs 1,000</h3>
+          <p>Small gifts that still teach something</p>
+          <span class="go">Shop now {% icon 'arrow-r' 16 2.4 %}</span>
           {% illus 'cards' %}
         </a>
         <a class="promo promo-mint" href="{% url 'store:shop' %}?pick=1">
-          <h3>{% trans "Therapist picks" %}</h3>
-          <p>{% trans "Used in sessions, made for home" %}</p>
-          <span class="go">{% trans "See the picks" %} {% icon 'arrow-r' 16 2.4 %}</span>
+          <h3>Therapist picks</h3>
+          <p>Used in sessions, made for home</p>
+          <span class="go">See the picks {% icon 'arrow-r' 16 2.4 %}</span>
           {% illus 'balls' %}
         </a>
       </div>
@@ -137,10 +137,10 @@
   </div>
   <div class="trust-wrap wrap">
     <div class="trust">
-      <div style="--accent:var(--green)"><span class="ti">{% icon 'cash' 22 2.2 %}</span><p><b>{% trans "Cash on delivery" %}</b><span>{% trans "Pay when the parcel arrives" %}</span></p></div>
-      <div style="--accent:var(--sky)"><span class="ti">{% icon 'truck' 22 2.2 %}</span><p><b>{% trans "All over Pakistan" %}</b><span>{% if shop.free_delivery_over %}{% blocktrans with amount=shop.free_delivery_over|rs %}Free over {{ amount }}{% endblocktrans %}{% else %}{% trans "Fast courier delivery" %}{% endif %}</span></p></div>
-      <div style="--accent:var(--orange)"><span class="ti">{% icon 'return' 22 2.2 %}</span><p><b>{% trans "Easy returns" %}</b><span>{% trans "Damaged item? We replace it" %}</span></p></div>
-      <div style="--accent:var(--brand)"><span class="ti">{% icon 'shield' 22 2.2 %}</span><p><b>{% trans "Therapist chosen" %}</b><span>{% trans "Safe, age-right toys" %}</span></p></div>
+      <div style="--accent:var(--green)"><span class="ti">{% icon 'cash' 22 2.2 %}</span><p><b>Cash on delivery</b><span>Pay when the parcel arrives</span></p></div>
+      <div style="--accent:var(--sky)"><span class="ti">{% icon 'truck' 22 2.2 %}</span><p><b>All over Pakistan</b><span>{% if shop.free_delivery_over %}Free over {{ shop.free_delivery_over|rs }}{% else %}Fast courier delivery{% endif %}</span></p></div>
+      <div style="--accent:var(--orange)"><span class="ti">{% icon 'return' 22 2.2 %}</span><p><b>Easy returns</b><span>Damaged item? We replace it</span></p></div>
+      <div style="--accent:var(--brand)"><span class="ti">{% icon 'shield' 22 2.2 %}</span><p><b>Therapist chosen</b><span>Safe, age-right toys</span></p></div>
     </div>
   </div>
 </section>{# end hero #}
@@ -153,10 +153,10 @@
   <div class="wrap">
     <div class="section-head reveal">
       <div>
-        <h2 class="reveal-words"><span class="title-dot" style="background:var(--brand)"></span>{% if s and s.title %}{{ s.title }}{% else %}{% trans "Shop by skill" %}{% endif %}</h2>
-        <p>{% if s and s.subtitle %}{{ s.subtitle }}{% else %}{% trans "Pick what your child is working on right now." %}{% endif %}</p>
+        <h2 class="reveal-words"><span class="title-dot" style="background:var(--brand)"></span>{% if s and s.title %}{{ s.title }}{% else %}Shop by skill{% endif %}</h2>
+        <p>{% if s and s.subtitle %}{{ s.subtitle }}{% else %}Pick what your child is working on right now.{% endif %}</p>
       </div>
-      <a class="link" href="{% url 'store:shop' %}">{% trans "All toys" %}</a>
+      <a class="link" href="{% url 'store:shop' %}">All toys</a>
     </div>
     <div class="skill-tiles">
       {% for c in categories %}
@@ -183,8 +183,8 @@
   <div class="wrap">
     <div class="section-head reveal">
       <div>
-        <h2><span class="title-dot" style="background:var(--orange)"></span>{% if s and s.title %}{{ s.title }}{% else %}{% trans "What does your child need help with?" %}{% endif %}</h2>
-        <p>{% if s and s.subtitle %}{{ s.subtitle }}{% else %}{% trans "Start from what your child needs help with — we'll show the toys parents choose for it." %}{% endif %}</p>
+        <h2><span class="title-dot" style="background:var(--orange)"></span>{% if s and s.title %}{{ s.title }}{% else %}What does your child need help with?{% endif %}</h2>
+        <p>{% if s and s.subtitle %}{{ s.subtitle }}{% else %}Start from what your child needs help with — we'll show the toys parents choose for it.{% endif %}</p>
       </div>
     </div>
     <div class="need-grid">
@@ -508,7 +508,7 @@
     <h2>{% if s and s.title %}{{ s.title }}{% else %}Ready to find their next favourite?{% endif %}</h2>
     <p>{% if s and s.subtitle %}{{ s.subtitle }}{% else %}Therapist-chosen toys, delivered across Pakistan.{% endif %}</p>
     <div class="final-cta-btns">
-      <a class="btn final-cta-btn-solid" href="{% url 'store:shop' %}">{% trans "Shop all toys" %} {% icon 'arrow-r' 18 2.4 %}</a>
+      <a class="btn final-cta-btn-solid" href="{% url 'store:shop' %}">Shop all toys {% icon 'arrow-r' 18 2.4 %}</a>
       <button class="btn final-cta-btn-ghost" type="button" data-mila-guide>Ask Mila</button>
     </div>
   </div>

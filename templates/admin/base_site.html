@@ -1,5 +1,4 @@
 {% extends "admin/base.html" %}
-{% load i18n %}
 
 {% block extrahead %}
 {{ block.super }}
@@ -19,44 +18,28 @@ window.googleTranslateElementInit = function() {
 body{top:0!important}
 font{font-family:inherit}
 </style>
-{% else %}
-<style>
-.lm-admin-lang { display:inline-flex; align-items:center; gap:4px; }
-.lm-admin-lang select { font-size:.8125rem; border:1px solid rgba(255,255,255,.25); background:transparent; color:inherit; border-radius:4px; padding:3px 6px; cursor:pointer; }
-.lm-admin-lang select:focus { outline:2px solid rgba(255,255,255,.5); }
-</style>
 {% endif %}
 {% endblock %}
 
 {% block userlinks %}
+{% if ENABLE_GOOGLE_TRANSLATE %}
 <div class="lm-admin-lang" style="display:inline-flex;align-items:center;gap:6px;margin-inline-end:8px">
-  {% get_current_language as cur_lang %}
-  {% get_available_languages as avail_langs %}
-  <form action="{% url 'set_language' %}" method="post" style="display:inline-flex;align-items:center;gap:4px">
-    {% csrf_token %}
-    <input type="hidden" name="next" value="{{ request.get_full_path }}">
-    <select name="language" onchange="this.form.submit()" aria-label="Admin language"
-            style="font-size:.8125rem;background:transparent;color:inherit;border:1px solid rgba(255,255,255,.3);border-radius:4px;padding:3px 6px;cursor:pointer">
-      {% for lc, ln in avail_langs %}
-      <option value="{{ lc }}" {% if lc == cur_lang %}selected{% endif %} class="notranslate">{{ ln }}</option>
-      {% endfor %}
-    </select>
-  </form>
-  {% if ENABLE_GOOGLE_TRANSLATE %}
-  <select id="admin-gt-select" aria-label="More languages" onchange="adminGTChange(this.value)"
+  <select id="admin-gt-select" aria-label="Language" onchange="adminGTChange(this.value)"
           style="font-size:.8125rem;background:transparent;color:inherit;border:1px solid rgba(255,255,255,.3);border-radius:4px;padding:3px 6px;cursor:pointer">
-    <option value="" class="notranslate">&#x1F310; More languages</option>
+    <option value="" class="notranslate">&#x1F310; Language</option>
     {% for code, native, english, rtl in GT_LANGUAGES %}
     <option value="{{ code }}" {% if code == current_gt_lang %}selected{% endif %} class="notranslate">{{ native }} — {{ english }}</option>
     {% endfor %}
-    {% if current_gt_lang %}<option value="__reset__" class="notranslate">&#x21A9; Show original</option>{% endif %}
+    {% if current_gt_lang %}<option value="__reset__" class="notranslate">&#x21A9; Show original (English)</option>{% endif %}
   </select>
   <script>
   function adminGTChange(code) {
     if (!code) return;
     if (code === '__reset__') {
       document.cookie='lm_gt_lang=;path=/;max-age=0';
+      document.cookie='lm_gt_lang=;path=/;max-age=0;domain='+location.hostname;
       document.cookie='googtrans=;path=/;max-age=0';
+      document.cookie='googtrans=;path=/;max-age=0;domain='+location.hostname;
       document.cookie='django_language=en;path=/;max-age='+(365*24*3600);
       location.reload(); return;
     }
@@ -68,7 +51,7 @@ font{font-family:inherit}
     location.reload();
   }
   </script>
-  {% endif %}
 </div>
+{% endif %}
 {{ block.super }}
 {% endblock %}

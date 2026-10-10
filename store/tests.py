@@ -1938,147 +1938,6 @@ class OrderWorkflowTests(TestCase):
         self.assertContains(resp, "returned")
 
 
-class LanguageSwitcherTests(TestCase):
-    """Language switcher: cookie, dir attribute, translated text, fallback."""
-
-    def _set_lang(self, lang):
-        self.client.cookies['django_language'] = lang
-
-    def test_default_is_english(self):
-        resp = self.client.get("/")
-        self.assertContains(resp, 'lang="en"')
-        self.assertContains(resp, 'dir="ltr"')
-
-    def test_set_language_post_sets_cookie(self):
-        resp = self.client.post(
-            reverse("set_language"),
-            {"language": "ur", "next": "/"},
-            follow=True,
-        )
-        self.assertEqual(self.client.cookies.get("django_language").value, "ur")
-
-    def test_ur_renders_rtl(self):
-        self._set_lang("ur")
-        resp = self.client.get("/")
-        self.assertContains(resp, 'dir="rtl"')
-        self.assertContains(resp, 'lang="ur"')
-
-    def test_ar_renders_rtl(self):
-        self._set_lang("ar")
-        resp = self.client.get("/")
-        self.assertContains(resp, 'dir="rtl"')
-
-    def test_en_renders_ltr(self):
-        self._set_lang("en")
-        resp = self.client.get("/")
-        self.assertContains(resp, 'dir="ltr"')
-
-    def test_roman_urdu_renders_ltr(self):
-        self._set_lang("ur-latn")
-        resp = self.client.get("/")
-        self.assertContains(resp, 'dir="ltr"')
-
-    def test_invalid_language_falls_back_to_english(self):
-        self._set_lang("xx")
-        resp = self.client.get("/")
-        self.assertContains(resp, 'lang="en"')
-
-    def test_ur_translated_navigation(self):
-        self._set_lang("ur")
-        resp = self.client.get("/")
-        # Should contain some Urdu text
-        self.assertContains(resp, "کھلونے")  # from "Shop" or navigation
-
-    def test_no_url_changes(self):
-        """Existing URLs must still work with language cookie."""
-        self._set_lang("ur")
-        urls = ["/", reverse("store:shop"), reverse("orders:track")]
-        for url in urls:
-            resp = self.client.get(url)
-            self.assertIn(resp.status_code, [200, 302])
-
-    def test_tracking_page_ur(self):
-        self._set_lang("ur")
-        resp = self.client.get(reverse("orders:track"))
-        self.assertContains(resp, 'dir="rtl"')
-
-    def test_set_language_view_exists(self):
-        resp = self.client.post(
-            reverse("set_language"),
-            {"language": "en", "next": "/"},
-        )
-        self.assertIn(resp.status_code, [200, 302])
-
-
-class FillUrduContentTests(TestCase):
-    """fill_urdu_content command: fills empty fields, never overwrites."""
-
-    def setUp(self):
-        from store.management.commands.setup_roles import Command
-        Command().handle()
-        cat = make_category("Fine motor")
-        make_product(cat, "Rainbow Stacking Rings", price=1450, stock=10)
-
-    def test_fills_empty_urdu_fields(self):
-        from django.core.management import call_command
-        call_command("fill_urdu_content", verbosity=0)
-        from store.models import Product
-        p = Product.objects.get(name="Rainbow Stacking Rings")
-        self.assertTrue(p.name_ur, "name_ur should be filled")
-        self.assertIn("رِنگ", p.name_ur)
-
-    def test_does_not_overwrite_existing(self):
-        from store.models import Product
-        p = Product.objects.get(name="Rainbow Stacking Rings")
-        p.name_ur = "Existing content"
-        p.save()
-        from django.core.management import call_command
-        call_command("fill_urdu_content", verbosity=0)
-        p.refresh_from_db()
-        self.assertEqual(p.name_ur, "Existing content")
-
-    def test_idempotent(self):
-        from django.core.management import call_command
-        call_command("fill_urdu_content", verbosity=0)
-        from store.models import Product
-        p = Product.objects.get(name="Rainbow Stacking Rings")
-        val_after_first = p.name_ur
-        call_command("fill_urdu_content", verbosity=0)
-        p.refresh_from_db()
-        self.assertEqual(p.name_ur, val_after_first)
-
-
-class TranslationCoverageTests(TestCase):
-    """Verify key translated strings appear when ur/ar cookies are set."""
-
-    def _set_lang(self, lang):
-        self.client.cookies['django_language'] = lang
-
-    def test_cart_page_translates_ur(self):
-        self._set_lang("ur")
-        resp = self.client.get(reverse("store:cart"))
-        self.assertContains(resp, 'lang="ur"')
-
-    def test_checkout_page_translates_ar(self):
-        self._set_lang("ar")
-        # Add an item to cart so checkout doesn't redirect
-        cat = make_category("Test")
-        p = make_product(cat, "Test Toy", price=500, stock=5)
-        self.client.post(reverse("store:cart_add", args=[p.pk]), {"qty": 1})
-        resp = self.client.get(reverse("orders:checkout"))
-        self.assertContains(resp, 'dir="rtl"')
-
-    def test_shop_page_translates_ur(self):
-        self._set_lang("ur")
-        resp = self.client.get(reverse("store:shop"))
-        self.assertContains(resp, 'lang="ur"')
-
-    def test_home_page_translates_ar(self):
-        self._set_lang("ar")
-        resp = self.client.get(reverse("store:home"))
-        self.assertContains(resp, 'dir="rtl"')
-
-
 class GoogleTranslateTests(TestCase):
     """Google Translate integration: dropdown, cookies, no element.js on normal load."""
 
@@ -2092,13 +1951,12 @@ class GoogleTranslateTests(TestCase):
         for code, native, english, rtl in GT_LANGUAGES:
             self.assertIsInstance(rtl, bool, f"{code} rtl flag should be bool")
 
-    def test_native_codes_not_in_gt_list(self):
-        from store.languages import GT_LANGUAGES, NATIVE_CODES
+    def test_gt_popular_codes_in_gt_languages(self):
+        from store.languages import GT_LANGUAGES
         gt_codes = {lang[0] for lang in GT_LANGUAGES}
-        overlap = NATIVE_CODES & gt_codes
-        # ur and ar may overlap with GT codes — that's fine, we check native first
-        # Just ensure NATIVE_CODES is defined
-        self.assertIn("en", NATIVE_CODES)
+        popular = ['ur', 'ar', 'hi', 'zh-CN', 'es', 'fr', 'de', 'tr']
+        for code in popular:
+            self.assertIn(code, gt_codes, f"Popular code {code} not in GT_LANGUAGES")
 
     def test_element_js_not_in_normal_page_load(self):
         """element.js must NOT appear in the HTML when no lm_gt_lang cookie is set."""
@@ -2113,7 +1971,8 @@ class GoogleTranslateTests(TestCase):
 
     def test_gt_dropdown_renders_two_groups(self):
         resp = self.client.get("/")
-        self.assertContains(resp, "More languages")
+        self.assertContains(resp, "Popular")
+        self.assertContains(resp, "All languages")
         self.assertContains(resp, "lang-gt-list")
 
     def test_brand_name_has_notranslate(self):
@@ -2126,14 +1985,6 @@ class GoogleTranslateTests(TestCase):
             resp = self.client.get("/")
             self.assertNotContains(resp, "element.js")
             self.assertNotContains(resp, 'id="lang-gt-list"')
-
-    def test_switching_to_native_language_still_works(self):
-        resp = self.client.post(
-            reverse("set_language"),
-            {"language": "ur", "next": "/"},
-            follow=True,
-        )
-        self.assertContains(resp, 'lang="ur"')
 
     def test_no_url_changes_with_gt_cookie(self):
         self.client.cookies['lm_gt_lang'] = 'tr'

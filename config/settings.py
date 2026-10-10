@@ -71,7 +71,6 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "store.middleware.CookieLocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -91,7 +90,6 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "django.template.context_processors.i18n",
                 "store.context_processors.store",
                 "store.context_processors.site_context",
                 "store.context_processors.lang_context",
@@ -116,29 +114,8 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-USE_I18N = True
+USE_I18N = False
 LANGUAGE_CODE = "en"
-
-# Register Roman Urdu as a known language variant (Django 5.x approach)
-try:
-    from django.utils.translation.trans_real import LANG_INFO as _LANG_INFO
-    _LANG_INFO.setdefault("ur-latn", {
-        "bidi": False,
-        "code": "ur-latn",
-        "name": "Roman Urdu",
-        "name_local": "Roman Urdu",
-        "name_translated": "Roman Urdu",
-    })
-except ImportError:
-    pass
-
-LANGUAGES = [
-    ("en",      "English"),
-    ("ur",      "اردو"),
-    ("ur-latn", "Roman Urdu"),
-    ("ar",      "العربية"),
-]
-LOCALE_PATHS = [BASE_DIR / "locale"]
 
 ENABLE_GOOGLE_TRANSLATE = env_bool("ENABLE_GOOGLE_TRANSLATE", True)
 

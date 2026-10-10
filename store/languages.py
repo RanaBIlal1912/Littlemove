@@ -1,18 +1,7 @@
 """
-Languages for the LittleMove multi-language dropdown.
-NATIVE_CODES = our hand-translated locales (Django i18n).
-GT_LANGUAGES = additional languages powered by Google Website Translator.
+Languages for the LittleMove language dropdown.
+GT_LANGUAGES = languages powered by Google Website Translator.
 """
-
-NATIVE_LANGUAGES = [
-    # (code, native_name, english_name, is_rtl)
-    ("en",      "English",   "English",    False),
-    ("ur",      "اردو",       "Urdu",        True),
-    ("ur-latn", "Roman Urdu","Roman Urdu",  False),
-    ("ar",      "العربية",   "Arabic",      True),
-]
-
-NATIVE_CODES = {lang[0] for lang in NATIVE_LANGUAGES}
 
 # Google Translate language codes + display info
 # code = Google Translate combo value (NOT BCP47 — note iw=Hebrew, zh-CN/zh-TW, etc.)
@@ -21,6 +10,7 @@ GT_LANGUAGES = [
     ("af",    "Afrikaans",            "Afrikaans",         False),
     ("sq",    "Shqip",                "Albanian",          False),
     ("am",    "አማርኛ",                 "Amharic",           False),
+    ("ar",    "العربية",              "Arabic",            True),
     ("hy",    "Հայերեն",              "Armenian",          False),
     ("az",    "Azərbaycan",           "Azerbaijani",       False),
     ("eu",    "Euskara",              "Basque",            False),
@@ -117,6 +107,7 @@ GT_LANGUAGES = [
     ("tk",    "Türkmen",              "Turkmen",           False),
     ("uk",    "Українська",           "Ukrainian",         False),
     ("ug",    "ئۇيغۇرچە",             "Uyghur",            True),
+    ("ur",    "اردو",                 "Urdu",              True),
     ("uz",    "O'zbek",               "Uzbek",             False),
     ("vi",    "Tiếng Việt",           "Vietnamese",        False),
     ("cy",    "Cymraeg",              "Welsh",             False),

@@ -1,4 +1,4 @@
-{% extends "base.html" %}{% load store_tags i18n %}
+{% extends "base.html" %}{% load store_tags %}
 {% block title %}{% if category %}{{ category.name }} toys{% elif need %}Toys for {{ need.name|lower }}{% elif on_sale %}Toys on sale{% elif picks %}Therapist picks{% elif q %}Search: {{ q }}{% else %}All toys{% endif %} — {{ shop.store_name }}{% endblock %}
 {% block content %}
 <div class="wrap">
@@ -60,9 +60,9 @@
         <div class="active-filters">
           <button class="chip filters-toggle" type="button" id="filters-btn" aria-controls="filters" aria-expanded="false">{% icon 'filter' 16 2.4 %} Filters</button>
           <span class="muted" style="font-weight:700;align-self:center">{{ page.paginator.count }} toy{{ page.paginator.count|pluralize }}</span>
-          {% if category or need or age or q or max_price or on_sale or picks %}<a class="chip chip-x" href="{% url 'store:shop' %}">{% trans "Clear filters" %}</a>{% endif %}
+          {% if category or need or age or q or max_price or on_sale or picks %}<a class="chip chip-x" href="{% url 'store:shop' %}">Clear filters</a>{% endif %}
         </div>
-        <label class="small" style="display:flex;align-items:center;gap:8px;font-weight:800">{% trans "Sort by:" %}
+        <label class="small" style="display:flex;align-items:center;gap:8px;font-weight:800">Sort by:
           <select name="sort" onchange="this.form.submit()">
             {% for key, s in sorts.items %}<option value="{{ key }}" {% if sort == key %}selected{% endif %}>{{ s.0 }}</option>{% endfor %}
           </select>
@@ -81,9 +81,9 @@
       {% endif %}
       {% else %}
       <div class="empty">
-        <h3>{% trans "No toys found." %}</h3>
+        <h3>No toys found.</h3>
         <p>Try another age or skill, or ask us on WhatsApp — we may have it at the clinic.</p>
-        <a class="btn" href="{% url 'store:shop' %}">{% trans "Clear filters" %}</a>
+        <a class="btn" href="{% url 'store:shop' %}">Clear filters</a>
       </div>
       {% endif %}
     </div>

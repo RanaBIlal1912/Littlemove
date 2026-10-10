@@ -1,7 +1,5 @@
-{% load static store_tags i18n %}<!doctype html>
-{% get_current_language as LANGUAGE_CODE %}
-{% get_current_language_bidi as LANGUAGE_BIDI %}
-<html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_BIDI and LANGUAGE_CODE != 'ur-latn' %}rtl{% else %}ltr{% endif %}" class="js-off">
+{% load static store_tags %}<!doctype html>
+<html lang="en" dir="ltr" class="js-off">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -10,13 +8,6 @@
   <meta name="theme-color" content="#3BA4E6">
   <link rel="preload" href="{% static 'fonts/fredoka-latin-600-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="{% static 'fonts/nunito-sans-latin-400-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
-  {% if LANGUAGE_CODE == 'ur' %}
-  <link rel="preload" href="{% static 'fonts/noto-nastaliq-urdu-400.woff2' %}" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="{% static 'css/fonts-ur.css' %}">
-  {% elif LANGUAGE_CODE == 'ar' %}
-  <link rel="preload" href="{% static 'fonts/noto-naskh-arabic-400.woff2' %}" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="{% static 'css/fonts-ar.css' %}">
-  {% endif %}
   <link rel="stylesheet" href="{% static 'vendor/swiper.min.css' %}">
   <link rel="stylesheet" href="{% static 'css/site.css' %}">
   {% if shop.favicon %}<link rel="icon" href="{{ shop.favicon.url }}" type="image/x-icon">{% else %}
@@ -64,7 +55,7 @@
 <body class="{% block body_class %}{% endblock %}{% with msgs=shop.announcements %}{% if msgs %} has-topbar{% endif %}{% endwith %}"{% block body_attrs %}{% endblock %}>
   <div id="loader-overlay" class="loader-overlay" aria-hidden="true"><img src="{% static 'img/littlemove-logo.png' %}" alt="" width="120"></div>
   <div id="bg-wrap" aria-hidden="true" data-anim="{{ shop.animated_bg|yesno:'1,0' }}"><canvas id="bg-cv"></canvas></div>
-  <a class="sr-only" href="#main">{% trans "Skip to content" %}</a>
+  <a class="sr-only" href="#main">Skip to content</a>
 
   {% with msgs=shop.announcements %}{% if msgs %}
   <div class="topbar">
@@ -73,8 +64,8 @@
         {% for a in msgs %}<span class="{% if forloop.first %}on{% endif %}">{{ a }}</span>{% endfor %}
       </div>
       <div class="topbar-links">
-        <a href="{% url 'orders:track' %}">{% trans "Track order" %}</a>
-        <a href="{% url 'store:delivery' %}">{% trans "Delivery and returns" %}</a>
+        <a href="{% url 'orders:track' %}">Track order</a>
+        <a href="{% url 'store:delivery' %}">Delivery and returns</a>
         <a href="https://wa.me/{{ shop.whatsapp_number }}" target="_blank" rel="noopener">WhatsApp +{{ shop.whatsapp_number }}</a>
       </div>
     </div>
@@ -83,49 +74,73 @@
 
   <header class="header" id="site-header">
     <div class="wrap header-main">
-      <button class="menu-btn" type="button" data-open-drawer aria-label="{% trans 'Open menu' %}">{% icon 'menu' 22 2.2 %}</button>
+      <button class="menu-btn" type="button" data-open-drawer aria-label="Open menu">{% icon 'menu' 22 2.2 %}</button>
       <a class="brand" href="{% url 'store:home' %}" aria-label="{{ shop.store_name }} home" translate="no">
         <img src="{% static 'img/littlemove-logo.png' %}" alt="" width="48" height="48" class="brand-logo"><span class="brand-name notranslate" translate="no">Little<b>Move</b></span>
       </a>
       <form class="search" action="{% url 'store:shop' %}" role="search">
         {% icon 'search' 20 2.2 %}
-        <label class="sr-only" for="q">{% trans "Search toys" %}</label>
-        <input id="q" name="q" type="search" placeholder="{% trans 'Search toys, e.g. stacking rings' %}" value="{{ q|default:'' }}">
+        <label class="sr-only" for="q">Search toys</label>
+        <input id="q" name="q" type="search" placeholder="Search toys, e.g. stacking rings" value="{{ q|default:'' }}">
         <button type="submit">Search</button>
       </form>
       <div class="header-icons">
         <a class="icon-link hide-sm" href="https://wa.me/{{ shop.whatsapp_number }}" target="_blank" rel="noopener">
           <span class="ico" style="color:var(--wa)">{% whatsapp_icon 22 'currentColor' %}</span>
-          <span class="lbl"><small>{% trans "Need help?" %}</small>{% trans "WhatsApp us" %}</span>
+          <span class="lbl"><small>Need help?</small>WhatsApp us</span>
         </a>
         <a class="icon-link hide-sm" href="{% url 'orders:track' %}">
           <span class="ico">{% icon 'truck' 22 %}</span>
-          <span class="lbl"><small>{% trans "Where is it?" %}</small>{% trans "Track order" %}</span>
+          <span class="lbl"><small>Where is it?</small>Track order</span>
         </a>
         {% if ENABLE_GOOGLE_TRANSLATE %}
         <div class="lang-switcher" id="lang-switcher" {% if current_gt_lang %}data-gt="{{ current_gt_lang }}"{% endif %} data-rtl-codes="{{ GT_RTL_CODES }}">
           <button class="lang-btn" type="button" aria-expanded="false" aria-controls="lang-menu" aria-label="Change language" id="lang-btn">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-            <span class="lang-name notranslate" translate="no" id="lang-name-display">
-              {% get_current_language as cur_lang %}{% get_available_languages as avail_langs %}{% for lc, ln in avail_langs %}{% if lc == cur_lang %}{{ ln }}{% endif %}{% endfor %}
-            </span>
+            <span class="lang-name notranslate" translate="no" id="lang-name-display">English</span>
           </button>
           <div class="lang-menu lang-menu--extended" id="lang-menu" role="dialog" aria-label="Select language" hidden>
             <div class="lang-menu-inner">
-              <div class="lang-group-label" aria-hidden="true">Languages</div>
-              {% get_current_language as cur_lang %}
-              {% get_available_languages as avail_langs %}
-              {% for lc, ln in avail_langs %}
-              <form action="{% url 'set_language' %}" method="post" class="lang-opt {% if lc == cur_lang and not current_gt_lang %}lang-opt--active{% endif %}">
-                {% csrf_token %}
-                <input type="hidden" name="language" value="{{ lc }}">
-                <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                <button type="submit" class="notranslate" translate="no" data-clears-gt="1">{{ ln }}</button>
-              </form>
-              {% endfor %}
+              <div class="lang-group-label" aria-hidden="true">Popular</div>
+              <button type="button" class="lang-gt-opt {% if not current_gt_lang %}lang-opt--active{% endif %} notranslate" translate="no"
+                      data-gt-reset="1" data-search="english en">
+                English <span class="lang-gt-en">English</span>
+              </button>
+              <button type="button" class="lang-gt-opt {% if current_gt_lang == 'ur' %}lang-opt--active{% endif %} notranslate" translate="no"
+                      data-gt-code="ur" data-gt-rtl="1" data-search="اردو urdu ur">
+                اردو <span class="lang-gt-en">Urdu</span>
+              </button>
+              <button type="button" class="lang-gt-opt {% if current_gt_lang == 'ar' %}lang-opt--active{% endif %} notranslate" translate="no"
+                      data-gt-code="ar" data-gt-rtl="1" data-search="العربية arabic ar">
+                العربية <span class="lang-gt-en">Arabic</span>
+              </button>
+              <button type="button" class="lang-gt-opt {% if current_gt_lang == 'hi' %}lang-opt--active{% endif %} notranslate" translate="no"
+                      data-gt-code="hi" data-gt-rtl="0" data-search="हिन्दी hindi hi">
+                हिन्दी <span class="lang-gt-en">Hindi</span>
+              </button>
+              <button type="button" class="lang-gt-opt {% if current_gt_lang == 'zh-CN' %}lang-opt--active{% endif %} notranslate" translate="no"
+                      data-gt-code="zh-CN" data-gt-rtl="0" data-search="中文 chinese simplified zh-CN">
+                中文（简体） <span class="lang-gt-en">Chinese (Simplified)</span>
+              </button>
+              <button type="button" class="lang-gt-opt {% if current_gt_lang == 'es' %}lang-opt--active{% endif %} notranslate" translate="no"
+                      data-gt-code="es" data-gt-rtl="0" data-search="español spanish es">
+                Español <span class="lang-gt-en">Spanish</span>
+              </button>
+              <button type="button" class="lang-gt-opt {% if current_gt_lang == 'fr' %}lang-opt--active{% endif %} notranslate" translate="no"
+                      data-gt-code="fr" data-gt-rtl="0" data-search="français french fr">
+                Français <span class="lang-gt-en">French</span>
+              </button>
+              <button type="button" class="lang-gt-opt {% if current_gt_lang == 'de' %}lang-opt--active{% endif %} notranslate" translate="no"
+                      data-gt-code="de" data-gt-rtl="0" data-search="deutsch german de">
+                Deutsch <span class="lang-gt-en">German</span>
+              </button>
+              <button type="button" class="lang-gt-opt {% if current_gt_lang == 'tr' %}lang-opt--active{% endif %} notranslate" translate="no"
+                      data-gt-code="tr" data-gt-rtl="0" data-search="türkçe turkish tr">
+                Türkçe <span class="lang-gt-en">Turkish</span>
+              </button>
 
               <div class="lang-group-sep"></div>
-              <div class="lang-group-label" aria-hidden="true">More languages (auto-translate)</div>
+              <div class="lang-group-label" aria-hidden="true">All languages</div>
               <div class="lang-search-wrap">
                 <input type="text" class="lang-search" id="lang-search" placeholder="Search…" autocomplete="off" aria-label="Search languages">
               </div>
@@ -143,36 +158,15 @@
                 <button type="button" class="lang-reset notranslate" translate="no" id="lang-reset">
                   Show original (English)
                 </button>
-                {% if ENABLE_GOOGLE_TRANSLATE %}
-                <span class="lang-gt-notice">Auto-translate by Google. Check amounts and names in the original.</span>
-                {% endif %}
+                <span class="lang-gt-notice">Automatic translation by Google. It may not be perfect. Prices and product codes are protected.</span>
               </div>
             </div>
           </div>
         </div>
-        {% else %}
-        {# Fallback: simple 4-language switcher if Google Translate is disabled #}
-        <div class="lang-switcher" id="lang-switcher">
-          <button class="lang-btn" type="button" aria-expanded="false" aria-controls="lang-menu" aria-label="Change language">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"/></svg>
-            <span class="lang-name notranslate" translate="no">{% get_current_language as cur_lang %}{% get_available_languages as avail_langs %}{% for lc, ln in avail_langs %}{% if lc == cur_lang %}{{ ln }}{% endif %}{% endfor %}</span>
-          </button>
-          <div class="lang-menu" id="lang-menu" role="listbox" aria-label="Select language" hidden>
-            {% get_available_languages as avail_langs %}{% get_current_language as cur_lang %}
-            {% for lc, ln in avail_langs %}
-            <form action="{% url 'set_language' %}" method="post" class="lang-opt {% if lc == cur_lang %}lang-opt--active{% endif %}">
-              {% csrf_token %}
-              <input type="hidden" name="language" value="{{ lc }}">
-              <input type="hidden" name="next" value="{{ request.get_full_path }}">
-              <button type="submit" class="notranslate" translate="no">{{ ln }}</button>
-            </form>
-            {% endfor %}
-          </div>
-        </div>
         {% endif %}
         <a class="icon-link" href="{% url 'store:cart' %}" data-open-cart>
-          <span class="ico">{% icon 'cart' 22 2.2 %}<span class="badge-count" aria-label="{{ cart_count }} {% trans 'items in cart' %}">{{ cart_count }}</span></span>
-          <span class="lbl hide-sm"><small>{% trans "Your cart" %}</small>{% trans "Cart" %}</span>
+          <span class="ico">{% icon 'cart' 22 2.2 %}<span class="badge-count" aria-label="{{ cart_count }} items in cart">{{ cart_count }}</span></span>
+          <span class="lbl hide-sm"><small>Your cart</small>Cart</span>
         </a>
       </div>
     </div>
@@ -180,7 +174,7 @@
     <nav class="navbar" aria-label="Main">
       <div class="wrap">
         <div class="nav-item">
-          <button class="nav-link nav-all" type="button" aria-haspopup="true">{% icon 'grid' 18 2.2 %} {% trans "Shop by skill" %} {% icon 'chev-d' 16 2.4 %}</button>
+          <button class="nav-link nav-all" type="button" aria-haspopup="true">{% icon 'grid' 18 2.2 %} Shop by skill {% icon 'chev-d' 16 2.4 %}</button>
           <div class="dropdown">
             {% for c in nav_categories %}
             <a class="t-{{ c.color }}" href="{{ c.get_absolute_url }}">
@@ -188,25 +182,25 @@
               <span>{{ c.name }}{% if c.short %}<small>{{ c.short }}</small>{% endif %}</span>
             </a>
             {% endfor %}
-            <a href="{% url 'store:shop' %}"><span class="mini">{% icon 'grid' 20 %}</span><span>{% trans "All toys" %}</span></a>
+            <a href="{% url 'store:shop' %}"><span class="mini">{% icon 'grid' 20 %}</span><span>All toys</span></a>
           </div>
         </div>
         <div class="nav-item">
-          <button class="nav-link" type="button" aria-haspopup="true">{% trans "Shop by age" %} {% icon 'chev-d' 16 2.4 %}</button>
+          <button class="nav-link" type="button" aria-haspopup="true">Shop by age {% icon 'chev-d' 16 2.4 %}</button>
           <div class="dropdown dropdown-ages">
             {% for key, band in nav_ages.items %}<a href="{% url 'store:shop' %}?age={{ key }}">{{ band.0 }}</a>{% endfor %}
           </div>
         </div>
         <div class="nav-item">
-          <button class="nav-link" type="button" aria-haspopup="true">{% trans "Shop by need" %} {% icon 'chev-d' 16 2.4 %}</button>
+          <button class="nav-link" type="button" aria-haspopup="true">Shop by need {% icon 'chev-d' 16 2.4 %}</button>
           <div class="dropdown">
             {% for n in nav_needs %}<a class="t-{{ n.color }}" href="{{ n.get_absolute_url }}"><span class="mini need-dot"></span><span>{{ n.name }}{% if n.short %}<small>{{ n.short }}</small>{% endif %}</span></a>{% endfor %}
           </div>
         </div>
-        <a class="nav-link nav-sale" href="{% url 'store:shop' %}?sale=1"><span class="dot-live"></span>{% trans "Sale" %}</a>
-        <a class="nav-link" href="{% url 'store:shop' %}?sort=new">{% trans "New arrivals" %}</a>
-        <a class="nav-link" href="{% url 'store:shop' %}?pick=1">{% trans "Therapist picks" %}</a>
-        <span class="nav-right">{% icon 'shield' 18 2.2 %} {% trans "Chosen with therapists" %}</span>
+        <a class="nav-link nav-sale" href="{% url 'store:shop' %}?sale=1"><span class="dot-live"></span>Sale</a>
+        <a class="nav-link" href="{% url 'store:shop' %}?sort=new">New arrivals</a>
+        <a class="nav-link" href="{% url 'store:shop' %}?pick=1">Therapist picks</a>
+        <span class="nav-right">{% icon 'shield' 18 2.2 %} Chosen with therapists</span>
       </div>
     </nav>
   </header>
@@ -216,50 +210,28 @@
     <div class="drawer-panel" role="dialog" aria-label="Menu">
       <div class="drawer-head">
         <a class="brand" href="{% url 'store:home' %}"><img src="{% static 'img/littlemove-logo.png' %}" alt="" width="34" height="34" class="brand-logo"><span class="brand-name notranslate" translate="no">Little<b>Move</b></span></a>
-        <button class="close-btn" type="button" data-close-drawer aria-label="{% trans 'Close menu' %}">{% icon 'x' 20 2.4 %}</button>
+        <button class="close-btn" type="button" data-close-drawer aria-label="Close menu">{% icon 'x' 20 2.4 %}</button>
       </div>
       {% if ENABLE_GOOGLE_TRANSLATE %}
       <div class="drawer-lang">
         <span>Language</span>
-        {% get_available_languages as avail_langs %}{% get_current_language as cur_lang %}
-        {% for lc, ln in avail_langs %}
-        <form action="{% url 'set_language' %}" method="post" style="display:inline">
-          {% csrf_token %}
-          <input type="hidden" name="language" value="{{ lc }}">
-          <input type="hidden" name="next" value="{{ request.get_full_path }}">
-          <button type="submit" class="drawer-lang-btn notranslate {% if lc == cur_lang and not current_gt_lang %}active{% endif %}" translate="no" data-clears-gt="1">{{ ln }}</button>
-        </form>
-        {% endfor %}
-        <button type="button" class="drawer-lang-btn notranslate {% if current_gt_lang %}active{% endif %}" translate="no" id="drawer-more-langs">+ More</button>
-      </div>
-      {% else %}
-      <div class="drawer-lang">
-        <span>Language</span>
-        {% get_available_languages as avail_langs %}{% get_current_language as cur_lang %}
-        {% for lc, ln in avail_langs %}
-        <form action="{% url 'set_language' %}" method="post" style="display:inline">
-          {% csrf_token %}
-          <input type="hidden" name="language" value="{{ lc }}">
-          <input type="hidden" name="next" value="{{ request.get_full_path }}">
-          <button type="submit" class="drawer-lang-btn notranslate {% if lc == cur_lang %}active{% endif %}" translate="no">{{ ln }}</button>
-        </form>
-        {% endfor %}
+        <button type="button" class="drawer-lang-btn notranslate" translate="no" id="drawer-more-langs">More languages</button>
       </div>
       {% endif %}
-      <h3>{% trans "Shop by skill" %}</h3>
+      <h3>Shop by skill</h3>
       {% for c in nav_categories %}
       <a class="t-{{ c.color }}" href="{{ c.get_absolute_url }}"><span class="mini">{% if c.image %}<img src="{{ c.image.url }}" alt="">{% else %}{% with first=c.products.first %}{% illus first.illustration|default:'blocks' %}{% endwith %}{% endif %}</span>{{ c.name }}</a>
       {% endfor %}
-      <h3>{% trans "Shop by need" %}</h3>
+      <h3>Shop by need</h3>
       {% for n in nav_needs %}<a class="t-{{ n.color }}" href="{{ n.get_absolute_url }}"><span class="mini need-dot"></span>{{ n.name }}</a>{% endfor %}
-      <h3>{% trans "Shop by age" %}</h3>
+      <h3>Shop by age</h3>
       {% for key, band in nav_ages.items %}<a href="{% url 'store:shop' %}?age={{ key }}">{{ band.0 }}</a>{% endfor %}
       <h3>More</h3>
-      <a href="{% url 'store:shop' %}?sale=1" style="color:#C4473D">{% trans "Sale" %}</a>
-      <a href="{% url 'store:shop' %}?pick=1">{% trans "Therapist picks" %}</a>
-      <a href="{% url 'orders:track' %}">{% trans "Track your order" %}</a>
-      <a href="{% url 'store:delivery' %}">{% trans "Delivery and returns" %}</a>
-      <a href="https://wa.me/{{ shop.whatsapp_number }}" target="_blank" rel="noopener">{% trans "WhatsApp us" %}</a>
+      <a href="{% url 'store:shop' %}?sale=1" style="color:#C4473D">Sale</a>
+      <a href="{% url 'store:shop' %}?pick=1">Therapist picks</a>
+      <a href="{% url 'orders:track' %}">Track your order</a>
+      <a href="{% url 'store:delivery' %}">Delivery and returns</a>
+      <a href="https://wa.me/{{ shop.whatsapp_number }}" target="_blank" rel="noopener">WhatsApp us</a>
     </div>
   </div>
 
@@ -283,22 +255,22 @@
           <div class="pay-chips" style="margin-top:18px"><span>Cash on delivery</span>{% if shop.jazzcash_number %}<span>JazzCash</span>{% endif %}{% if shop.easypaisa_number %}<span>EasyPaisa</span>{% endif %}{% if shop.bank_details %}<span>Bank transfer</span>{% endif %}</div>
         </div>
         <div>
-          <h2>{% trans "Shop" %}</h2>
+          <h2>Shop</h2>
           <ul>
             {% for c in nav_categories %}<li><a href="{{ c.get_absolute_url }}">{{ c.name }}</a></li>{% endfor %}
-            <li><a href="{% url 'store:shop' %}?sale=1">{% trans "Sale" %}</a></li>
+            <li><a href="{% url 'store:shop' %}?sale=1">Sale</a></li>
           </ul>
         </div>
         <div>
-          <h2>{% trans "Help" %}</h2>
+          <h2>Help</h2>
           <ul>
-            <li><a href="{% url 'orders:track' %}">{% trans "Track your order" %}</a></li>
-            <li><a href="{% url 'store:delivery' %}">{% trans "Delivery and returns" %}</a></li>
-            <li><a href="{% url 'store:home' %}#faq">{% trans "Questions and answers" %}</a></li>
+            <li><a href="{% url 'orders:track' %}">Track your order</a></li>
+            <li><a href="{% url 'store:delivery' %}">Delivery and returns</a></li>
+            <li><a href="{% url 'store:home' %}#faq">Questions and answers</a></li>
           </ul>
         </div>
         <div>
-          <h2>{% trans "Contact" %}</h2>
+          <h2>Contact</h2>
           <ul>
             <li><a href="https://wa.me/{{ shop.whatsapp_number }}" target="_blank" rel="noopener">WhatsApp <span class="notranslate" translate="no">+{{ shop.whatsapp_number }}</span></a></li>
             <li><a href="mailto:{{ shop.email }}"><span class="notranslate" translate="no">{{ shop.email }}</span></a></li>
@@ -347,19 +319,19 @@
 
   {# ── Cart drawer (populated by app.js after AJAX add-to-cart) ── #}
   <div id="cart-drawer-bg" class="cart-drawer-bg" aria-hidden="true"></div>
-  <div id="cart-drawer" class="cart-drawer" role="dialog" aria-modal="true" aria-label="{% trans 'Your cart' %}" aria-hidden="true">
+  <div id="cart-drawer" class="cart-drawer" role="dialog" aria-modal="true" aria-label="Your cart" aria-hidden="true">
     <div class="cart-drawer-head">
-      <h2>{% trans "Your cart" %}</h2>
+      <h2>Your cart</h2>
       <button class="cart-drawer-close" type="button" data-close-cart aria-label="Close cart">&#x2715;</button>
     </div>
     <div class="cart-drawer-items" id="cart-drawer-items">
-      <p class="cart-drawer-empty">{% trans "Your cart is empty." %}</p>
+      <p class="cart-drawer-empty">Your cart is empty.</p>
     </div>
     <div class="cart-drawer-foot">
       <div class="free-bar"><span id="cart-free-bar"></span></div>
       <p class="free-bar-note" id="cart-free-note"></p>
-      <div class="cart-drawer-total"><span>{% trans "Total" %}</span><span id="cart-drawer-total" class="notranslate" translate="no">Rs 0</span></div>
-      <a class="btn btn-block" href="{% url 'store:cart' %}">{% trans "View cart & checkout" %}</a>
+      <div class="cart-drawer-total"><span>Total</span><span id="cart-drawer-total" class="notranslate" translate="no">Rs 0</span></div>
+      <a class="btn btn-block" href="{% url 'store:cart' %}">View cart &amp; checkout</a>
     </div>
   </div>
 
@@ -390,8 +362,7 @@
 
   <script>
 (function () {
-  /* ── Language switcher (native + Google Translate) ── */
-  var NATIVE_CODES = ['en','ur','ur-latn','ar'];
+  /* ── Language switcher (Google Translate) ── */
   var ENABLE_GT = {% if ENABLE_GOOGLE_TRANSLATE %}true{% else %}false{% endif %};
 
   /* DOM refs */
@@ -410,6 +381,7 @@
   var activeLmGt = (document.cookie.match(/(?:^|;\s*)lm_gt_lang=([^;]+)/) || [])[1] || '';
   if (activeLmGt && nameEl && ENABLE_GT) {
     var activeBtn = gtList && gtList.querySelector('[data-gt-code="' + activeLmGt + '"]');
+    if (!activeBtn) activeBtn = sw && sw.querySelector('[data-gt-code="' + activeLmGt + '"]');
     if (activeBtn) {
       var parts = activeBtn.textContent.trim().split(/\s+/);
       if (parts.length) nameEl.textContent = parts[0];
@@ -445,26 +417,19 @@
     }
   });
 
-  /* ── Native language: when submitted, clear GT cookie ── */
+  /* ── "English" Popular entry: clicking resets GT ── */
   if (sw) {
-    sw.querySelectorAll('[data-clears-gt]').forEach(function(b) {
+    sw.querySelectorAll('[data-gt-reset]').forEach(function(b) {
       b.addEventListener('click', function() {
         document.cookie = 'lm_gt_lang=;path=/;max-age=0';
         document.cookie = 'lm_gt_lang=;path=/;max-age=0;domain=' + location.hostname;
         document.cookie = 'googtrans=;path=/;max-age=0';
         document.cookie = 'googtrans=;path=/;max-age=0;domain=' + location.hostname;
+        document.cookie = 'django_language=en;path=/;max-age=' + (365*24*3600);
+        location.reload();
       });
     });
   }
-  /* Also handle drawer native lang buttons */
-  document.querySelectorAll('[data-clears-gt]').forEach(function(b) {
-    b.addEventListener('click', function() {
-      document.cookie = 'lm_gt_lang=;path=/;max-age=0';
-      document.cookie = 'lm_gt_lang=;path=/;max-age=0;domain=' + location.hostname;
-      document.cookie = 'googtrans=;path=/;max-age=0';
-      document.cookie = 'googtrans=;path=/;max-age=0;domain=' + location.hostname;
-    });
-  });
 
   /* ── Google Translate language picker ── */
   function activateGT(code, isRtl) {
@@ -482,8 +447,8 @@
     location.reload();
   }
 
-  if (gtList && ENABLE_GT) {
-    gtList.addEventListener('click', function(e) {
+  if (ENABLE_GT && menu) {
+    menu.addEventListener('click', function(e) {
       var opt = e.target.closest('[data-gt-code]');
       if (!opt) return;
       var code = opt.dataset.gtCode;

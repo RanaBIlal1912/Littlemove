@@ -2161,75 +2161,6 @@ body.has-hero.has-topbar .hero-fullbleed {
   body.has-hero.has-topbar .hero-fullbleed { padding-top: 0 !important; }
 }
 
-/* ── RTL overrides (dir=rtl) ── */
-
-[dir="rtl"] {
-  --start: right;
-  --end: left;
-}
-
-/* Header & nav */
-[dir="rtl"] .header-main { flex-direction: row-reverse; }
-[dir="rtl"] .header-icons { flex-direction: row-reverse; }
-[dir="rtl"] .navbar .wrap { flex-direction: row-reverse; }
-[dir="rtl"] .search { flex-direction: row-reverse; }
-[dir="rtl"] .search input { text-align: right; }
-[dir="rtl"] .nav-right { margin-inline-start: auto; margin-inline-end: 0; }
-[dir="rtl"] .dropdown { inset-inline-start: auto; inset-inline-end: 0; }
-[dir="rtl"] .nav-item .dropdown { left: auto; right: 0; }
-
-/* Brand */
-[dir="rtl"] .brand { flex-direction: row-reverse; }
-
-/* Drawer */
-[dir="rtl"] .drawer-panel { left: auto; right: 0; transform: translateX(100%); }
-[dir="rtl"] .drawer.open .drawer-panel { transform: translateX(0); }
-[dir="rtl"] .drawer-head { flex-direction: row-reverse; }
-
-/* Cart drawer */
-[dir="rtl"] .cart-drawer { left: auto; right: 0; transform: translateX(100%); }
-[dir="rtl"] .cart-drawer.open { transform: translateX(0); }
-[dir="rtl"] .cart-drawer-head { flex-direction: row-reverse; }
-
-/* Product cards */
-[dir="rtl"] .card { text-align: right; }
-[dir="rtl"] .card .badge { right: auto; left: 8px; }
-[dir="rtl"] .sale-pct { right: auto; left: 8px; }
-[dir="rtl"] .price { flex-direction: row-reverse; }
-
-/* Footer */
-[dir="rtl"] .footer-grid { direction: rtl; }
-[dir="rtl"] .footer-bottom { flex-direction: row-reverse; }
-
-/* Bottom nav */
-[dir="rtl"] .bottom-nav { direction: rtl; }
-
-/* Forms */
-[dir="rtl"] input, [dir="rtl"] textarea, [dir="rtl"] select {
-  text-align: right;
-  direction: rtl;
-}
-[dir="rtl"] .form-row { flex-direction: row-reverse; }
-
-/* WA float — swap sides */
-[dir="rtl"] .wa-float { left: 20px; right: auto; }
-
-/* Mila chatbot — swap sides */
-[dir="rtl"] .mila-bot { left: 20px; right: auto; }
-[dir="rtl"] .mila-window { left: 0; right: auto; }
-
-/* Swiper RTL */
-[dir="rtl"] .swiper { direction: rtl; }
-
-/* Arrow icons flip */
-[dir="rtl"] .icon-chev-r,
-[dir="rtl"] [data-scroll] { transform: scaleX(-1); }
-
-/* Text align */
-[dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3,
-[dir="rtl"] p, [dir="rtl"] li { text-align: right; }
-[dir="rtl"] .wrap { direction: rtl; }
-
 /* Language switcher */
 .lang-switcher { position: relative; }
 .lang-btn {
@@ -2274,65 +2205,12 @@ body.has-hero.has-topbar .hero-fullbleed {
 }
 .lang-opt button:hover { background: #f3f4f6; }
 .lang-opt--active button { font-weight: 700; color: var(--primary, #3BA4E6); }
-[dir="rtl"] .lang-menu { inset-inline-start: 0; inset-inline-end: auto; }
 
 /* Drawer language switcher */
 .drawer-lang { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 8px 16px 14px; border-bottom: 1px solid #f3f4f6; }
 .drawer-lang > span { font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: #9ca3af; }
 .drawer-lang-btn { padding: 4px 10px; border: 1.5px solid #e5e7eb; border-radius: 99px; background: transparent; cursor: pointer; font-size: .8125rem; font-weight: 600; color: #374151; }
 .drawer-lang-btn.active { background: var(--primary, #3BA4E6); color: #fff; border-color: var(--primary, #3BA4E6); }
-
-/* Urdu font */
-.lang-ur { font-family: 'Noto Nastaliq Urdu', serif; line-height: 2; }
-
-/* Arabic font */
-.lang-ar { font-family: 'Noto Naskh Arabic', 'Noto Sans Arabic', serif; line-height: 1.8; }
-
-/* ── Roman Urdu: long label truncation ─────────────────────────── */
-[lang="ur-latn"] .nav-right { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
-
-/* ── Hero alignment in RTL ─────────────────────────────────────── */
-[dir="rtl"] .hero { flex-direction: row-reverse; }
-[dir="rtl"] .hero-text { text-align: right; }
-[dir="rtl"] .hero-btns { justify-content: flex-end; }
-[dir="rtl"] .hero-illus { order: -1; }
-
-/* ── Shop page: illustration moves to the other side ───────────── */
-[dir="rtl"] .shop-hero { flex-direction: row-reverse; }
-[dir="rtl"] .shop-hero-illus { order: -1; }
-
-/* ── Sort select arrow text ─────────────────────────────────────── */
-[dir="rtl"] select { text-align-last: right; padding-inline-start: 8px; padding-inline-end: 28px; }
-
-/* ── Discount/sale badge corners ────────────────────────────────── */
-[dir="rtl"] .badge-sale,
-[dir="rtl"] .sale-pct {
-  border-radius: 0 6px 6px 0;
-  left: auto;
-  right: 0;
-  inset-inline-start: 0;
-  inset-inline-end: auto;
-}
-
-/* ── Breadcrumb arrow flip ──────────────────────────────────────── */
-[dir="rtl"] .breadcrumb-sep { transform: scaleX(-1); display: inline-block; }
-
-/* ── PDP buy box ────────────────────────────────────────────────── */
-[dir="rtl"] .buy-box { text-align: right; }
-[dir="rtl"] .buy-box .price { justify-content: flex-end; }
-
-/* ── Checkout form ──────────────────────────────────────────────── */
-[dir="rtl"] .checkout-grid { direction: rtl; }
-
-/* ── Tracking timeline ──────────────────────────────────────────── */
-[dir="rtl"] ol.timeline { padding-inline-start: 0; padding-inline-end: 1.5rem; }
-[dir="rtl"] ol.timeline li::before { left: auto; right: -1.5rem; }
-
-/* ── Mobile 390px RTL specifics ─────────────────────────────────── */
-@media (max-width: 640px) {
-  [dir="rtl"] .header-main { gap: 8px; }
-  [dir="rtl"] .search { max-width: 100%; }
-}
 
 /* ── Extended language dropdown (GT) ── */
 .lang-menu--extended {
