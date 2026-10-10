@@ -1,0 +1,35 @@
+.lm-drop-zone {
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+  position: relative;
+}
+.lm-drop-zone:hover,
+.lm-drop-zone.drag-over { border-color: #3BA4E6; background: #f0f9ff; }
+.lm-drop-zone input[type="file"] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+.lm-drop-zone .dz-label { color: #6b7280; font-size: .875rem; pointer-events: none; }
+.lm-drop-zone .dz-label b { color: #3BA4E6; }
+.lm-drop-zone .dz-preview {
+  display: flex; align-items: center; gap: 10px;
+  background: #f9fafb; border-radius: 8px; padding: 8px 12px;
+  margin-top: 10px; position: relative;
+}
+.lm-drop-zone .dz-thumb { width: 56px; height: 56px; object-fit: cover; border-radius: 6px; flex-shrink: 0; }
+.lm-drop-zone .dz-info { font-size: .8125rem; text-align: left; min-width: 0; }
+.lm-drop-zone .dz-info b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lm-drop-zone .dz-info small { color: #6b7280; }
+.lm-drop-zone .dz-remove {
+  position: absolute; right: 6px; top: 6px;
+  background: #fee2e2; border: none; border-radius: 50%; width: 20px; height: 20px;
+  cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center;
+}
+.lm-drop-zone .dz-error { color: #b42318; font-size: .8125rem; margin-top: 6px; }
+.lm-drop-zone .dz-missing {
+  background: #fff1f0; border: 1px solid #ffa39e; border-radius: 6px;
+  padding: 6px 10px; font-size: .8125rem; color: #a8071a; margin-top: 6px;
+}

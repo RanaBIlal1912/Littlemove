@@ -222,6 +222,14 @@ UNFOLD = {
     "SHOW_VIEW_ON_SITE": True,
     "SHOW_BACK_BUTTON": True,
 
+    # Drop-zone upload widget (loaded on every admin page)
+    "STYLES": [
+        lambda request: static("admin/drop_zone.css"),
+    ],
+    "SCRIPTS": [
+        lambda request: static("admin/drop_zone.js"),
+    ],
+
     # Dashboard context callback
     "DASHBOARD_CALLBACK": "store.admin_callbacks.dashboard_callback",
 
