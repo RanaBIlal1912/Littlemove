@@ -1,0 +1,287 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block title %}Bulk product import | LittleMove{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">Home</a>
+  &rsaquo; <a href="{% url 'admin:store_product_changelist' %}">Products</a>
+  &rsaquo; Bulk product import
+</div>
+{% endblock %}
+
+{% block content %}
+<h1>Bulk product import</h1>
+
+{% if cloudinary_warning %}
+<div style="background:#fff1f0;border:1px solid #ffa39e;color:#a8071a;padding:12px 16px;border-radius:8px;margin-bottom:20px">
+  <strong>⚠ Photos will be lost on the next deploy — set CLOUDINARY_URL before uploading photos.</strong>
+</div>
+{% endif %}
+
+{% if error %}
+<div style="background:#fff1f0;border:1px solid #ffa39e;color:#a8071a;padding:12px 16px;border-radius:8px;margin-bottom:20px">
+  {{ error }}
+</div>
+{% endif %}
+
+{# ── RESULT PAGE ──────────────────────────────────────────────────────────────── #}
+{% if step == "result" %}
+
+  {% if result.created or result.updated %}
+  <div style="background:#f6ffed;border:1px solid #b7eb8f;padding:14px 18px;border-radius:8px;margin-bottom:20px">
+    <strong>✓ Import complete</strong><br>
+    {% if result.created %}<span style="color:#067647">{{ result.created }} product{{ result.created|pluralize }} created.</span>{% endif %}
+    {% if result.updated %}<span style="color:#1d4ed8;margin-left:8px">{{ result.updated }} product{{ result.updated|pluralize }} updated.</span>{% endif %}
+  </div>
+  {% endif %}
+
+  {% if result.errors %}
+  <div style="background:#fff1f0;border:1px solid #ffa39e;color:#a8071a;padding:12px 16px;border-radius:8px;margin-bottom:20px">
+    <strong>{{ result.errors|length }} row{{ result.errors|length|pluralize }} had errors and were skipped:</strong>
+    <ul style="margin:8px 0 0 20px;padding:0">
+      {% for e in result.errors %}<li>{{ e }}</li>{% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  {% with pr=result.photo_result %}
+  {% if pr %}
+    {% if pr.attached %}
+    <div style="background:#e6f7ff;border:1px solid #91d5ff;padding:12px 16px;border-radius:8px;margin-bottom:16px">
+      <strong>📷 {{ pr.attached|length }} photo{{ pr.attached|length|pluralize }} attached</strong>
+      <ul style="margin:8px 0 0 20px;padding:0">{% for n in pr.attached %}<li>{{ n }}</li>{% endfor %}</ul>
+    </div>
+    {% endif %}
+    {% if pr.no_match %}
+    <div style="background:#fffbe6;border:1px solid #ffe58f;padding:12px 16px;border-radius:8px;margin-bottom:16px">
+      <strong>⚠ {{ pr.no_match|length }} file{{ pr.no_match|length|pluralize }} matched no product</strong>
+      <ul style="margin:8px 0 0 20px;padding:0">{% for f in pr.no_match %}<li>{{ f }}</li>{% endfor %}</ul>
+    </div>
+    {% endif %}
+    {% if pr.no_photo %}
+    <div style="background:#fffbe6;border:1px solid #ffe58f;padding:12px 16px;border-radius:8px;margin-bottom:16px">
+      <strong>⚠ {{ pr.no_photo|length }} product{{ pr.no_photo|length|pluralize }} still have no photo</strong>
+      <ul style="margin:8px 0 0 20px;padding:0">{% for n in pr.no_photo %}<li>{{ n }}</li>{% endfor %}</ul>
+    </div>
+    {% endif %}
+    {% if pr.errors %}
+    <div style="background:#fff1f0;border:1px solid #ffa39e;color:#a8071a;padding:12px 16px;border-radius:8px;margin-bottom:16px">
+      <strong>Photo errors:</strong>
+      <ul style="margin:8px 0 0 20px;padding:0">{% for e in pr.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    </div>
+    {% endif %}
+  {% endif %}
+  {% endwith %}
+
+  <div style="margin-top:24px;display:flex;gap:12px;flex-wrap:wrap">
+    <a href="{% url 'admin:store_product_changelist' %}" class="button default">View all products</a>
+    <a href="{% url 'admin:store_product_bulk_import' %}" style="padding:8px 16px;border:1px solid #d1d5db;border-radius:6px;text-decoration:none;color:#374151;font-weight:600;font-size:.875rem">Import another file</a>
+  </div>
+
+{# ── PREVIEW PAGE ─────────────────────────────────────────────────────────────── #}
+{% elif step == "preview" %}
+
+  <div style="background:#fffbe6;border:1px solid #fde68a;padding:14px 18px;border-radius:8px;margin-bottom:20px">
+    <strong>⚠ Prices in this file may be sample values — check all prices before showing products in the shop.</strong>
+  </div>
+
+  <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:20px">
+    <div style="background:#f0fdf4;border:1px solid #86efac;padding:12px 18px;border-radius:8px;min-width:120px;text-align:center">
+      <div style="font-size:1.8rem;font-weight:700;color:#16a34a">{{ preview.will_create }}</div>
+      <div style="font-size:.85rem;color:#15803d">will create</div>
+    </div>
+    <div style="background:#eff6ff;border:1px solid #93c5fd;padding:12px 18px;border-radius:8px;min-width:120px;text-align:center">
+      <div style="font-size:1.8rem;font-weight:700;color:#1d4ed8">{{ preview.will_update }}</div>
+      <div style="font-size:.85rem;color:#1e40af">will update</div>
+    </div>
+    {% if preview.error_count %}
+    <div style="background:#fff1f0;border:1px solid #fca5a5;padding:12px 18px;border-radius:8px;min-width:120px;text-align:center">
+      <div style="font-size:1.8rem;font-weight:700;color:#dc2626">{{ preview.error_count }}</div>
+      <div style="font-size:.85rem;color:#b91c1c">errors</div>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if preview.truncated %}
+  <div style="background:#fffbe6;border:1px solid #ffe58f;padding:10px 14px;border-radius:8px;margin-bottom:16px;font-size:.875rem">
+    ⚠ File has {{ preview.total_in_file }} rows — only the first {{ MAX_ROWS }} will be imported.
+  </div>
+  {% endif %}
+
+  {% if session_options.import_as_hidden %}
+  <div style="background:#f0f9ff;border:1px solid #bae6fd;padding:10px 14px;border-radius:8px;margin-bottom:16px;font-size:.875rem">
+    ℹ New products will be created as <strong>hidden (draft)</strong> — check prices, then show them in the shop.
+  </div>
+  {% endif %}
+
+  <h2 style="font-size:1rem;margin:20px 0 8px">Preview of first 20 rows</h2>
+  <div style="overflow-x:auto;margin-bottom:24px">
+    <table style="width:100%;border-collapse:collapse;font-size:.875rem">
+      <thead>
+        <tr style="background:#f9fafb">
+          <th style="padding:8px 10px;text-align:left;border-bottom:2px solid #e5e7eb;font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;color:#6b7280">Row</th>
+          <th style="padding:8px 10px;text-align:left;border-bottom:2px solid #e5e7eb;font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;color:#6b7280">Product name</th>
+          <th style="padding:8px 10px;text-align:left;border-bottom:2px solid #e5e7eb;font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;color:#6b7280">SKU</th>
+          <th style="padding:8px 10px;text-align:left;border-bottom:2px solid #e5e7eb;font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;color:#6b7280">Category</th>
+          <th style="padding:8px 10px;text-align:right;border-bottom:2px solid #e5e7eb;font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;color:#6b7280">Price</th>
+          <th style="padding:8px 10px;text-align:right;border-bottom:2px solid #e5e7eb;font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;color:#6b7280">Stock</th>
+          <th style="padding:8px 10px;text-align:center;border-bottom:2px solid #e5e7eb;font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;color:#6b7280">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in preview.preview_rows %}
+        <tr style="border-bottom:1px solid #f3f4f6{% if row.action == 'error' %};background:#fff1f0{% endif %}">
+          <td style="padding:7px 10px;color:#6b7280">{{ row.row_num }}</td>
+          <td style="padding:7px 10px">{{ row.name|default:"—" }}</td>
+          <td style="padding:7px 10px;color:#6b7280">{{ row.sku|default:"—" }}</td>
+          <td style="padding:7px 10px">{{ row.category_name|default:"—" }}</td>
+          <td style="padding:7px 10px;text-align:right">
+            {% if row.price %}Rs {{ row.price }}
+              {% if row.compare_at_price %}<span style="text-decoration:line-through;color:#9ca3af;margin-left:4px">{{ row.compare_at_price }}</span>{% endif %}
+            {% else %}—{% endif %}
+          </td>
+          <td style="padding:7px 10px;text-align:right">{{ row.stock }}</td>
+          <td style="padding:7px 10px;text-align:center">
+            {% if row.action == "create" %}
+              <span style="background:#dcfce7;color:#15803d;padding:2px 8px;border-radius:4px;font-size:.75rem;font-weight:600">Create</span>
+            {% elif row.action == "update" %}
+              <span style="background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:.75rem;font-weight:600">Update</span>
+            {% else %}
+              <span style="background:#fee2e2;color:#b91c1c;padding:2px 8px;border-radius:4px;font-size:.75rem;font-weight:600">Error</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if preview.error_rows %}
+  <h2 style="font-size:1rem;margin:20px 0 8px;color:#b91c1c">All rows with errors ({{ preview.error_count }})</h2>
+  <div style="overflow-x:auto;margin-bottom:24px">
+    <table style="width:100%;border-collapse:collapse;font-size:.875rem">
+      <thead>
+        <tr style="background:#fff1f0">
+          <th style="padding:8px 10px;text-align:left;border-bottom:2px solid #fca5a5;font-size:.75rem;text-transform:uppercase;color:#6b7280">Row</th>
+          <th style="padding:8px 10px;text-align:left;border-bottom:2px solid #fca5a5;font-size:.75rem;text-transform:uppercase;color:#6b7280">Product name</th>
+          <th style="padding:8px 10px;text-align:left;border-bottom:2px solid #fca5a5;font-size:.75rem;text-transform:uppercase;color:#6b7280">Error</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in preview.error_rows %}
+        <tr style="border-bottom:1px solid #fee2e2">
+          <td style="padding:7px 10px;color:#6b7280">{{ row.row_num }}</td>
+          <td style="padding:7px 10px">{{ row.name|default:"(no name)" }}</td>
+          <td style="padding:7px 10px;color:#b91c1c">{{ row.error }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <form method="post" style="margin-top:8px">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="confirm">
+    <input type="hidden" name="create_missing_categories" value="{% if session_options.create_missing_categories %}on{% endif %}">
+    <input type="hidden" name="import_as_hidden" value="{% if session_options.import_as_hidden %}on{% endif %}">
+    <input type="hidden" name="replace_photos" value="{% if session_options.replace_photos %}on{% endif %}">
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+      <button type="submit" class="button default"
+              {% if not preview.will_create and not preview.will_update %}disabled{% endif %}>
+        Confirm import ({{ preview.will_create|add:preview.will_update }} rows)
+      </button>
+      <a href="{% url 'admin:store_product_bulk_import' %}"
+         style="padding:8px 16px;border:1px solid #d1d5db;border-radius:6px;text-decoration:none;color:#374151;font-weight:600;font-size:.875rem">
+        ← Upload a different file
+      </a>
+    </div>
+  </form>
+
+{# ── UPLOAD FORM ──────────────────────────────────────────────────────────────── #}
+{% else %}
+
+  <p style="color:#6b7280;max-width:680px;margin-bottom:24px;line-height:1.6">
+    Upload an Excel (.xlsx) or CSV file with your products. The sheet must be named
+    <strong>Product Catalog</strong> and have a header row with these columns (order doesn't matter,
+    names are case-insensitive):<br>
+    <code style="font-size:.8rem">SKU | Product Name | Category | Short Description | Age Range |
+    Selling Price (PKR) | Sale Price (PKR) | Stock Qty | Status | Image File</code><br><br>
+    Columns named <em>Cost Price</em>, <em>Profit</em>, <em>Margin %</em>, and <em>Barcode</em>
+    are accepted but <strong>never stored</strong>. You will see a full preview before anything is saved.
+    Maximum {{ MAX_ROWS }} rows per import.
+  </p>
+
+  <form method="post" enctype="multipart/form-data" style="max-width:560px">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="preview">
+
+    <fieldset style="border:1px solid #e5e7eb;border-radius:8px;padding:20px;margin-bottom:16px">
+      <legend style="padding:0 8px;font-weight:600">Spreadsheet file</legend>
+
+      <div style="margin-bottom:16px">
+        <label for="import_file" style="display:block;margin-bottom:4px;font-weight:600">
+          Excel or CSV file <span style="color:#b91c1c">*</span>
+        </label>
+        <input type="file" name="import_file" id="import_file" accept=".xlsx,.csv" required
+               style="display:block;width:100%">
+        <p style="margin:4px 0 0;font-size:.8rem;color:#6b7280">Accepted: .xlsx, .csv — max {{ MAX_ROWS }} rows</p>
+      </div>
+
+      <div style="margin-bottom:8px">
+        <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
+          <input type="checkbox" name="import_as_hidden" checked style="margin-top:3px">
+          <span>
+            <strong>Import as draft (hidden)</strong><br>
+            <span style="font-size:.85rem;color:#6b7280">
+              New products will be hidden from the shop. Review prices, then show them.
+            </span>
+          </span>
+        </label>
+      </div>
+
+      <div style="margin-bottom:8px">
+        <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
+          <input type="checkbox" name="create_missing_categories" checked style="margin-top:3px">
+          <span>
+            <strong>Create missing categories</strong><br>
+            <span style="font-size:.85rem;color:#6b7280">
+              If a category in the file doesn't exist yet, create it automatically.
+              Uncheck to report those rows as errors instead.
+            </span>
+          </span>
+        </label>
+      </div>
+    </fieldset>
+
+    <fieldset style="border:1px solid #e5e7eb;border-radius:8px;padding:20px;margin-bottom:20px">
+      <legend style="padding:0 8px;font-weight:600">Photos ZIP (optional)</legend>
+      <p style="margin:0 0 12px;font-size:.875rem;color:#6b7280">
+        If you have photos, upload a ZIP file. Each image filename must match the
+        <strong>Image File</strong> column value in your spreadsheet (e.g. <code>toy_001.jpg</code>).
+        Max 60 MB.
+      </p>
+
+      <div style="margin-bottom:14px">
+        <label for="photos_zip" style="display:block;margin-bottom:4px;font-weight:600">ZIP file</label>
+        <input type="file" name="photos_zip" id="photos_zip" accept=".zip" style="display:block;width:100%">
+      </div>
+
+      <div>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" name="replace_photos">
+          <span>Replace existing photos</span>
+        </label>
+        <p style="margin:4px 0 0 24px;font-size:.8rem;color:#6b7280">
+          When checked, existing photos are replaced. Default: add photos only to products with none.
+        </p>
+      </div>
+    </fieldset>
+
+    <button type="submit" class="button default">Preview import</button>
+  </form>
+
+{% endif %}
+{% endblock %}

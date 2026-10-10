@@ -793,3 +793,470 @@ class PackingSlipTests(TestCase):
         url = reverse("admin:orders_order_packing_slip", args=[self.order.pk])
         resp = self.client.get(url)
         self.assertNotEqual(resp.status_code, 200)
+
+
+# ── Bulk import tests ─────────────────────────────────────────────────────────
+
+import openpyxl as _openpyxl
+
+
+def _make_xlsx(rows, headers=None):
+    """Build an in-memory .xlsx with a 'Product Catalog' sheet."""
+    if headers is None:
+        headers = [
+            "", "SKU", "Product Name", "Category", "Short Description",
+            "Age Range", "Cost Price (PKR)", "Selling Price (PKR)", "Sale Price (PKR)",
+            "Profit (PKR)", "Margin %", "Stock Qty", "Barcode", "Status", "Image File",
+        ]
+    wb = _openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Product Catalog"
+    ws.append(headers)
+    for row in rows:
+        ws.append(row)
+    buf = io.BytesIO()
+    wb.save(buf)
+    return buf.getvalue()
+
+
+def _row(name="Test Toy", sku="TST01", category="Sensory play",
+         desc="A test toy", age="2-6", cost=300, sell=999, sale=None,
+         profit=699, margin=70, stock=10, barcode="", status="Active",
+         image_file=""):
+    """Return a row tuple matching the default headers."""
+    return ("", sku, name, category, desc, age, cost, sell, sale,
+            profit, margin, stock, barcode, status, image_file)
+
+
+class BulkImportParserTests(TestCase):
+    """Unit tests for bulk_import.py parser helpers."""
+
+    def test_parse_age_range(self):
+        from store.bulk_import import _parse_age
+        self.assertEqual(_parse_age("2-6"), (2, 6))
+        self.assertEqual(_parse_age("2–6"), (2, 6))   # en dash
+        self.assertEqual(_parse_age("0-2"), (0, 2))
+
+    def test_parse_age_6plus(self):
+        from store.bulk_import import _parse_age
+        self.assertEqual(_parse_age("6+"), (6, 12))
+
+    def test_parse_age_empty_defaults(self):
+        from store.bulk_import import _parse_age
+        self.assertEqual(_parse_age(None), (1, 6))
+        self.assertEqual(_parse_age(""), (1, 6))
+
+    def test_parse_age_invalid_raises(self):
+        from store.bulk_import import _parse_age
+        with self.assertRaises(ValueError):
+            _parse_age("adult")
+
+    def test_cost_barcode_ignored(self):
+        from store.bulk_import import _normalize_row, HEADER_MAP
+        # Cost Price and Barcode must never be mapped to a field
+        self.assertIsNone(HEADER_MAP.get("cost price (pkr)"))
+        self.assertIsNone(HEADER_MAP.get("barcode"))
+        raw = {
+            "product name": "X", "cost price (pkr)": 500,
+            "selling price (pkr)": 999, "barcode": "1234567890123",
+        }
+        canonical = _normalize_row(raw)
+        self.assertNotIn("cost_price", canonical)
+        self.assertNotIn("barcode", canonical)
+        self.assertEqual(canonical.get("selling_price"), 999)
+
+
+class BulkImportBuildPreviewTests(TestCase):
+    """Tests for build_preview (no DB writes)."""
+
+    def setUp(self):
+        self.cat = Category.objects.create(name="Sensory play")
+        self.staff = User.objects.create_superuser("admin_bi", "bi@x.com", "AdminPass1!")
+
+    def test_create_action_for_new_product(self):
+        from store.bulk_import import build_preview
+        xlsx = _make_xlsx([_row()])
+        prev = build_preview(xlsx, "test.xlsx", True, True)
+        self.assertEqual(prev.will_create, 1)
+        self.assertEqual(prev.will_update, 0)
+        self.assertEqual(prev.error_count, 0)
+        self.assertEqual(prev.rows[0].action, "create")
+
+    def test_update_action_for_existing_sku(self):
+        from store.bulk_import import build_preview
+        make_product(self.cat, name="Old Name", price=500)
+        Product.objects.filter(name="Old Name").update(
+            **{"sku": "TST01"}
+        )
+        xlsx = _make_xlsx([_row(sku="TST01", name="New Name")])
+        prev = build_preview(xlsx, "test.xlsx", True, True)
+        self.assertEqual(prev.will_update, 1)
+        self.assertEqual(prev.will_create, 0)
+
+    def test_update_action_for_existing_name(self):
+        from store.bulk_import import build_preview
+        make_product(self.cat, name="Matching Toy", price=500)
+        xlsx = _make_xlsx([_row(name="Matching Toy", sku="")])
+        prev = build_preview(xlsx, "test.xlsx", True, True)
+        self.assertEqual(prev.will_update, 1)
+
+    def test_missing_category_error_when_not_ticked(self):
+        from store.bulk_import import build_preview
+        xlsx = _make_xlsx([_row(category="Ghost Category")])
+        prev = build_preview(xlsx, "test.xlsx", create_missing_categories=False,
+                             import_as_hidden=True)
+        self.assertEqual(prev.error_count, 1)
+        self.assertIn("Ghost Category", prev.rows[0].error)
+
+    def test_missing_category_ok_when_ticked(self):
+        from store.bulk_import import build_preview
+        xlsx = _make_xlsx([_row(category="Brand New Cat")])
+        prev = build_preview(xlsx, "test.xlsx", create_missing_categories=True,
+                             import_as_hidden=True)
+        self.assertEqual(prev.error_count, 0)
+        self.assertEqual(prev.will_create, 1)
+
+    def test_sale_price_mapping_preview(self):
+        from store.bulk_import import build_preview
+        xlsx = _make_xlsx([_row(sell=1000, sale=799)])
+        prev = build_preview(xlsx, "test.xlsx", True, True)
+        row = prev.rows[0]
+        self.assertEqual(row.price, 799)
+        self.assertEqual(row.compare_at_price, 1000)
+
+    def test_no_sale_price_when_not_lower(self):
+        from store.bulk_import import build_preview
+        xlsx = _make_xlsx([_row(sell=1000, sale=1200)])  # sale > sell
+        prev = build_preview(xlsx, "test.xlsx", True, True)
+        row = prev.rows[0]
+        self.assertEqual(row.price, 1000)
+        self.assertIsNone(row.compare_at_price)
+
+    def test_preview_saves_nothing(self):
+        from store.bulk_import import build_preview
+        count_before = Product.objects.count()
+        cat_count_before = Category.objects.count()
+        xlsx = _make_xlsx([_row(), _row(name="Toy 2", sku="T02")])
+        build_preview(xlsx, "test.xlsx", True, True)
+        self.assertEqual(Product.objects.count(), count_before)
+        self.assertEqual(Category.objects.count(), cat_count_before)
+
+    def test_missing_product_name_is_error(self):
+        from store.bulk_import import build_preview
+        xlsx = _make_xlsx([_row(name="")])
+        prev = build_preview(xlsx, "test.xlsx", True, True)
+        self.assertEqual(prev.error_count, 1)
+        self.assertEqual(prev.will_create, 0)
+
+    def test_bad_age_range_reported(self):
+        from store.bulk_import import build_preview
+        xlsx = _make_xlsx([_row(age="adult")])
+        prev = build_preview(xlsx, "test.xlsx", True, True)
+        self.assertEqual(prev.error_count, 1)
+
+    def test_hidden_by_default_for_new_products(self):
+        from store.bulk_import import build_preview
+        xlsx = _make_xlsx([_row(status="Active")])
+        prev = build_preview(xlsx, "test.xlsx", True, import_as_hidden=True)
+        self.assertFalse(prev.rows[0].is_active)
+
+    def test_preview_rows_property(self):
+        from store.bulk_import import build_preview
+        rows = [_row(name=f"Toy {i}", sku=f"T{i:02d}") for i in range(25)]
+        xlsx = _make_xlsx(rows)
+        prev = build_preview(xlsx, "test.xlsx", True, True)
+        self.assertEqual(len(prev.preview_rows), 20)
+
+    def test_error_rows_property(self):
+        from store.bulk_import import build_preview
+        rows = [_row(name=f"Toy {i}", sku=f"T{i:02d}") for i in range(5)]
+        rows.append(_row(name=""))   # error row
+        xlsx = _make_xlsx(rows)
+        prev = build_preview(xlsx, "test.xlsx", True, True)
+        self.assertEqual(len(prev.error_rows), 1)
+
+
+class BulkImportExecuteTests(TestCase):
+    """Tests for execute_import (writes to DB)."""
+
+    def setUp(self):
+        self.cat = Category.objects.create(name="Sensory play")
+
+    def test_creates_new_product(self):
+        from store.bulk_import import execute_import
+        xlsx = _make_xlsx([_row()])
+        result = execute_import(xlsx, "test.xlsx",
+                                {"create_missing_categories": True, "import_as_hidden": True})
+        self.assertEqual(result["created"], 1)
+        self.assertEqual(result["updated"], 0)
+        self.assertTrue(Product.objects.filter(name="Test Toy").exists())
+
+    def test_new_product_hidden_by_default(self):
+        from store.bulk_import import execute_import
+        xlsx = _make_xlsx([_row(status="Active")])
+        execute_import(xlsx, "test.xlsx",
+                       {"create_missing_categories": True, "import_as_hidden": True})
+        p = Product.objects.get(name="Test Toy")
+        self.assertFalse(p.is_active)
+
+    def test_updates_by_sku(self):
+        from store.bulk_import import execute_import
+        existing = make_product(self.cat, name="Old Name", price=500)
+        existing.sku = "TST01"
+        existing.save(update_fields=["sku"])
+        xlsx = _make_xlsx([_row(sku="TST01", name="New Name", sell=1200)])
+        result = execute_import(xlsx, "test.xlsx",
+                                {"create_missing_categories": True, "import_as_hidden": True})
+        self.assertEqual(result["updated"], 1)
+        self.assertEqual(result["created"], 0)
+        existing.refresh_from_db()
+        self.assertEqual(existing.price, 1200)
+
+    def test_updates_by_name(self):
+        from store.bulk_import import execute_import
+        existing = make_product(self.cat, name="Matching Toy", price=500)
+        xlsx = _make_xlsx([_row(name="Matching Toy", sku="", sell=888)])
+        result = execute_import(xlsx, "test.xlsx",
+                                {"create_missing_categories": True, "import_as_hidden": True})
+        self.assertEqual(result["updated"], 1)
+        existing.refresh_from_db()
+        self.assertEqual(existing.price, 888)
+
+    def test_sale_price_mapping(self):
+        from store.bulk_import import execute_import
+        xlsx = _make_xlsx([_row(sell=1000, sale=799)])
+        execute_import(xlsx, "test.xlsx",
+                       {"create_missing_categories": True, "import_as_hidden": True})
+        p = Product.objects.get(name="Test Toy")
+        self.assertEqual(p.price, 799)
+        self.assertEqual(p.compare_at_price, 1000)
+
+    def test_age_6plus_parsed(self):
+        from store.bulk_import import execute_import
+        xlsx = _make_xlsx([_row(age="6+")])
+        execute_import(xlsx, "test.xlsx",
+                       {"create_missing_categories": True, "import_as_hidden": True})
+        p = Product.objects.get(name="Test Toy")
+        self.assertEqual(p.age_from, 6)
+        self.assertEqual(p.age_to, 12)
+
+    def test_missing_category_creates_when_ticked(self):
+        from store.bulk_import import execute_import
+        xlsx = _make_xlsx([_row(category="Brand New Category")])
+        result = execute_import(xlsx, "test.xlsx",
+                                {"create_missing_categories": True, "import_as_hidden": True})
+        self.assertEqual(result["created"], 1)
+        self.assertEqual(len(result["errors"]), 0)
+        self.assertTrue(Category.objects.filter(name="Brand New Category").exists())
+
+    def test_missing_category_errors_when_not_ticked(self):
+        from store.bulk_import import execute_import
+        xlsx = _make_xlsx([_row(category="Ghost Cat")])
+        result = execute_import(xlsx, "test.xlsx",
+                                {"create_missing_categories": False, "import_as_hidden": True})
+        self.assertEqual(result["created"], 0)
+        self.assertEqual(len(result["errors"]), 1)
+        self.assertIn("Ghost Cat", result["errors"][0])
+
+    def test_needs_assigned_for_new_products(self):
+        from store.bulk_import import execute_import
+        from store.models import Need
+        need = Need.objects.create(name="Strong little hands", slug="strong-little-hands")
+        # Category name matches CATEGORY_NEEDS_MAP key "fine motor"
+        fine_cat = Category.objects.create(name="Fine motor")
+        xlsx = _make_xlsx([_row(category="Fine motor")])
+        execute_import(xlsx, "test.xlsx",
+                       {"create_missing_categories": True, "import_as_hidden": True})
+        p = Product.objects.get(name="Test Toy")
+        self.assertIn(need, p.needs.all())
+
+    def test_needs_not_changed_for_existing_products(self):
+        from store.bulk_import import execute_import
+        from store.models import Need
+        need = Need.objects.create(name="Strong little hands", slug="strong-little-hands")
+        existing = make_product(self.cat, name="Test Toy", price=500)
+        existing.sku = "TST01"
+        existing.save(update_fields=["sku"])
+        existing.needs.add(need)
+        # Fine motor category would add "Strong little hands" – but existing product should be unchanged
+        fine_cat = Category.objects.create(name="Fine motor")
+        xlsx = _make_xlsx([_row(sku="TST01", category="Fine motor")])
+        execute_import(xlsx, "test.xlsx",
+                       {"create_missing_categories": True, "import_as_hidden": True})
+        # Needs are unchanged for existing products (they were set before, remain set)
+        existing.refresh_from_db()
+        self.assertIn(need, existing.needs.all())  # still there, not duplicated
+
+    def test_cost_and_barcode_not_stored(self):
+        from store.bulk_import import execute_import
+        xlsx = _make_xlsx([_row(cost=500, barcode="9780201379624")])
+        execute_import(xlsx, "test.xlsx",
+                       {"create_missing_categories": True, "import_as_hidden": True})
+        # Product model has no cost/barcode fields – this just verifies no crash
+        p = Product.objects.get(name="Test Toy")
+        self.assertFalse(hasattr(p, "cost_price"))
+        self.assertFalse(hasattr(p, "barcode"))
+
+    def test_slug_is_unique(self):
+        from store.bulk_import import execute_import
+        xlsx = _make_xlsx([
+            _row(name="Same Name", sku="SK1"),
+            _row(name="Same Name", sku="SK2"),  # duplicate name, different SKU
+        ])
+        result = execute_import(xlsx, "test.xlsx",
+                                {"create_missing_categories": True, "import_as_hidden": True})
+        # First creates, second updates (matched by name)
+        self.assertEqual(result["created"], 1)
+        self.assertEqual(result["updated"], 1)
+
+    def test_errors_reported_per_row(self):
+        from store.bulk_import import execute_import
+        xlsx = _make_xlsx([
+            _row(name="Good Toy"),
+            _row(name=""),          # error: missing name
+            _row(name="Bad Age", age="adult"),  # error: unparseable age
+        ])
+        result = execute_import(xlsx, "test.xlsx",
+                                {"create_missing_categories": True, "import_as_hidden": True})
+        self.assertEqual(result["created"], 1)
+        self.assertEqual(len(result["errors"]), 2)
+
+    def test_image_file_map_populated(self):
+        from store.bulk_import import execute_import
+        xlsx = _make_xlsx([_row(image_file="toy_001.jpg")])
+        result = execute_import(xlsx, "test.xlsx",
+                                {"create_missing_categories": True, "import_as_hidden": True})
+        self.assertIn("toy_001.jpg", result["image_file_map"])
+        p = result["image_file_map"]["toy_001.jpg"]
+        self.assertEqual(p.name, "Test Toy")
+
+
+class BulkImportPhotoTests(TestCase):
+    """Tests for match_photos_zip."""
+
+    def setUp(self):
+        self.cat = Category.objects.create(name="Motor play")
+        self.p1 = Product.objects.create(
+            category=self.cat, name="Ring Toy", sku="RING1",
+            slug="ring-toy", price=999, stock=5, summary="x",
+        )
+        self.png = _make_png_bytes()
+
+    def _make_zip_with_file(self, filename, data=None):
+        buf = io.BytesIO()
+        with _zipfile.ZipFile(buf, "w") as zf:
+            zf.writestr(filename, data or self.png)
+        return buf.getvalue()
+
+    def test_photos_matched_by_image_file(self):
+        from store.bulk_import import match_photos_zip
+        image_file_map = {"ring.jpg": self.p1}
+        zip_bytes = self._make_zip_with_file("ring.jpg")
+        result = match_photos_zip(zip_bytes, image_file_map, replace_existing=True)
+        self.assertIn("Ring Toy", result["attached"])
+        self.p1.refresh_from_db()
+        self.assertTrue(bool(self.p1.image))
+
+    def test_no_match_reported(self):
+        from store.bulk_import import match_photos_zip
+        image_file_map = {"other.jpg": self.p1}
+        zip_bytes = self._make_zip_with_file("notmatching.jpg")
+        result = match_photos_zip(zip_bytes, image_file_map, replace_existing=True)
+        self.assertIn("notmatching.jpg", result["no_match"])
+
+    def test_existing_photo_kept_when_replace_false(self):
+        from store.bulk_import import match_photos_zip
+        from django.core.files.base import ContentFile
+        self.p1.image.save("existing.png", ContentFile(self.png), save=True)
+        image_file_map = {"new.jpg": self.p1}
+        zip_bytes = self._make_zip_with_file("new.jpg")
+        result = match_photos_zip(zip_bytes, image_file_map, replace_existing=False)
+        self.assertNotIn("Ring Toy", result["attached"])
+
+
+class BulkImportViewTests(TestCase):
+    """Integration tests for the admin bulk import view."""
+
+    def setUp(self):
+        self.staff = User.objects.create_superuser("admin_biv", "biv@x.com", "AdminPass1!")
+        self.regular = User.objects.create_user("user_biv", password="UserPass1!")
+        self.client.force_login(self.staff)
+        self.cat = Category.objects.create(name="Gross motor")
+
+    def test_get_page_loads(self):
+        url = reverse("admin:store_product_bulk_import")
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Bulk product import")
+
+    def test_anonymous_redirected(self):
+        self.client.logout()
+        url = reverse("admin:store_product_bulk_import")
+        resp = self.client.get(url)
+        self.assertNotEqual(resp.status_code, 200)
+
+    def test_non_staff_redirected(self):
+        self.client.force_login(self.regular)
+        url = reverse("admin:store_product_bulk_import")
+        resp = self.client.get(url)
+        self.assertNotEqual(resp.status_code, 200)
+
+    def test_no_file_shows_error(self):
+        url = reverse("admin:store_product_bulk_import")
+        resp = self.client.post(url, {"action": "preview"})
+        self.assertContains(resp, "Please choose")
+
+    def test_preview_post_returns_preview(self):
+        url = reverse("admin:store_product_bulk_import")
+        xlsx = _make_xlsx([_row(category="Gross motor")])
+        f = SimpleUploadedFile("import.xlsx", xlsx,
+                               content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        resp = self.client.post(url, {
+            "action": "preview",
+            "import_file": f,
+            "import_as_hidden": "on",
+            "create_missing_categories": "on",
+        })
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "will create")
+
+    def test_preview_saves_nothing(self):
+        url = reverse("admin:store_product_bulk_import")
+        count_before = Product.objects.count()
+        xlsx = _make_xlsx([_row(category="Gross motor")])
+        f = SimpleUploadedFile("import.xlsx", xlsx,
+                               content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        self.client.post(url, {
+            "action": "preview",
+            "import_file": f,
+            "import_as_hidden": "on",
+            "create_missing_categories": "on",
+        })
+        self.assertEqual(Product.objects.count(), count_before)
+
+    def test_confirm_creates_product(self):
+        url = reverse("admin:store_product_bulk_import")
+        xlsx = _make_xlsx([_row(category="Gross motor")])
+        f = SimpleUploadedFile("import.xlsx", xlsx,
+                               content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        # Step 1: preview
+        self.client.post(url, {
+            "action": "preview",
+            "import_file": f,
+            "import_as_hidden": "on",
+            "create_missing_categories": "on",
+        })
+        # Step 2: confirm
+        resp = self.client.post(url, {
+            "action": "confirm",
+            "import_as_hidden": "on",
+            "create_missing_categories": "on",
+        })
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Import complete")
+        self.assertTrue(Product.objects.filter(name="Test Toy").exists())
+
+    def test_product_list_changelist_loads(self):
+        url = reverse("admin:store_product_changelist")
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)

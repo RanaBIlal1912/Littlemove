@@ -185,6 +185,7 @@ class ProductAdmin(ModelAdmin):
     form = ProductAdminForm
     tabs = True
     save_on_top = True
+    change_list_template = "admin/store/product/change_list.html"
     list_display = ["thumb", "name", "category", "price", "stock", "stock_flag",
                     "is_active", "is_featured"]
     list_display_links = ["thumb", "name"]
@@ -193,6 +194,17 @@ class ProductAdmin(ModelAdmin):
     search_fields = ["name", "sku", "summary"]
     inlines = [PhotoInline]
     list_per_page = 50
+    actions = ["show_in_shop", "hide_from_shop"]
+
+    @admin.action(description="Show selected products in shop")
+    def show_in_shop(self, request, queryset):
+        updated = queryset.update(is_active=True)
+        self.message_user(request, f"{updated} product(s) are now visible in the shop.")
+
+    @admin.action(description="Hide selected products from shop")
+    def hide_from_shop(self, request, queryset):
+        updated = queryset.update(is_active=False)
+        self.message_user(request, f"{updated} product(s) are now hidden from the shop.")
     fieldsets = [
         (
             "Basics",
@@ -269,6 +281,11 @@ class ProductAdmin(ModelAdmin):
                 self.admin_site.admin_view(self.bulk_upload_view),
                 name="store_product_bulk_upload",
             ),
+            urlpath(
+                "bulk-import/",
+                self.admin_site.admin_view(self.bulk_import_view),
+                name="store_product_bulk_import",
+            ),
         ]
         return custom + super().get_urls()
 
@@ -304,6 +321,170 @@ class ProductAdmin(ModelAdmin):
             "error": error,
         }
         return render(request, "store/admin_bulk_upload.html", context)
+
+    def bulk_import_view(self, request):
+        import os
+        import tempfile
+        from django.conf import settings as djsettings
+        from django.shortcuts import render
+        from .bulk_import import (
+            MAX_ROWS, build_preview, execute_import, match_photos_zip,
+        )
+        from .bulk_upload import MAX_ZIP_BYTES, process_bulk_zip
+
+        cloudinary_warning = (
+            not os.environ.get("CLOUDINARY_URL") and not djsettings.DEBUG
+        )
+        step = "form"
+        preview = None
+        result = None
+        error = None
+        session_options = {}
+
+        if request.method == "POST":
+            action = request.POST.get("action", "preview")
+
+            if action == "preview":
+                import_file = request.FILES.get("import_file")
+                zip_file = request.FILES.get("photos_zip")
+                create_missing = request.POST.get("create_missing_categories") == "on"
+                import_as_hidden = request.POST.get("import_as_hidden") == "on"
+                replace_photos = request.POST.get("replace_photos") == "on"
+
+                if not import_file:
+                    error = "Please choose a spreadsheet file (.xlsx or .csv)."
+                else:
+                    file_bytes = import_file.read()
+                    filename = import_file.name
+
+                    # Save xlsx/csv to temp file
+                    suffix = os.path.splitext(filename)[1] or ".xlsx"
+                    fd, tmp_xlsx = tempfile.mkstemp(suffix=suffix)
+                    os.close(fd)
+                    with open(tmp_xlsx, "wb") as fh:
+                        fh.write(file_bytes)
+
+                    # Save photos ZIP to temp file (if provided and within size limit)
+                    tmp_zip = None
+                    if zip_file:
+                        if zip_file.size > MAX_ZIP_BYTES:
+                            mb = zip_file.size // (1024 * 1024)
+                            error = (
+                                f"Photos ZIP is too large ({mb} MB, max 60 MB). "
+                                "Upload photos separately using Bulk photo upload."
+                            )
+                        else:
+                            fd2, tmp_zip = tempfile.mkstemp(suffix=".zip")
+                            os.close(fd2)
+                            with open(tmp_zip, "wb") as fh:
+                                fh.write(zip_file.read())
+
+                    if not error:
+                        request.session["_bulk_import"] = {
+                            "file_path": tmp_xlsx,
+                            "filename": filename,
+                            "zip_path": tmp_zip,
+                            "options": {
+                                "create_missing_categories": create_missing,
+                                "import_as_hidden": import_as_hidden,
+                                "replace_photos": replace_photos,
+                            },
+                        }
+                        try:
+                            preview = build_preview(
+                                file_bytes, filename,
+                                create_missing, import_as_hidden,
+                            )
+                            session_options = request.session["_bulk_import"]["options"]
+                            step = "preview"
+                        except Exception as exc:
+                            for p in [tmp_xlsx, tmp_zip]:
+                                if p:
+                                    try:
+                                        os.unlink(p)
+                                    except OSError:
+                                        pass
+                            request.session.pop("_bulk_import", None)
+                            error = f"Could not read file: {exc}"
+
+            elif action == "confirm":
+                session_data = request.session.pop("_bulk_import", None)
+                if not session_data:
+                    error = "Session expired — please upload the file again."
+                else:
+                    tmp_xlsx = session_data.get("file_path")
+                    filename = session_data.get("filename", "import.xlsx")
+                    tmp_zip = session_data.get("zip_path")
+                    options = session_data.get("options", {})
+
+                    try:
+                        with open(tmp_xlsx, "rb") as fh:
+                            file_bytes = fh.read()
+                    except (IOError, TypeError):
+                        file_bytes = None
+                        error = "Temporary file not found — please upload again."
+
+                    if file_bytes:
+                        import_result = execute_import(file_bytes, filename, options)
+                        photo_result = None
+
+                        if tmp_zip:
+                            try:
+                                with open(tmp_zip, "rb") as fh:
+                                    zip_bytes = fh.read()
+                                image_file_map = import_result.get("image_file_map", {})
+                                if image_file_map:
+                                    photo_result = match_photos_zip(
+                                        zip_bytes, image_file_map,
+                                        replace_existing=options.get("replace_photos", False),
+                                    )
+                                else:
+                                    photo_result = process_bulk_zip(
+                                        zip_bytes,
+                                        replace=options.get("replace_photos", False),
+                                    )
+                            except Exception as exc:
+                                import_result["errors"].append(f"Photo import error: {exc}")
+
+                        result = {
+                            "created": import_result["created"],
+                            "updated": import_result["updated"],
+                            "errors": import_result["errors"],
+                            "photo_result": photo_result,
+                        }
+                        step = "result"
+
+                    # Clean up temp files
+                    for p in [tmp_xlsx, tmp_zip]:
+                        if p:
+                            try:
+                                os.unlink(p)
+                            except OSError:
+                                pass
+
+            elif action == "cancel":
+                session_data = request.session.pop("_bulk_import", None)
+                if session_data:
+                    for p in [session_data.get("file_path"), session_data.get("zip_path")]:
+                        if p:
+                            try:
+                                os.unlink(p)
+                            except OSError:
+                                pass
+
+        context = {
+            **self.admin_site.each_context(request),
+            "title": "Bulk product import",
+            "opts": self.model._meta,
+            "cloudinary_warning": cloudinary_warning,
+            "MAX_ROWS": MAX_ROWS,
+            "step": step,
+            "preview": preview,
+            "session_options": session_options,
+            "result": result,
+            "error": error,
+        }
+        return render(request, "store/admin_bulk_import.html", context)
 
     def save_related(self, request, form, formsets, change):
         super().save_related(request, form, formsets, change)

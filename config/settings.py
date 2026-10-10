@@ -274,6 +274,11 @@ UNFOLD = {
                         "link": reverse_lazy("admin:store_product_bulk_upload"),
                     },
                     {
+                        "title": "Bulk product import",
+                        "icon": "table_view",
+                        "link": reverse_lazy("admin:store_product_bulk_import"),
+                    },
+                    {
                         "title": "Low stock",
                         "icon": "warning",
                         "link": lambda request: reverse_lazy("admin:store_product_changelist").__str__() + "?stock=low",
