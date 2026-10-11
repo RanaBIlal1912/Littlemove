@@ -224,6 +224,7 @@
           Excel or CSV file <span style="color:#b91c1c">*</span>
         </label>
         <input type="file" name="import_file" id="import_file" accept=".xlsx,.csv" required
+               data-dz-label="Drag &amp; drop your Excel/CSV here or click to browse"
                style="display:block;width:100%">
         <p style="margin:4px 0 0;font-size:.8rem;color:#6b7280">Accepted: .xlsx, .csv — max {{ MAX_ROWS }} rows</p>
       </div>
@@ -264,7 +265,10 @@
 
       <div style="margin-bottom:14px">
         <label for="photos_zip" style="display:block;margin-bottom:4px;font-weight:600">ZIP file</label>
-        <input type="file" name="photos_zip" id="photos_zip" accept=".zip" style="display:block;width:100%">
+        <input type="file" name="photos_zip" id="photos_zip" accept=".zip"
+               data-dz-label="Drag &amp; drop your photos ZIP here or click to browse"
+               data-dz-max-mb="60"
+               style="display:block;width:100%">
       </div>
 
       <div>

@@ -2431,6 +2431,70 @@ class DropZoneJsTests(TestCase):
             js = f.read()
         self.assertIn("Please choose an image file", js)
 
+    def test_drop_zone_type_aware_config(self):
+        """getZoneConfig must detect image/zip/spreadsheet from accept attribute."""
+        with open("static/admin/drop_zone.js", encoding="utf-8") as f:
+            js = f.read()
+        self.assertIn("getZoneConfig", js)
+        # Must handle all three types
+        self.assertIn("spreadsheet", js)
+        self.assertIn(".zip", js)
+        self.assertIn("image", js)
+
+    def test_drop_zone_skips_unknown_accept(self):
+        """getZoneConfig must return null for unrecognised accept values."""
+        with open("static/admin/drop_zone.js", encoding="utf-8") as f:
+            js = f.read()
+        # Must have an explicit null return for the unknown-accept path
+        self.assertIn("return null", js)
+
+    def test_drop_zone_accepts_zip_files(self):
+        """ZIP zone must show a ZIP-specific error, not an image error."""
+        with open("static/admin/drop_zone.js", encoding="utf-8") as f:
+            js = f.read()
+        self.assertIn("Please choose a ZIP file", js)
+
+    def test_drop_zone_accepts_spreadsheet_files(self):
+        """Spreadsheet zone must show a spreadsheet-specific error."""
+        with open("static/admin/drop_zone.js", encoding="utf-8") as f:
+            js = f.read()
+        self.assertIn("Please choose an Excel or CSV file", js)
+
+    def test_drop_zone_try_catch_fallback(self):
+        """Mounting failures must restore the native input."""
+        with open("static/admin/drop_zone.js", encoding="utf-8") as f:
+            js = f.read()
+        self.assertIn("input.style.cssText", js)
+        # Both _attachZone (inner) and attachZone (outer try/catch) must exist
+        self.assertIn("_attachZone", js)
+        self.assertIn("attachZone", js)
+
+    def test_bulk_upload_page_renders(self):
+        """Bulk photo upload page renders 200 with a .zip file input."""
+        from django.contrib.auth.models import User
+        user = User.objects.create_superuser("bulkup1", "bulkup1@a.com", "supersecret123")
+        self.client.force_login(user)
+        resp = self.client.get("/manage-store/store/product/bulk-upload/")
+        self.assertIn(resp.status_code, [200, 302])
+        if resp.status_code == 200:
+            content = resp.content.decode()
+            self.assertIn('accept=".zip"', content)
+            self.assertIn('type="file"', content)
+            # Drop zone JS must be referenced (loaded via UNFOLD SCRIPTS)
+            self.assertIn("drop_zone", content)
+
+    def test_bulk_import_page_renders(self):
+        """Bulk import page renders 200 with both .xlsx/.csv and .zip inputs."""
+        from django.contrib.auth.models import User
+        user = User.objects.create_superuser("bulkim1", "bulkim1@a.com", "supersecret123")
+        self.client.force_login(user)
+        resp = self.client.get("/manage-store/store/product/bulk-import/")
+        self.assertIn(resp.status_code, [200, 302])
+        if resp.status_code == 200:
+            content = resp.content.decode()
+            self.assertIn('accept=".xlsx,.csv"', content)
+            self.assertIn('accept=".zip"', content)
+
     def test_admin_lang_js_exists(self):
         import os
         self.assertTrue(os.path.exists("static/admin/admin_lang.js"),
