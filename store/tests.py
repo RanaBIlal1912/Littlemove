@@ -2328,21 +2328,23 @@ class MobileHeroTests(TestCase):
         import re
         with open("static/css/site.css", encoding="utf-8") as f:
             css = f.read()
-        # Find the mobile hero block (max-width: 760px)
-        m = re.search(
-            r'@media\s*\(max-width:\s*760px\).*?hero-fullbleed\.hero-compact\s*\{([^}]+)\}',
-            css, re.DOTALL
+        # Isolate each @media (max-width: 760px) { ... } block individually
+        # (avoids false-matching the desktop rule at line ~1192)
+        mobile_blocks = re.findall(
+            r'@media\s*\(max-width:\s*760px\)\s*\{([^@]+)\}', css
         )
-        if not m:
-            self.skipTest("hero-compact mobile rule not found (structure may have changed)")
-        rule = m.group(1)
-        # Extract the clamp min value
-        height_m = re.search(r'height:\s*clamp\((\d+)px', rule)
-        if height_m:
-            min_px = int(height_m.group(1))
+        compact_heights = []
+        for block in mobile_blocks:
+            for rule in re.findall(r'hero-compact[^}]*\{([^}]+)\}', block):
+                m = re.search(r'height:\s*clamp\((\d+)px', rule)
+                if m:
+                    compact_heights.append(int(m.group(1)))
+        if not compact_heights:
+            self.skipTest("No hero-compact height clamp found in mobile blocks")
+        for h in compact_heights:
             self.assertGreaterEqual(
-                min_px, 380,
-                f"hero-compact mobile min height is {min_px}px — must be >=380px to fit text+buttons"
+                h, 380,
+                f"hero-compact mobile min height is {h}px — must be >=380px to fit text+buttons"
             )
 
     def test_hero_d1_rule_targets_fullbleed_not_dot_hero(self):
