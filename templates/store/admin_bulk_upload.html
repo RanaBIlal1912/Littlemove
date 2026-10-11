@@ -1,4 +1,5 @@
 {% extends "admin/base.html" %}
+{% load static %}
 
 {% block title %}Bulk photo upload | LittleMove{% endblock %}
 
@@ -74,10 +75,24 @@
     <legend style="padding:0 8px;font-weight:600">Upload ZIP</legend>
 
     <div style="margin-bottom:14px">
-      <label for="zipfile" style="display:block;margin-bottom:4px;font-weight:600">ZIP file (max 60 MB)</label>
-      <input type="file" name="zipfile" id="zipfile" accept=".zip" required
-             data-dz-label="Drag &amp; drop your photos ZIP here or click to browse"
-             data-dz-max-mb="60">
+      <label for="zipfile" style="display:block;margin-bottom:4px;font-weight:600">ZIP file, folder, or images (max 60 MB — large photos shrunk automatically)</label>
+      <input type="file" name="zipfile" id="zipfile"
+             accept=".zip,image/jpeg,image/png,image/webp,image/gif"
+             data-dz-label="Drag &amp; drop a ZIP, folder, or photos here — or click to browse"
+             data-dz-max-mb="200"
+             data-dz-shrink="bulk-upload">
+      <div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap">
+        <label style="cursor:pointer;font-size:.875rem;color:#2563eb;text-decoration:underline">
+          📁 Select folder instead
+          <input type="file" id="zipfile_folder" webkitdirectory multiple
+                 style="display:none" onchange="lmShrinkFolderPick(this, document.getElementById('zipfile'))">
+        </label>
+        <label style="cursor:pointer;font-size:.875rem;color:#2563eb;text-decoration:underline">
+          🖼️ Select individual photos
+          <input type="file" id="zipfile_images" accept="image/*" multiple
+                 style="display:none" onchange="lmShrinkFolderPick(this, document.getElementById('zipfile'))">
+        </label>
+      </div>
     </div>
 
     <div style="margin-bottom:18px">
@@ -93,4 +108,20 @@
     <button type="submit" class="button default">Upload and process</button>
   </fieldset>
 </form>
+
+<link rel="stylesheet" href="{% static 'admin/photo_shrink.css' %}">
+<script src="{% static 'vendor/jszip-3.10.1.min.js' %}"></script>
+<script src="{% static 'admin/photo_shrink.js' %}"></script>
+<script>
+function lmShrinkFolderPick(sourceInput, targetInput) {
+  /* Transfer files from a secondary input (folder/image picker) to the main zip input */
+  if (!sourceInput.files || !sourceInput.files.length) return;
+  var pageType = targetInput.dataset.dzShrink || 'bulk-upload';
+  var ui = document.getElementById('lm-shrink-ui-' + targetInput.id);
+  if (ui) ui.style.display = 'block';
+  // We cannot assign a FileList directly to another input, so relay via a custom event.
+  targetInput._shrinkOverrideFiles = sourceInput.files;
+  targetInput.dispatchEvent(new CustomEvent('lm-shrink-files', { detail: { files: sourceInput.files, pageType: pageType } }));
+}
+</script>
 {% endblock %}

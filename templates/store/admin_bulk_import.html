@@ -265,10 +265,18 @@
 
       <div style="margin-bottom:14px">
         <label for="photos_zip" style="display:block;margin-bottom:4px;font-weight:600">ZIP file</label>
-        <input type="file" name="photos_zip" id="photos_zip" accept=".zip"
+        <input type="file" name="photos_zip" id="photos_zip" accept=".zip,image/jpeg,image/png,image/webp"
                data-dz-label="Drag &amp; drop your photos ZIP here or click to browse"
-               data-dz-max-mb="60"
+               data-dz-max-mb="200"
+               data-dz-shrink="bulk-import"
                style="display:block;width:100%">
+        <div style="margin-top:4px;display:flex;gap:8px;flex-wrap:wrap">
+          <label style="cursor:pointer;font-size:.8rem;color:#2563eb;text-decoration:underline">
+            📁 Select folder instead
+            <input type="file" id="photos_zip_folder" webkitdirectory multiple
+                   style="display:none" onchange="lmShrinkFolderPick(this, document.getElementById('photos_zip'))">
+          </label>
+        </div>
       </div>
 
       <div>
@@ -286,4 +294,18 @@
   </form>
 
 {% endif %}
+
+{% load static %}
+<link rel="stylesheet" href="{% static 'admin/photo_shrink.css' %}">
+<script src="{% static 'vendor/jszip-3.10.1.min.js' %}"></script>
+<script src="{% static 'admin/photo_shrink.js' %}"></script>
+<script>
+function lmShrinkFolderPick(sourceInput, targetInput) {
+  if (!sourceInput.files || !sourceInput.files.length) return;
+  var pageType = targetInput.dataset.dzShrink || 'bulk-import';
+  var ui = document.getElementById('lm-shrink-ui-' + targetInput.id);
+  if (ui) ui.style.display = 'block';
+  targetInput.dispatchEvent(new CustomEvent('lm-shrink-files', { detail: { files: sourceInput.files, pageType: pageType } }));
+}
+</script>
 {% endblock %}

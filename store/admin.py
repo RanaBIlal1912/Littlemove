@@ -341,10 +341,30 @@ class ProductAdmin(ModelAdmin):
                 error = "Please choose a ZIP file."
             elif zf.size > MAX_ZIP_BYTES:
                 mb = zf.size // (1024 * 1024)
-                error = f"ZIP file must be ≤ 60 MB (yours is {mb} MB)."
+                error = (
+                    f"This ZIP is {mb} MB. The limit is 60 MB. Select the photos "
+                    "folder instead — the page shrinks the photos automatically."
+                )
             else:
                 replace = request.POST.get("replace") == "on"
                 report = process_bulk_zip(zf.read(), replace=replace)
+
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            from django.http import JsonResponse
+
+            def _fmt_report(r):
+                return {
+                    "matched": [{"name": p.name, "pk": p.pk, "count": n} for p, n in r.get("matched", [])],
+                    "unmatched": r.get("unmatched", []),
+                    "errors": r.get("errors", []),
+                    "skipped": r.get("skipped", []),
+                    "timed_out": r.get("timed_out", False),
+                    "remaining": r.get("remaining", []),
+                }
+
+            if error:
+                return JsonResponse({"error": error}, status=400)
+            return JsonResponse(_fmt_report(report))
 
         context = {
             **self.admin_site.each_context(request),
@@ -404,8 +424,8 @@ class ProductAdmin(ModelAdmin):
                         if zip_file.size > MAX_ZIP_BYTES:
                             mb = zip_file.size // (1024 * 1024)
                             error = (
-                                f"Photos ZIP is too large ({mb} MB, max 60 MB). "
-                                "Upload photos separately using Bulk photo upload."
+                                f"This ZIP is {mb} MB. The limit is 60 MB. Select the photos "
+                                "folder instead — the page shrinks the photos automatically."
                             )
                         else:
                             fd2, tmp_zip = tempfile.mkstemp(suffix=".zip")

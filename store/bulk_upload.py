@@ -50,6 +50,8 @@ def process_bulk_zip(zip_bytes, replace=False):
         errors    – list of error message strings
         skipped   – list of {"name": str, "reason": str} dicts
     """
+    import time
+
     from PIL import Image as PilImage
     from django.core.files.uploadedfile import SimpleUploadedFile
     from store.uploads import validate_zip_safety
@@ -58,6 +60,7 @@ def process_bulk_zip(zip_bytes, replace=False):
     unmatched = []
     errors = []
     skipped = []
+    processed_folders = set()
 
     by_name, by_sku, by_slug = _build_lookup()
 
@@ -67,7 +70,8 @@ def process_bulk_zip(zip_bytes, replace=False):
         validate_zip_safety(zip_file_obj)
     except Exception as exc:
         errors.append(str(exc))
-        return {"matched": matched, "unmatched": unmatched, "errors": errors, "skipped": skipped}
+        return {"matched": matched, "unmatched": unmatched, "errors": errors,
+                "skipped": skipped, "remaining": [], "timed_out": False}
 
     try:
         with zipfile.ZipFile(io.BytesIO(zip_bytes)) as zf:
@@ -84,7 +88,17 @@ def process_bulk_zip(zip_bytes, replace=False):
                 ):
                     folders.add(folder)
 
+            _start = time.monotonic()
+            BUDGET_S = 45  # stop cleanly at 45 s
+
             for folder in sorted(folders):
+                if time.monotonic() - _start > BUDGET_S:
+                    # Return what's done + what's left (remaining folder names)
+                    remaining = sorted(folders - processed_folders)
+                    return {"matched": matched, "unmatched": unmatched, "errors": errors,
+                            "skipped": skipped, "remaining": remaining, "timed_out": True}
+
+                processed_folders.add(folder)
                 product = _match_product(folder, by_name, by_sku, by_slug)
                 if product is None:
                     unmatched.append(folder)
@@ -129,15 +143,21 @@ def process_bulk_zip(zip_bytes, replace=False):
                         skipped.append({"name": filename, "reason": "invalid image data"})
                         continue
 
-                    cf = ContentFile(data, name=filename)
-                    if idx == 0 and not product.image:
-                        product.image.save(filename, cf, save=True)
-                    else:
-                        order = product.photos.count()
-                        ProductPhoto.objects.create(
-                            product=product, image=cf, order=order
-                        )
-                    count += 1
+                    # Save each image in its own try/except so a network error on
+                    # one image (e.g. Cloudinary) doesn't abort the whole folder.
+                    try:
+                        cf = ContentFile(data, name=filename)
+                        if idx == 0 and not product.image:
+                            product.image.save(filename, cf, save=True)
+                        else:
+                            order = product.photos.count()
+                            ProductPhoto.objects.create(
+                                product=product, image=cf, order=order
+                            )
+                        count += 1
+                    except Exception as exc:
+                        skipped.append({"name": filename, "reason": f"save failed: {exc}"})
+                        continue
 
                 if count:
                     matched.append((product, count))
@@ -149,4 +169,5 @@ def process_bulk_zip(zip_bytes, replace=False):
     except Exception as exc:
         errors.append(f"Unexpected error: {exc}")
 
-    return {"matched": matched, "unmatched": unmatched, "errors": errors, "skipped": skipped}
+    return {"matched": matched, "unmatched": unmatched, "errors": errors,
+            "skipped": skipped, "remaining": [], "timed_out": False}

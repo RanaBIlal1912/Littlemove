@@ -1,0 +1,23 @@
+/* LittleMove photo shrinker progress UI */
+.lm-shrink-ui {
+  margin: 8px 0;
+  padding: 10px 14px;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  background: #f0f9ff;
+  font-size: .8125rem;
+}
+.lm-shrink-bar-wrap {
+  background: #e0f2fe; border-radius: 4px; height: 6px; margin-bottom: 6px;
+}
+.lm-shrink-bar {
+  height: 6px; border-radius: 4px; background: #0ea5e9;
+  width: 0; transition: width .2s;
+}
+.lm-shrink-status { color: #0c4a6e; }
+.lm-shrink-result { color: #065f46; }
+.lm-shrink-error { color: #b91c1c; background: #fff1f0; border-radius: 6px; padding: 6px 10px; }
+.dark .lm-shrink-ui { background: #0c2a3a; border-color: #075985; }
+.dark .lm-shrink-bar-wrap { background: #0c3a5a; }
+.dark .lm-shrink-status { color: #7dd3fc; }
+.dark .lm-shrink-result { color: #6ee7b7; }

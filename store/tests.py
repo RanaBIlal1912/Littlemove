@@ -2478,7 +2478,7 @@ class DropZoneJsTests(TestCase):
         self.assertIn(resp.status_code, [200, 302])
         if resp.status_code == 200:
             content = resp.content.decode()
-            self.assertIn('accept=".zip"', content)
+            self.assertIn('accept=".zip,image/jpeg,image/png,image/webp,image/gif"', content)
             self.assertIn('type="file"', content)
             # Drop zone JS must be referenced (loaded via UNFOLD SCRIPTS)
             self.assertIn("drop_zone", content)
@@ -2493,7 +2493,7 @@ class DropZoneJsTests(TestCase):
         if resp.status_code == 200:
             content = resp.content.decode()
             self.assertIn('accept=".xlsx,.csv"', content)
-            self.assertIn('accept=".zip"', content)
+            self.assertIn('accept=".zip,image/jpeg,image/png,image/webp"', content)
 
     def test_admin_lang_js_exists(self):
         import os
@@ -2504,3 +2504,104 @@ class DropZoneJsTests(TestCase):
         import os
         self.assertTrue(os.path.exists("static/admin/admin_lang.css"),
                         "admin_lang.css must exist for admin language pill")
+
+
+class BulkShrinkTests(TestCase):
+    def test_photo_shrink_js_exists(self):
+        import os
+        self.assertTrue(os.path.exists("static/admin/photo_shrink.js"))
+
+    def test_jszip_vendor_exists(self):
+        import os
+        self.assertTrue(os.path.exists("static/vendor/jszip-3.10.1.min.js"))
+
+    def test_photo_shrink_has_max_long_side(self):
+        with open("static/admin/photo_shrink.js", encoding="utf-8") as f:
+            js = f.read()
+        self.assertIn("MAX_LONG_SIDE", js)
+        self.assertIn("1200", js)
+
+    def test_photo_shrink_has_split_logic(self):
+        with open("static/admin/photo_shrink.js", encoding="utf-8") as f:
+            js = f.read()
+        self.assertIn("splitByFolder", js)
+        self.assertIn("PART_BYTES", js)
+
+    def test_photo_shrink_has_folder_support(self):
+        with open("static/admin/photo_shrink.js", encoding="utf-8") as f:
+            js = f.read()
+        self.assertIn("webkitRelativePath", js)
+
+    def test_photo_shrink_has_zip_reader(self):
+        with open("static/admin/photo_shrink.js", encoding="utf-8") as f:
+            js = f.read()
+        self.assertIn("JSZip", js)
+        self.assertIn("loadAsync", js)
+
+    def test_photo_shrink_has_progress_bar(self):
+        with open("static/admin/photo_shrink.js", encoding="utf-8") as f:
+            js = f.read()
+        self.assertIn("lm-shrink-bar", js)
+
+    def test_photo_shrink_handles_bulk_import_too_large(self):
+        with open("static/admin/photo_shrink.js", encoding="utf-8") as f:
+            js = f.read()
+        self.assertIn("bulk-import", js)
+        self.assertIn("Bulk photo upload", js)
+
+    def test_photo_shrink_has_exif_orientation(self):
+        """EXIF orientation handled via imageOrientation: from-image."""
+        with open("static/admin/photo_shrink.js", encoding="utf-8") as f:
+            js = f.read()
+        self.assertIn("from-image", js)
+
+    def test_bulk_upload_view_oversize_message(self):
+        from django.contrib.auth.models import User
+        user = User.objects.create_superuser("bulkov1", "bulkov1@a.com", "supersecret123")
+        self.client.force_login(user)
+        # Create a fake file just over 60 MB (content must actually exceed the
+        # limit — the test client derives UploadedFile.size from real bytes).
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        fake_zip = SimpleUploadedFile(
+            "big.zip", b'PK\x03\x04' + b'\x00' * (61 * 1024 * 1024),
+            content_type="application/zip",
+        )
+        resp = self.client.post("/manage-store/store/product/bulk-upload/",
+                                {"zipfile": fake_zip}, follow=False)
+        self.assertIn(resp.status_code, [200, 302])
+        if resp.status_code == 200:
+            content = resp.content.decode()
+            self.assertIn("shrinks the photos automatically", content)
+
+    def test_bulk_upload_ajax_endpoint_returns_json(self):
+        from django.contrib.auth.models import User
+        user = User.objects.create_superuser("bulkaj1", "bulkaj1@a.com", "supersecret123")
+        self.client.force_login(user)
+        import zipfile, io
+        # Build a tiny valid ZIP with one image folder
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, 'w') as zf:
+            from PIL import Image as PilImage
+            img_buf = io.BytesIO()
+            PilImage.new('RGB', (10, 10), color=(255, 0, 0)).save(img_buf, 'JPEG')
+            zf.writestr("testfolder/img.jpg", img_buf.getvalue())
+        buf.seek(0)
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        zf = SimpleUploadedFile("test.zip", buf.read(), content_type="application/zip")
+        resp = self.client.post(
+            "/manage-store/store/product/bulk-upload/",
+            {"zipfile": zf, "replace": ""},
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertIn("matched", data)
+        self.assertIn("unmatched", data)
+        self.assertIn("errors", data)
+
+    def test_process_bulk_zip_has_time_budget(self):
+        import inspect
+        from store import bulk_upload
+        src = inspect.getsource(bulk_upload.process_bulk_zip)
+        self.assertIn("BUDGET_S", src)
+        self.assertIn("timed_out", src)
