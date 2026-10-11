@@ -219,6 +219,28 @@ def first_name(value):
     return parts[0] if parts else ""
 
 
+@register.filter(name='sentence_trunc')
+def sentence_trunc(value, max_chars=220):
+    """Truncate at the last sentence-ending full stop within max_chars characters."""
+    if not value:
+        return value
+    text = str(value)
+    if len(text) <= max_chars:
+        return text
+    segment = text[:max_chars]
+    # Find last full stop that isn't a decimal number (preceded by a digit)
+    idx = len(segment) - 1
+    while idx >= 0:
+        if segment[idx] == '.' and (idx == 0 or not segment[idx - 1].isdigit()):
+            return text[:idx + 1]
+        idx -= 1
+    # No full stop found: cut at word boundary
+    last_space = segment.rfind(' ')
+    if last_space > max_chars // 2:
+        return text[:last_space] + '…'
+    return segment + '…'
+
+
 @register.filter
 def absolute_url(value, request):
     """Make a URL absolute only when it starts with /. Cloudinary URLs are already absolute."""

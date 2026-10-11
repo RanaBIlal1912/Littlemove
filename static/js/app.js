@@ -40,6 +40,7 @@
     if (hero && !hero.swiper) {
       new Swiper(hero, {
         loop: hero.querySelectorAll(".swiper-slide").length > 1,
+        autoHeight: true,
         effect: REDUCED ? "slide" : "creative",
         creativeEffect: {
           prev: { shadow: true, translate: ["-20%", 0, -200] },

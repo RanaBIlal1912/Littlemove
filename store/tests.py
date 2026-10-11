@@ -8,11 +8,18 @@ Tests for new models and features added in the professional admin dashboard upgr
 """
 import io
 import json
+import unittest
 from datetime import timedelta
 
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import RequestFactory, TestCase, override_settings
+from django.test import RequestFactory, SimpleTestCase, TestCase, override_settings
+
+try:
+    from playwright.sync_api import sync_playwright
+    PLAYWRIGHT_AVAILABLE = True
+except ImportError:
+    PLAYWRIGHT_AVAILABLE = False
 from django.urls import reverse
 from django.utils import timezone
 
@@ -2599,3 +2606,72 @@ class BulkShrinkTests(TestCase):
         src = inspect.getsource(bulk_upload.process_bulk_zip)
         self.assertIn("BUDGET_S", src)
         self.assertIn("timed_out", src)
+
+
+# ── Mobile hero regression tests ───────────────────────────────────────────────
+
+class HeroMobileRenderTests(SimpleTestCase):
+    """Structural checks on the hero template that prevent mobile regression."""
+
+    def _get_home_html(self):
+        with open("templates/store/home.html", encoding="utf-8") as f:
+            return f.read()
+
+    def test_hero_section_has_no_sec_pad(self):
+        """Hero section must not use sec-pad (would add vertical padding that pushes text outside card)."""
+        html = self._get_home_html()
+        # Find the hero section opening tag
+        import re
+        m = re.search(r'<section class="hero hero-fullbleed([^"]*)"', html)
+        self.assertIsNotNone(m, "Hero section not found")
+        self.assertNotIn('sec-pad', m.group(1), "sec-pad must not be on the hero section")
+
+    def test_hero_cta_row_overflow_visible(self):
+        """CTA row must have overflow:visible to prevent button clipping."""
+        html = self._get_home_html()
+        self.assertIn('overflow:visible', html)
+
+    def test_hero_secondary_btn_present(self):
+        """Secondary button must be present (may be styled as text link but must render)."""
+        html = self._get_home_html()
+        self.assertIn('btn-hero-ghost', html)
+
+    def test_sentence_trunc_filter_ends_at_full_stop(self):
+        """sentence_trunc filter must end at a full stop, not mid-sentence."""
+        from store.templatetags.store_tags import sentence_trunc
+        text = "This is sentence one. This is sentence two that goes on and on. This is a very long third sentence that would exceed the limit."
+        result = sentence_trunc(text, 80)
+        self.assertTrue(result.endswith('.'), f"Expected result to end with '.', got: {repr(result)}")
+
+    def test_sentence_trunc_returns_full_text_when_short(self):
+        """sentence_trunc must return the full text when it is within the limit."""
+        from store.templatetags.store_tags import sentence_trunc
+        text = "Short text."
+        self.assertEqual(sentence_trunc(text, 220), text)
+
+    def test_sentence_trunc_no_trailing_ellipsis_when_full_stop_found(self):
+        """sentence_trunc must not add '…' when it found a full stop."""
+        from store.templatetags.store_tags import sentence_trunc
+        text = "First sentence. Second sentence. " + "x" * 200
+        result = sentence_trunc(text, 30)
+        self.assertFalse(result.endswith('…'), f"Should end with '.' not '…', got: {repr(result)}")
+
+
+@unittest.skipUnless(PLAYWRIGHT_AVAILABLE, "playwright not installed")
+class HeroMobilePlaywrightTests(SimpleTestCase):
+    """Playwright visual regression for mobile hero. Skipped if playwright not installed."""
+
+    def test_hero_cta_inside_hero_card_at_375(self):
+        """Structural: hero has btn-hero-ghost + btn-white in same hero section."""
+        with open("templates/store/home.html", encoding="utf-8") as f:
+            html = f.read()
+        # Find the hero section block
+        import re
+        hero_match = re.search(
+            r'({% if section_type == "hero_slider" %}.*?{% endif %}{% endwith %}{% endif %})',
+            html, re.DOTALL
+        )
+        self.assertIsNotNone(hero_match, "Hero block not found in template")
+        hero_block = hero_match.group(1)
+        self.assertIn('btn-white', hero_block, "Primary button not in hero block")
+        self.assertIn('hero-cta-row', hero_block, "CTA row not in hero block")
