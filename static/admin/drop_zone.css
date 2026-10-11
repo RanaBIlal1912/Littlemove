@@ -1,35 +1,64 @@
-.lm-drop-zone {
+/* LittleMove admin drag-and-drop upload card */
+
+.lm-dz-card {
   border: 2px dashed #d1d5db;
   border-radius: 12px;
-  padding: 20px;
-  text-align: center;
-  cursor: pointer;
+  padding: 14px 16px;
+  margin: 8px 0;
   transition: border-color .2s, background .2s;
-  position: relative;
+  cursor: pointer;
 }
-.lm-drop-zone:hover,
-.lm-drop-zone.drag-over { border-color: #3BA4E6; background: #f0f9ff; }
-.lm-drop-zone input[type="file"] {
-  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+.lm-dz-card:hover,
+.lm-dz-card.lm-dz-over { border-color: #3BA4E6; background: #f0f9ff; }
+
+/* hint row */
+.lm-dz-hint {
+  color: #6b7280; font-size: .8125rem; text-align: center;
+  pointer-events: none; line-height: 1.6;
 }
-.lm-drop-zone .dz-label { color: #6b7280; font-size: .875rem; pointer-events: none; }
-.lm-drop-zone .dz-label b { color: #3BA4E6; }
-.lm-drop-zone .dz-preview {
+.lm-dz-hint .material-symbols-outlined { font-size: 1.25rem; vertical-align: middle; }
+.lm-dz-hint b { color: #3BA4E6; }
+
+/* existing & new file previews */
+.lm-dz-preview,
+.lm-dz-thumb-wrap {
   display: flex; align-items: center; gap: 10px;
-  background: #f9fafb; border-radius: 8px; padding: 8px 12px;
-  margin-top: 10px; position: relative;
+  background: #f9fafb; border-radius: 8px; padding: 8px 10px;
+  margin-bottom: 8px; position: relative;
 }
-.lm-drop-zone .dz-thumb { width: 56px; height: 56px; object-fit: cover; border-radius: 6px; flex-shrink: 0; }
-.lm-drop-zone .dz-info { font-size: .8125rem; text-align: left; min-width: 0; }
-.lm-drop-zone .dz-info b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.lm-drop-zone .dz-info small { color: #6b7280; }
-.lm-drop-zone .dz-remove {
-  position: absolute; right: 6px; top: 6px;
-  background: #fee2e2; border: none; border-radius: 50%; width: 20px; height: 20px;
-  cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center;
+.lm-dz-new-preview {
+  display: flex; align-items: center; gap: 10px;
+  background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px;
+  padding: 8px 10px; margin-top: 8px; position: relative;
 }
-.lm-drop-zone .dz-error { color: #b42318; font-size: .8125rem; margin-top: 6px; }
-.lm-drop-zone .dz-missing {
+.lm-dz-thumb {
+  width: 56px; height: 56px; object-fit: cover; border-radius: 6px; flex-shrink: 0;
+}
+.lm-dz-info { font-size: .8125rem; text-align: left; min-width: 0; flex: 1; }
+.lm-dz-info b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lm-dz-info small { color: #6b7280; }
+.lm-dz-remove {
+  background: #fee2e2; border: none; border-radius: 50%;
+  width: 22px; height: 22px; flex-shrink: 0;
+  cursor: pointer; font-size: 11px;
+  display: flex; align-items: center; justify-content: center;
+  margin-left: auto;
+}
+.lm-dz-remove:hover { background: #fecaca; }
+.lm-dz-error {
+  color: #b42318; font-size: .8125rem; margin-top: 4px; padding: 4px 0;
+}
+.lm-dz-missing {
   background: #fff1f0; border: 1px solid #ffa39e; border-radius: 6px;
-  padding: 6px 10px; font-size: .8125rem; color: #a8071a; margin-top: 6px;
+  padding: 6px 10px; font-size: .8125rem; color: #a8071a;
 }
+
+/* dark mode */
+.dark .lm-dz-card { border-color: #374151; }
+.dark .lm-dz-card:hover, .dark .lm-dz-card.lm-dz-over { background: #1e3a5f; border-color: #3BA4E6; }
+.dark .lm-dz-preview, .dark .lm-dz-thumb-wrap { background: #1e1e2e; }
+.dark .lm-dz-hint { color: #9ca3af; }
+.dark .lm-dz-info small { color: #9ca3af; }
+
+/* Legacy class kept for compatibility */
+.lm-drop-zone { display: none; }

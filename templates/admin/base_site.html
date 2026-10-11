@@ -17,168 +17,90 @@ window.googleTranslateElementInit = function() {
 .goog-te-banner-frame,.skiptranslate,#google_translate_element,.goog-te-gadget{display:none!important}
 body{top:0!important}
 font{font-family:inherit}
+/* Admin language pill — in-flow inside the header userlinks area */
+.lm-admin-lang-wrap { display:inline-flex; align-items:center; position:relative; margin-inline-end:8px; }
+.lm-admin-lang-select {
+  font-size:.8125rem; background:transparent; color:inherit;
+  border:1px solid rgba(128,128,128,.35); border-radius:14px;
+  padding:4px 10px; cursor:pointer; height:28px;
+  min-width:80px; max-width:160px;
+}
+.lm-admin-lang-select:hover { border-color:rgba(128,128,128,.6); }
+/* Login page globe */
+.lm-login-lang { text-align:center; margin-top:16px; }
+.lm-login-lang select { font-size:.875rem; padding:6px 12px; border-radius:8px;
+  border:1px solid #e5e7eb; background:#fff; color:#374151; cursor:pointer; }
 </style>
 {% endif %}
-{% if ENABLE_GOOGLE_TRANSLATE %}
-<style>
-#lm-gt-pill {
-  display:inline-flex; align-items:center; gap:4px;
-  height:28px; padding:0 8px; border:1px solid rgba(255,255,255,.25);
-  border-radius:14px; background:transparent; color:inherit;
-  font-size:.8125rem; font-weight:600; cursor:pointer; white-space:nowrap;
-  position:relative;
-}
-#lm-gt-pill .lang-code { font-variant:small-caps; letter-spacing:.03em; }
-#lm-gt-pill-menu {
-  position:absolute; right:0; top:calc(100% + 6px);
-  background:#fff; color:#111; border:1px solid #e5e7eb;
-  border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,.12);
-  width:260px; max-width:calc(100vw - 24px);
-  max-height:min(340px,60vh); overflow-y:auto;
-  padding:8px 0; z-index:99999; display:none;
-}
-#lm-gt-pill-menu button {
-  display:block; width:100%; text-align:left;
-  padding:6px 14px; font-size:.8125rem; background:none;
-  border:none; cursor:pointer; color:#111;
-}
-#lm-gt-pill-menu button:hover { background:#f3f4f6; }
-#lm-gt-pill-menu .lm-gt-search {
-  width:calc(100% - 16px); margin:0 8px 6px;
-  height:30px; padding:0 8px; border:1px solid #e5e7eb;
-  border-radius:6px; font-size:.8125rem;
-}
-.dark #lm-gt-pill-menu { background:#1e1e2e; border-color:#2d2d3f; color:#f3f4f6; }
-.dark #lm-gt-pill-menu button { color:#f3f4f6; }
-.dark #lm-gt-pill-menu button:hover { background:#2d2d3f; }
-</style>
-<script>
-(function(){
-  var GT_LANGUAGES = [
-    {% for code, native, english, rtl in GT_LANGUAGES %}
-    ["{{ code }}", "{{ native|escapejs }}", "{{ english|escapejs }}", {{ rtl|yesno:"true,false" }}],
-    {% endfor %}
-  ];
-  var current = "{{ current_gt_lang|escapejs }}";
+{% endblock %}
 
-  function adminGTChange(code) {
+{% block userlinks %}
+{% if ENABLE_GOOGLE_TRANSLATE %}
+{# In-flow select inside Unfold's header flex row — never overlaps other buttons #}
+<span class="lm-admin-lang-wrap">
+  <select class="lm-admin-lang-select notranslate" aria-label="Language"
+          onchange="lmAdminGTChange(this.value)">
+    <option value="" class="notranslate">🌐 EN</option>
+    {% for code, native, english, rtl in GT_LANGUAGES %}
+    <option value="{{ code }}" {% if code == current_gt_lang %}selected{% endif %}
+            class="notranslate">{{ native }} — {{ english }}</option>
+    {% endfor %}
+    {% if current_gt_lang %}
+    <option value="__reset__" class="notranslate">↩ English (original)</option>
+    {% endif %}
+  </select>
+</span>
+<script>
+function lmAdminGTChange(code) {
+  if (!code) return;
+  if (code === '__reset__') {
+    ['lm_gt_lang','googtrans'].forEach(function(n){
+      document.cookie = n + '=;path=/;max-age=0';
+      document.cookie = n + '=;path=/;max-age=0;domain=' + location.hostname;
+    });
+    document.cookie = 'django_language=en;path=/;max-age=' + (365*24*3600);
+    location.reload(); return;
+  }
+  var d = location.hostname;
+  document.cookie = 'googtrans=/en/' + code + ';path=/';
+  document.cookie = 'googtrans=/en/' + code + ';path=/;domain=' + d;
+  document.cookie = 'lm_gt_lang=' + code + ';path=/;max-age=' + (365*24*3600) + ';samesite=Lax';
+  document.cookie = 'django_language=en;path=/;max-age=' + (365*24*3600);
+  location.reload();
+}
+</script>
+{% endif %}
+{{ block.super }}
+{% endblock %}
+
+{% block login_after %}
+{% if ENABLE_GOOGLE_TRANSLATE %}
+<div class="lm-login-lang">
+  <select aria-label="Language" onchange="lmAdminGTChange(this.value)">
+    <option value="">🌐 Language</option>
+    {% for code, native, english, rtl in GT_LANGUAGES %}
+    <option value="{{ code }}" {% if code == current_gt_lang %}selected{% endif %}>{{ native }} — {{ english }}</option>
+    {% endfor %}
+    {% if current_gt_lang %}<option value="__reset__">↩ Show English</option>{% endif %}
+  </select>
+  <script>
+  {% if not request.user.is_authenticated %}
+  function lmAdminGTChange(code) {
     if (!code) return;
     if (code === '__reset__') {
       ['lm_gt_lang','googtrans'].forEach(function(n){
         document.cookie=n+'=;path=/;max-age=0';
         document.cookie=n+'=;path=/;max-age=0;domain='+location.hostname;
       });
-      document.cookie='django_language=en;path=/;max-age='+(365*24*3600);
       location.reload(); return;
     }
-    var d=location.hostname;
     document.cookie='googtrans=/en/'+code+';path=/';
-    document.cookie='googtrans=/en/'+code+';path=/;domain='+d;
+    document.cookie='googtrans=/en/'+code+';path=/;domain='+location.hostname;
     document.cookie='lm_gt_lang='+code+';path=/;max-age='+(365*24*3600)+';samesite=Lax';
-    document.cookie='django_language=en;path=/;max-age='+(365*24*3600);
     location.reload();
   }
-
-  function buildPill() {
-    var bar = document.querySelector('.uf-topbar') ||
-              document.querySelector('[class*="topbar"]') ||
-              document.querySelector('header nav') ||
-              document.querySelector('#header');
-    if (!bar) {
-      var wrap = document.createElement('div');
-      wrap.style.cssText = 'position:fixed;top:8px;right:8px;z-index:99999;';
-      document.body.appendChild(wrap);
-      bar = wrap;
-    }
-
-    var pill = document.createElement('button');
-    pill.id = 'lm-gt-pill';
-    pill.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>' +
-      '<span class="lang-code">' + (current ? current.toUpperCase().slice(0,2) : 'EN') + '</span>';
-
-    var menu = document.createElement('div');
-    menu.id = 'lm-gt-pill-menu';
-    var search = document.createElement('input');
-    search.className = 'lm-gt-search';
-    search.placeholder = 'Search…';
-    search.autocomplete = 'off';
-    menu.appendChild(search);
-
-    function addBtn(label, code) {
-      var b = document.createElement('button');
-      b.textContent = label; b.type = 'button';
-      b.onclick = function(){ adminGTChange(code); };
-      menu.appendChild(b);
-    }
-    addBtn('🌐 English (original)', '__reset__');
-    GT_LANGUAGES.forEach(function(row){ addBtn(row[1]+' — '+row[2], row[0]); });
-
-    search.addEventListener('input', function(){
-      var q = search.value.toLowerCase();
-      menu.querySelectorAll('button').forEach(function(b){
-        b.style.display = (!q || b.textContent.toLowerCase().includes(q)) ? '' : 'none';
-      });
-    });
-
-    pill.onclick = function(e){
-      e.stopPropagation();
-      var open = menu.style.display === 'block';
-      menu.style.display = open ? 'none' : 'block';
-      if (!open) search.focus();
-    };
-    document.addEventListener('click', function(){ menu.style.display = 'none'; });
-
-    var wrap = document.createElement('span');
-    wrap.style.cssText = 'position:relative;display:inline-flex;margin-inline-end:8px;';
-    wrap.appendChild(pill);
-    wrap.appendChild(menu);
-
-    var ref = bar.querySelector('a,button');
-    if (ref) bar.insertBefore(wrap, ref);
-    else bar.appendChild(wrap);
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', buildPill);
-  } else {
-    buildPill();
-  }
-})();
-</script>
-{% endif %}
-{% endblock %}
-
-{% block userlinks %}
-{% if ENABLE_GOOGLE_TRANSLATE %}
-<div class="lm-admin-lang" style="display:inline-flex;align-items:center;gap:6px;margin-inline-end:8px">
-  <select id="admin-gt-select" aria-label="Language" onchange="adminGTChange(this.value)"
-          style="font-size:.8125rem;background:transparent;color:inherit;border:1px solid rgba(255,255,255,.3);border-radius:4px;padding:3px 6px;cursor:pointer">
-    <option value="" class="notranslate">&#x1F310; Language</option>
-    {% for code, native, english, rtl in GT_LANGUAGES %}
-    <option value="{{ code }}" {% if code == current_gt_lang %}selected{% endif %} class="notranslate">{{ native }} — {{ english }}</option>
-    {% endfor %}
-    {% if current_gt_lang %}<option value="__reset__" class="notranslate">&#x21A9; Show original (English)</option>{% endif %}
-  </select>
-  <script>
-  function adminGTChange(code) {
-    if (!code) return;
-    if (code === '__reset__') {
-      document.cookie='lm_gt_lang=;path=/;max-age=0';
-      document.cookie='lm_gt_lang=;path=/;max-age=0;domain='+location.hostname;
-      document.cookie='googtrans=;path=/;max-age=0';
-      document.cookie='googtrans=;path=/;max-age=0;domain='+location.hostname;
-      document.cookie='django_language=en;path=/;max-age='+(365*24*3600);
-      location.reload(); return;
-    }
-    var d=location.hostname;
-    document.cookie='googtrans=/en/'+code+';path=/';
-    document.cookie='googtrans=/en/'+code+';path=/;domain='+d;
-    document.cookie='lm_gt_lang='+code+';path=/;max-age='+(365*24*3600)+';samesite=Lax';
-    document.cookie='django_language=en;path=/;max-age='+(365*24*3600);
-    location.reload();
-  }
+  {% endif %}
   </script>
 </div>
 {% endif %}
-{{ block.super }}
 {% endblock %}

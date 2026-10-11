@@ -2295,15 +2295,85 @@ class LanguagePillTests(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, 'id="lang-btn"')
 
-    def test_admin_has_gt_pill_script(self):
+    def test_admin_has_language_select_no_fixed_pill(self):
         from django.conf import settings
         if not getattr(settings, 'ENABLE_GOOGLE_TRANSLATE', True):
             self.skipTest("GT disabled")
-        # The GT pill script is in base_site.html extrahead (rendered on change_list / dashboard pages)
-        user = User.objects.create_superuser("adminpill", "a@a.com", "supersecret123")
+        user = User.objects.create_superuser("adminpill2", "ap2@a.com", "supersecret123")
         self.client.force_login(user)
-        # change_list extends admin/base_site.html via Unfold
         resp = self.client.get("/manage-store/store/product/")
         self.assertIn(resp.status_code, [200, 302])
         if resp.status_code == 200:
-            self.assertContains(resp, 'lm-gt-pill')
+            content = resp.content.decode()
+            # Must have the in-flow language select (not position:fixed pill)
+            self.assertIn('lm-admin-lang-select', content)
+            # Must NOT have the old position:fixed injection
+            self.assertNotIn('position:fixed;top:8px;right:8px', content)
+            self.assertNotIn("position:fixed", content)
+
+    def test_admin_login_has_language_control(self):
+        from django.conf import settings
+        if not getattr(settings, 'ENABLE_GOOGLE_TRANSLATE', True):
+            self.skipTest("GT disabled")
+        resp = self.client.get("/manage-store/login/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'lm-login-lang')
+
+
+class MobileHeroTests(TestCase):
+    """CSS regression: mobile hero must not clip headline/subtitle/buttons."""
+
+    def test_hero_css_does_not_use_small_height_for_compact(self):
+        """The compact hero variant on mobile must be >= 380px tall."""
+        import re
+        with open("static/css/site.css", encoding="utf-8") as f:
+            css = f.read()
+        # Find the mobile hero block (max-width: 760px)
+        m = re.search(
+            r'@media\s*\(max-width:\s*760px\).*?hero-fullbleed\.hero-compact\s*\{([^}]+)\}',
+            css, re.DOTALL
+        )
+        if not m:
+            self.skipTest("hero-compact mobile rule not found (structure may have changed)")
+        rule = m.group(1)
+        # Extract the clamp min value
+        height_m = re.search(r'height:\s*clamp\((\d+)px', rule)
+        if height_m:
+            min_px = int(height_m.group(1))
+            self.assertGreaterEqual(
+                min_px, 380,
+                f"hero-compact mobile min height is {min_px}px — must be >=380px to fit text+buttons"
+            )
+
+    def test_hero_d1_rule_targets_fullbleed_not_dot_hero(self):
+        """The Phase-D1 bad rule (.hero { height: ... }) must not appear in site.css."""
+        with open("static/css/site.css", encoding="utf-8") as f:
+            css = f.read()
+        import re
+        # There should NOT be a rule like .hero { height: clamp(...) }
+        bad = re.search(r'\.hero\s*\{[^}]*height:\s*clamp', css)
+        self.assertIsNone(bad, "Found incorrect .hero { height: clamp(...) } rule — should target .hero-fullbleed")
+
+
+class DropZoneJsTests(TestCase):
+    """drop_zone.js must handle Unfold hidden inputs and formset:added."""
+
+    def test_drop_zone_js_exists(self):
+        import os
+        self.assertTrue(os.path.exists("static/admin/drop_zone.js"))
+
+    def test_drop_zone_handles_formset_added_event(self):
+        with open("static/admin/drop_zone.js", encoding="utf-8") as f:
+            js = f.read()
+        self.assertIn("formset:added", js)
+
+    def test_drop_zone_does_not_use_opacity0_as_target(self):
+        """Must detect Unfold hidden inputs and inject the card OUTSIDE them."""
+        with open("static/admin/drop_zone.js", encoding="utf-8") as f:
+            js = f.read()
+        self.assertIn("isUnfoldHidden", js)
+
+    def test_drop_zone_shows_missing_file_placeholder(self):
+        with open("static/admin/drop_zone.js", encoding="utf-8") as f:
+            js = f.read()
+        self.assertIn("File missing", js)
