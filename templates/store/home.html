@@ -99,24 +99,6 @@
 
 {# ── TRUST BADGES (closes hero section) ─────────────────────────── #}
 {% if section_type == "trust_badges" %}{% with s=sections.trust_badges %}{% if not s or s.enabled %}
-  <div class="hero-promos-wrap sec-alt" aria-label="Quick shop links">
-    <div class="wrap">
-      <div class="side-promos side-promos-strip">
-        <a class="promo promo-yellow" href="{% url 'store:shop' %}?max=1000">
-          <h3>Toys under Rs 1,000</h3>
-          <p>Small gifts that still teach something</p>
-          <span class="go">Shop now {% icon 'arrow-r' 16 2.4 %}</span>
-          {% illus 'cards' %}
-        </a>
-        <a class="promo promo-mint" href="{% url 'store:shop' %}?pick=1">
-          <h3>Therapist picks</h3>
-          <p>Used in sessions, made for home</p>
-          <span class="go">See the picks {% icon 'arrow-r' 16 2.4 %}</span>
-          {% illus 'balls' %}
-        </a>
-      </div>
-    </div>
-  </div>
   <div class="trust-wrap wrap">
     <div class="trust">
       <div style="--accent:var(--green)"><span class="ti">{% icon 'cash' 22 2.2 %}</span><p><b>Cash on delivery</b><span>Pay when the parcel arrives</span></p></div>
@@ -211,13 +193,18 @@ document.querySelectorAll('.row-tab').forEach(function(btn){
       {% endfor %}
     </div>
     {% if sections.shop_by_budget.enabled %}
-    <h3 class="section-subtitle">Shop by budget</h3>
-    <div class="chips-row">
+    <div class="chips-row" style="align-items:center;margin-top:24px">
+      <span class="section-subtitle" style="margin:0;white-space:nowrap">By budget:</span>
       {% for cap in price_caps %}
       <a href="{% url 'store:shop' %}?max={{ cap }}" class="budget-chip">Under {{ cap|rs }}</a>
       {% endfor %}
     </div>
     {% endif %}
+    {# WhatsApp help strip — single line right after age/budget chips #}
+    <div class="wa-help-strip" style="margin-top:28px;border-radius:10px">
+      <span>Not sure which toy fits your child?</span>
+      <a href="https://wa.me/{{ shop.whatsapp_number }}?text={{ 'Assalam o Alaikum! I need help choosing a toy. '|urlencode }}" class="btn btn-wa btn-sm" target="_blank" rel="noopener">Ask on WhatsApp</a>
+    </div>
   </div>
 </section>
 {% endif %}{% endwith %}{% endif %}
@@ -307,33 +294,25 @@ document.querySelectorAll('.row-tab').forEach(function(btn){
 {% endif %}{% endwith %}{% endif %}
 
 {# ── WHATSAPP HELP ───────────────────────────────────────────────── #}
-{% if section_type == "whatsapp_help" %}{% with s=sections.whatsapp_help %}{% if not s or s.enabled %}
-<section class="section">
-  <div class="wrap">
-    <div class="wa-band">
-      <span class="wa-ico">{% whatsapp_icon 34 %}</span>
-      <div>
-        <h3>{% if s and s.title %}{{ s.title }}{% else %}Not sure which toy fits your child?{% endif %}</h3>
-        <p>{% if s and s.subtitle %}{{ s.subtitle }}{% else %}Tell us your child's age and what they're working on. We'll suggest toys on WhatsApp.{% endif %}</p>
-      </div>
-      <a class="btn btn-wa" href="https://wa.me/{{ shop.whatsapp_number }}?text={{ 'Assalam o Alaikum! Please suggest toys for my child. Age: '|urlencode }}" target="_blank" rel="noopener">Ask on WhatsApp</a>
-    </div>
-  </div>
-</section>
-{% endif %}{% endwith %}{% endif %}
+{% if section_type == "whatsapp_help" %}{# suppressed — WA strip now inline after shop_by_age #}{% endif %}
 
 {# ── FAQ ─────────────────────────────────────────────────────────── #}
 {% if section_type == "faq" %}{% with s=sections.faq %}{% if not s or s.enabled %}
 <section class="section sec-white" id="faq">
   <div class="wrap">
     <div class="section-head reveal"><h2 class="section-title"><span class="title-dot" style="background:var(--brand)"></span>{% if s and s.title %}{{ s.title }}{% else %}Questions parents ask{% endif %}</h2></div>
-    <div class="faq">
+    <div class="faq" id="faq-list">
       <details><summary>How do I pay?</summary><p>Pay cash to the rider when your parcel arrives. You can also pay in advance by {% if shop.jazzcash_number %}JazzCash{% endif %}{% if shop.jazzcash_number and shop.easypaisa_number %} or {% endif %}{% if shop.easypaisa_number %}EasyPaisa{% endif %} and enter the transaction ID at checkout.</p></details>
       <details><summary>How long does delivery take, and what does it cost?</summary><p>{{ shop.city }} orders usually arrive in 1–2 days, other cities in 3–5 working days. Delivery is {{ shop.delivery_fee|rs }}{% if shop.free_delivery_over %}, and free on orders of {{ shop.free_delivery_over|rs }} or more{% endif %}.</p></details>
       <details><summary>What if a toy arrives damaged?</summary><p>Send us a photo on WhatsApp within 3 days and we'll replace it at no cost. Unused toys in their original packing can be returned within 7 days.</p></details>
       <details><summary>How do I know a toy suits my child's age?</summary><p>Every toy shows the ages it suits and the skills it helps with. If you're unsure, message us your child's age and we'll suggest options.</p></details>
-      <details><summary>Are these the toys used in therapy?</summary><p>Many are. LittleMove started at Wellness Rehabilitation Clinic in {{ shop.city }}, and toys marked "Therapist pick" are ones our therapists recommend for practice at home.</p></details>
-      <details><summary>Do I need an account to order?</summary><p>No. Add toys to your cart, fill in your name, number and address, and we'll confirm your order on WhatsApp.</p></details>
+      <div class="faq-hidden" hidden>
+        <details><summary>Are these the toys used in therapy?</summary><p>Many are. LittleMove started at Wellness Rehabilitation Clinic in {{ shop.city }}, and toys marked "Therapist pick" are ones our therapists recommend for practice at home.</p></details>
+        <details><summary>Do I need an account to order?</summary><p>No. Add toys to your cart, fill in your name, number and address, and we'll confirm your order on WhatsApp.</p></details>
+      </div>
+      <button type="button" class="faq-see-all" onclick="this.previousElementSibling.hidden=false;this.hidden=true">
+        See all questions
+      </button>
     </div>
   </div>
 </section>
@@ -376,10 +355,11 @@ document.querySelectorAll('.row-tab').forEach(function(btn){
 {# ── OUR STORY — slim centred band ────────────────────────────────── #}
 {% if section_type == "our_story" %}{% with s=sections.our_story %}{% if not s or s.enabled %}
 {% if our_story and our_story.active and our_story.body %}
-<div class="our-story-slim sec-alt sec-pad">
+<div class="our-story-slim sec-alt sec-pad" id="our-story">
   <div class="wrap" style="max-width:760px;text-align:center">
     {% with heading=s.title|default:our_story.title %}{% if heading %}<h2 class="section-title">{{ heading }}</h2>{% endif %}{% endwith %}
-    <p style="color:var(--ink);opacity:.75;margin:0">{{ our_story.body|truncatewords:40 }}</p>
+    <p style="color:var(--ink);opacity:.75;margin:0 0 16px">{{ our_story.body|truncatechars:200 }}</p>
+    <a href="{% url 'store:shop' %}" class="btn btn-ghost btn-sm">See our toys →</a>
   </div>
 </div>
 {% endif %}
@@ -422,14 +402,7 @@ document.querySelectorAll('.row-tab').forEach(function(btn){
 {% endif %}{% endwith %}{% endif %}
 
 {# ── FINAL CTA — slim WhatsApp help strip ─────────────────────────── #}
-{% if section_type == "final_cta" %}{% with s=sections.final_cta %}{% if not s or s.enabled %}
-<div class="wa-help-strip">
-  <span>{% if s and s.subtitle %}{{ s.subtitle }}{% else %}Not sure which toy fits your child?{% endif %}</span>
-  <a href="https://wa.me/{{ shop.whatsapp_number }}" class="btn btn-wa btn-sm" target="_blank" rel="noopener">
-    Ask on WhatsApp
-  </a>
-</div>
-{% endif %}{% endwith %}{% endif %}
+{% if section_type == "final_cta" %}{# WA strip moved inline into shop_by_age #}{% endif %}
 
 {% endfor %}{# end section_order loop #}
 

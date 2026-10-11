@@ -2505,22 +2505,66 @@ svg.divider { display: none !important; }
 .skill-tile-overlay span { color: var(--lm-muted) !important; opacity: 1 !important; }
 .skill-tile-img { aspect-ratio: 4/3 !important; background: var(--lm-bg-alt) !important; }
 
-/* ── 1g. Hero height fix — no clipped buttons ─────────────────────────── */
-.hero-fullbleed,
-.hero-fullbleed.hero-medium,
-.hero-fullbleed.hero-compact {
-  height: auto !important;
-  min-height: auto !important;
+/* Hero: calm, smaller */
+.hero-fullbleed .swiper,
+.hero-fullbleed .swiper-slide,
+.hero-fullbleed .slide {
+  height: clamp(300px, 38vh, 380px) !important;
+  min-height: unset !important;
   max-height: none !important;
-  padding: clamp(56px, 8vw, 96px) 0 !important;
 }
-.hero-swiper, .hero-swiper .swiper-wrapper, .hero-swiper .swiper-slide { height: auto !important; min-height: auto !important; }
-.hero-fullbleed .slide { height: auto !important; min-height: auto !important; }
+.hero-fullbleed {
+  height: auto !important;
+  min-height: unset !important;
+  overflow: hidden;
+}
+@media (max-width: 760px) {
+  .hero-fullbleed .swiper,
+  .hero-fullbleed .swiper-slide,
+  .hero-fullbleed .slide {
+    height: clamp(240px, 36vh, 300px) !important;
+  }
+}
+/* Ensure text and button are visible inside the constrained height */
+.hero-fullbleed .slide-text {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  padding-bottom: 0 !important;
+  overflow: visible !important;
+}
+.hero-fullbleed .hero-cta-row {
+  overflow: visible !important;
+  padding-bottom: 4px !important;
+}
+
+/* All text-only slides: calm brand blue, no radial gradients or glows */
+.hero-fullbleed .slide:not(.has-photo):not(.has-video) {
+  background: var(--brand) !important;
+  background-image: none !important;
+}
+.hero-fullbleed .slide.s-pink,
+.hero-fullbleed .slide.s-rose,
+.hero-fullbleed .slide.s-magenta,
+.hero-fullbleed .slide.s-coral {
+  background: var(--brand) !important;
+  background-image: none !important;
+}
+/* Keep confetti elements but reduce visual noise */
+.hero-fullbleed .confetti { opacity: 0.25 !important; }
+/* Sale tag on pink-style banners */
+.hero-fullbleed .slide.s-pink .btn,
+.hero-fullbleed .slide.s-rose .btn:first-child {
+  background: var(--coral) !important;
+  border-color: var(--coral) !important;
+}
 
 /* ── 1h. Alternate section background utilities ───────────────────────── */
 .sec-white { background: var(--lm-bg-white); }
 .sec-alt   { background: var(--lm-bg-alt); }
-.sec-pad   { padding-block: clamp(32px, 5vw, 48px); }
+.sec-pad   { padding-block: clamp(28px, 3.5vw, 40px) !important; }
+.section   { padding-block: clamp(28px, 3.5vw, 40px) !important; }
 
 /* ── 1i. No-photo placeholder card ────────────────────────────────────── */
 .pcard-no-photo {
@@ -2560,7 +2604,7 @@ svg.divider { display: none !important; }
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 /* ── 2c. Featured products tab switcher ───────────────────────────────── */
@@ -2611,3 +2655,21 @@ svg.divider { display: none !important; }
 @media (max-width: 760px) {
   .mila-bot { bottom: 72px !important; right: 18px !important; }
 }
+
+/* ── Polish: tighter trust strip under hero ───────────────────────────── */
+.trust-wrap.wrap { padding-top: 16px !important; padding-bottom: 16px !important; }
+
+/* ── Polish: FAQ "See all" expand button ──────────────────────────────── */
+.faq-see-all {
+  display: block;
+  margin-top: 12px;
+  background: none;
+  border: none;
+  color: var(--brand);
+  font-weight: 700;
+  font-size: .9rem;
+  cursor: pointer;
+  padding: 4px 0;
+}
+.faq-see-all:hover { text-decoration: underline; }
+.faq-hidden > details { margin-top: 0; }
