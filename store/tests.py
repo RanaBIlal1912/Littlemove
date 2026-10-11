@@ -218,9 +218,13 @@ class UploadValidationTests(TestCase):
         return SimpleUploadedFile(name, content)
 
     def _jpeg(self, name="photo.jpg"):
-        # minimal JPEG magic bytes
-        content = b'\xff\xd8\xff\xe0' + b'\x00' * 100
-        return self._file(name, content)
+        import io
+        from PIL import Image as _PILImage
+        buf = io.BytesIO()
+        _PILImage.new("RGB", (10, 10), (100, 150, 200)).save(buf, format="JPEG")
+        buf.seek(0)
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        return SimpleUploadedFile(name, buf.read(), content_type="image/jpeg")
 
     def _mp4(self, name="video.mp4"):
         # ftyp MP4 magic
@@ -277,11 +281,20 @@ class UploadValidationTests(TestCase):
         self.assertEqual(kind, "document")
 
     def test_oversize_rejected(self):
+        import io
+        from PIL import Image as _PILImage
+        from django.core.files.uploadedfile import SimpleUploadedFile
         from django.core.exceptions import ValidationError
+        from django.test import override_settings
         from store.uploads import validate_upload
-        big = self._file("big.jpg", b'\xff\xd8\xff\xe0' + b'\x00' * (11 * 1024 * 1024))
-        with self.assertRaises(ValidationError) as ctx:
-            validate_upload(big, allow_kinds=("image",))
+        buf = io.BytesIO()
+        _PILImage.new("RGB", (10, 10)).save(buf, format="JPEG")
+        buf.seek(0)
+        # Set a tiny limit so a real image triggers the size error
+        with override_settings(UPLOAD_MAX_IMAGE_MB=0):
+            f = SimpleUploadedFile("big.jpg", buf.read(), content_type="image/jpeg")
+            with self.assertRaises(ValidationError) as ctx:
+                validate_upload(f, allow_kinds=("image",))
         self.assertIn("MB", str(ctx.exception))
 
     def test_zip_traversal_rejected(self):
