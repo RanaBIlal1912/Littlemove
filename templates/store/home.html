@@ -11,7 +11,7 @@
 
 {# ── HERO SLIDER (full-bleed 100vh) ──────────────────────────────── #}
 {% if section_type == "hero_slider" %}{% with s=sections.hero_slider %}{% if not s or s.enabled %}
-<section class="hero hero-fullbleed{% if shop.hero_height == 'compact' %} hero-compact{% elif shop.hero_height == 'medium' %} hero-medium{% endif %}">
+<section class="hero hero-fullbleed sec-pad{% if shop.hero_height == 'compact' %} hero-compact{% elif shop.hero_height == 'medium' %} hero-medium{% endif %}">
   <div class="swiper hero-swiper" aria-roledescription="carousel" aria-label="Offers">
     <div class="swiper-wrapper slides" id="slides">
       {% for b in banners %}
@@ -27,7 +27,7 @@
             <div class="slide-text">
               <h1 class="hero-headline">{{ b.title }}</h1>
               {% if b.subtitle %}<p class="hero-sub">{{ b.subtitle }}</p>{% endif %}
-              <div class="hero-cta-row">
+              <div class="hero-cta-row" style="padding-bottom:8px;overflow:visible">
                 <a class="btn btn-white" href="{{ b.link }}">{{ b.button_text }} {% icon 'arrow-r' 18 2.4 %}</a>
                 <button class="btn btn-hero-ghost" type="button" data-mila-guide>Find the right toy</button>
               </div>
@@ -47,7 +47,7 @@
             <div class="slide-text">
               <h1 class="hero-headline">{{ b.title }}</h1>
               {% if b.subtitle %}<p class="hero-sub">{{ b.subtitle }}</p>{% endif %}
-              <div class="hero-cta-row">
+              <div class="hero-cta-row" style="padding-bottom:8px;overflow:visible">
                 <a class="btn btn-white" href="{{ b.link }}">{{ b.button_text }} {% icon 'arrow-r' 18 2.4 %}</a>
                 <button class="btn btn-hero-ghost" type="button" data-mila-guide>Find the right toy</button>
               </div>
@@ -62,7 +62,7 @@
             <div>
               <h1 class="hero-headline">{{ b.title }}</h1>
               {% if b.subtitle %}<p class="hero-sub">{{ b.subtitle }}</p>{% endif %}
-              <div class="hero-cta-row">
+              <div class="hero-cta-row" style="padding-bottom:8px;overflow:visible">
                 <a class="btn btn-white" href="{{ b.link }}">{{ b.button_text }} {% icon 'arrow-r' 18 2.4 %}</a>
                 <button class="btn btn-hero-ghost" type="button" data-mila-guide>Find the right toy</button>
               </div>
@@ -79,7 +79,7 @@
             <div>
               <h1 class="hero-headline">Toys that help<br>little ones grow</h1>
               <p class="hero-sub">Sensory, motor and speech toys chosen with therapists.<br>Cash on delivery across Pakistan.</p>
-              <div class="hero-cta-row">
+              <div class="hero-cta-row" style="padding-bottom:8px;overflow:visible">
                 <a class="btn btn-white" href="{% url 'store:shop' %}">Shop all toys {% icon 'arrow-r' 18 2.4 %}</a>
                 <button class="btn btn-hero-ghost" type="button" data-mila-guide>Find the right toy</button>
               </div>
@@ -95,29 +95,11 @@
     <button class="swiper-button-next slider-arrow next" type="button" aria-label="Next banner"></button>
     {% endif %}
   </div>
-
-  {# Rotating circular badge #}
-  <div class="spin-badge" aria-hidden="true">
-    <svg viewBox="0 0 100 100" width="110" height="110" role="img">
-      <title>Play Learn Grow</title>
-      <defs><path id="sp-path" d="M 50,50 m -37,0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" fill="none"/></defs>
-      <circle cx="50" cy="50" r="42" fill="rgba(255,255,255,0.18)"/>
-      <text font-size="11.5" fill="#fff" font-weight="700" letter-spacing="1">
-        <textPath href="#sp-path">Play • Learn • Grow • Play • Learn • Grow •</textPath>
-      </text>
-    </svg>
-  </div>
-
-  {# Scroll cue #}
-  <div class="scroll-cue" aria-hidden="true">
-    <span>Scroll</span>
-    <div class="scroll-cue-dot"></div>
-  </div>
 {% endif %}{% endwith %}{% endif %}
 
 {# ── TRUST BADGES (closes hero section) ─────────────────────────── #}
 {% if section_type == "trust_badges" %}{% with s=sections.trust_badges %}{% if not s or s.enabled %}
-  <div class="hero-promos-wrap" aria-label="Quick shop links">
+  <div class="hero-promos-wrap sec-alt" aria-label="Quick shop links">
     <div class="wrap">
       <div class="side-promos side-promos-strip">
         <a class="promo promo-yellow" href="{% url 'store:shop' %}?max=1000">
@@ -148,12 +130,11 @@
 
 {# ── SHOP BY SKILL — big image tiles ────────────────────────────── #}
 {% if section_type == "shop_by_skill" %}{% with s=sections.shop_by_skill %}{% if not s or s.enabled %}
-<div class="wave-divider wavy-top" aria-hidden="true"><svg viewBox="0 0 1440 60" preserveAspectRatio="none"><path fill="var(--brand-soft)" d="M0,20 C360,60 720,0 1080,30 C1260,45 1380,50 1440,40 L1440,60 L0,60 Z"></path></svg></div>
-<section class="section section-blue" {% if s and s.bg_image %}style="background-image:url('{{ s.bg_image.url }}');background-size:cover;background-position:center"{% endif %}>
+<section class="section sec-white" {% if s and s.bg_image %}style="background-image:url('{{ s.bg_image.url }}');background-size:cover;background-position:center"{% endif %}>
   <div class="wrap">
     <div class="section-head reveal">
       <div>
-        <h2 class="reveal-words"><span class="title-dot" style="background:var(--brand)"></span>{% if s and s.title %}{{ s.title }}{% else %}Shop by skill{% endif %}</h2>
+        <h2 class="section-title reveal-words"><span class="title-dot" style="background:var(--brand)"></span>{% if s and s.title %}{{ s.title }}{% else %}Shop by skill{% endif %}</h2>
         <p>{% if s and s.subtitle %}{{ s.subtitle }}{% else %}Pick what your child is working on right now.{% endif %}</p>
       </div>
       <a class="link" href="{% url 'store:shop' %}">All toys</a>
@@ -176,73 +157,67 @@
 </section>
 {% endif %}{% endwith %}{% endif %}
 
-{# ── SHOP BY NEED ────────────────────────────────────────────────── #}
-{% if section_type == "shop_by_need" %}{% with s=sections.shop_by_need %}{% if not s or s.enabled %}
-{% if needs %}
-<section class="section section-mint">
+{# ── SHOP BY NEED — merged into shop_by_skill (suppressed) ──────────── #}
+{% if section_type == "shop_by_need" %}{# merged into shop_by_skill #}{% endif %}
+
+{# ── FEATURED PRODUCTS + NEW ARRIVALS (tab switcher) ──────────────── #}
+{% if section_type == "featured_products" %}{% with s=sections.featured_products %}{% if not s or s.enabled %}
+<section class="section sec-alt" aria-label="Featured products">
   <div class="wrap">
-    <div class="section-head reveal">
-      <div>
-        <h2><span class="title-dot" style="background:var(--orange)"></span>{% if s and s.title %}{{ s.title }}{% else %}What does your child need help with?{% endif %}</h2>
-        <p>{% if s and s.subtitle %}{{ s.subtitle }}{% else %}Start from what your child needs help with — we'll show the toys parents choose for it.{% endif %}</p>
+    <div class="row-tabs" role="tablist">
+      <button class="row-tab row-tab--active" type="button" role="tab" aria-selected="true"
+              data-tab="favourites">{% if s and s.title %}{{ s.title }}{% else %}Parents' favourites{% endif %}</button>
+      {% if new_arrivals %}
+      <button class="row-tab" type="button" role="tab" aria-selected="false"
+              data-tab="new-arrivals">New arrivals</button>
+      {% endif %}
+    </div>
+    <div id="tab-favourites" class="row-tab-panel">
+      <div class="row-scroll" id="row-fav">
+        {% for p in featured %}{% include "store/_card.html" %}{% endfor %}
       </div>
     </div>
-    <div class="need-grid">
-      {% for n in needs %}
-      {% with fp=n.products.first %}
-      <a class="need-card t-{{ n.color }}" href="{{ n.get_absolute_url }}">
-        <div class="need-card-vis">
-          {% if fp and fp.image %}<img src="{{ fp.image.url }}" alt="" loading="lazy">
-          {% elif fp %}{% illus fp.illustration|default:'blocks' %}
-          {% else %}{% illus 'blocks' %}{% endif %}
-        </div>
-        <div class="need-card-body">
-          <b>{{ n.name }}</b>
-          {% if n.short %}<span>{{ n.short }}</span>{% endif %}
-          <span class="need-card-arrow">{% icon 'arrow-r' 16 2.4 %}</span>
-        </div>
-      </a>
-      {% endwith %}
-      {% endfor %}
+    {% if new_arrivals %}
+    <div id="tab-new-arrivals" class="row-tab-panel" hidden>
+      <div class="row-scroll" id="row-new">
+        {% for p in new_arrivals %}{% include "store/_card.html" %}{% endfor %}
+      </div>
     </div>
+    {% endif %}
   </div>
 </section>
-{% endif %}
+<script>
+document.querySelectorAll('.row-tab').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var tabs = btn.closest('.row-tabs');
+    tabs.querySelectorAll('.row-tab').forEach(function(t){ t.classList.remove('row-tab--active'); t.setAttribute('aria-selected','false'); });
+    btn.classList.add('row-tab--active'); btn.setAttribute('aria-selected','true');
+    var section = tabs.parentNode;
+    section.querySelectorAll('.row-tab-panel').forEach(function(p){ p.hidden = true; });
+    section.querySelector('#tab-'+btn.dataset.tab).hidden = false;
+  });
+});
+</script>
 {% endif %}{% endwith %}{% endif %}
 
-{# ── FEATURED PRODUCTS ───────────────────────────────────────────── #}
-{% if section_type == "featured_products" %}{% with s=sections.featured_products %}{% if not s or s.enabled %}
-<div class="marquee marquee-brand" aria-hidden="true"><div class="marquee-track">
-  {% for i in "12345678" %}<span>Play.</span><span>Learn.</span><span>Grow.</span>{% endfor %}
-</div></div>
-{% with title=s.title|default:"Parents' favourites" sub=s.subtitle|default:"The toys families order again and again." %}
-{% include "store/_row.html" with items=featured title=title sub=sub link="/shop/" rid="row-fav" soft=True %}
-{% endwith %}
-<div class="marquee marquee-coral marquee-reverse" aria-hidden="true"><div class="marquee-track">
-  {% for i in "12345678" %}<span>Sensory.</span><span>Motor.</span><span>Speech.</span>{% endfor %}
-</div></div>
-{% endif %}{% endwith %}{% endif %}
-
-{# ── SHOP BY AGE ─────────────────────────────────────────────────── #}
+{# ── SHOP BY AGE + BUDGET (flat chips) ───────────────────────────── #}
 {% if section_type == "shop_by_age" %}{% with s=sections.shop_by_age %}{% if not s or s.enabled %}
-<section class="section section-coral">
+<section class="sec-white sec-pad">
   <div class="wrap">
-    <div class="section-head reveal">
-      <div>
-        <h2><span class="title-dot" style="background:var(--sky)"></span>{% if s and s.title %}{{ s.title }}{% else %}Shop by age{% endif %}</h2>
-        <p>{% if s and s.subtitle %}{{ s.subtitle }}{% else %}Every toy is marked with the ages it suits best.{% endif %}</p>
-      </div>
-    </div>
-    <div class="age-row">
+    <h2 class="section-title">{% if s and s.title %}{{ s.title }}{% else %}Shop by age{% endif %}</h2>
+    <div class="chips-row" style="margin-bottom:24px">
       {% for key, band in age_bands.items %}
-      <a class="age age-{{ forloop.counter0 }}" href="{% url 'store:shop' %}?age={{ key }}">
-        <div class="num">{{ band.0|cut:" years" }}</div>
-        <div class="unit">years</div>
-        <span class="go">Shop {% icon 'arrow-r' 16 2.4 %}</span>
-        {% cycle 'rings' 'shapes' 'beads' 'board' as age_ill silent %}{% illus age_ill %}
-      </a>
+      <a href="{% url 'store:shop' %}?age={{ key }}" class="age-chip">{{ band.0 }}</a>
       {% endfor %}
     </div>
+    {% if sections.shop_by_budget.enabled %}
+    <h3 class="section-subtitle">Shop by budget</h3>
+    <div class="chips-row">
+      {% for cap in price_caps %}
+      <a href="{% url 'store:shop' %}?max={{ cap }}" class="budget-chip">Under {{ cap|rs }}</a>
+      {% endfor %}
+    </div>
+    {% endif %}
   </div>
 </section>
 {% endif %}{% endwith %}{% endif %}
@@ -254,54 +229,14 @@
 {% endwith %}
 {% endif %}{% endwith %}{% endif %}
 
-{# ── PROMO BANNERS ───────────────────────────────────────────────── #}
-{% if section_type == "promo_banners" %}{% with s=sections.promo_banners %}{% if not s or s.enabled %}
-<section class="section">
-  <div class="wrap split">
-    <a class="split-a" href="{% url 'store:shop' %}?category=speech-language">
-      <h3>Help them find their first words</h3>
-      <p>Picture cards and talking games for toddlers starting to speak.</p>
-      <span class="btn btn-white">Shop speech toys</span>
-      {% illus 'cards' %}
-    </a>
-    <a class="split-b" href="{% url 'store:shop' %}?category=gross-motor">
-      <h3>Balance, crawl and jump</h3>
-      <p>Boards and tunnels that get little bodies moving indoors.</p>
-      <span class="btn btn-white">Shop movement toys</span>
-      {% illus 'board' %}
-    </a>
-  </div>
-</section>
-{% endif %}{% endwith %}{% endif %}
+{# ── PROMO BANNERS — suppressed ──────────────────────────────────── #}
+{% if section_type == "promo_banners" %}{# suppressed in visual simplification #}{% endif %}
 
-{# ── NEW ARRIVALS ────────────────────────────────────────────────── #}
-{% if section_type == "new_arrivals" %}{% with s=sections.new_arrivals %}{% if not s or s.enabled %}
-{% with title=s.title|default:"New arrivals" %}
-{% include "store/_row.html" with items=new_arrivals title=title link="/shop/?sort=new" rid="row-new" dot="var(--yellow)" %}
-{% endwith %}
-{% endif %}{% endwith %}{% endif %}
+{# ── NEW ARRIVALS — now the second tab in Featured (suppressed) ───── #}
+{% if section_type == "new_arrivals" %}{# merged into featured_products tab switcher #}{% endif %}
 
-{# ── SHOP BY BUDGET ──────────────────────────────────────────────── #}
-{% if section_type == "shop_by_budget" %}{% with s=sections.shop_by_budget %}{% if not s or s.enabled %}
-<section class="section section-yellow">
-  <div class="wrap">
-    <div class="section-head reveal">
-      <div>
-        <h2><span class="title-dot" style="background:var(--green)"></span>{% if s and s.title %}{{ s.title }}{% else %}Shop by budget{% endif %}</h2>
-        <p>{% if s and s.subtitle %}{{ s.subtitle }}{% else %}Great learning toys at every price.{% endif %}</p>
-      </div>
-    </div>
-    <div class="price-row-tiles">
-      {% for cap in price_caps %}
-      <a class="ptile" href="{% url 'store:shop' %}?max={{ cap }}">
-        <span><small>Under</small><b>{{ cap|rs }}</b></span>
-        <span class="arrow">{% icon 'arrow-r' 18 2.4 %}</span>
-      </a>
-      {% endfor %}
-    </div>
-  </div>
-</section>
-{% endif %}{% endwith %}{% endif %}
+{# ── SHOP BY BUDGET — merged into Shop by age chips (suppressed) ──── #}
+{% if section_type == "shop_by_budget" %}{# merged into shop_by_age #}{% endif %}
 
 {# ── THERAPIST PICKS ─────────────────────────────────────────────── #}
 {% if section_type == "therapist_picks" %}{% with s=sections.therapist_picks %}{% if not s or s.enabled %}
@@ -389,10 +324,9 @@
 
 {# ── FAQ ─────────────────────────────────────────────────────────── #}
 {% if section_type == "faq" %}{% with s=sections.faq %}{% if not s or s.enabled %}
-<div class="wave-divider wavy-top" aria-hidden="true"><svg viewBox="0 0 1440 60" preserveAspectRatio="none"><path fill="var(--brand-soft)" d="M0,30 C240,60 480,0 720,20 C960,40 1200,60 1440,30 L1440,60 L0,60 Z"></path></svg></div>
-<section class="section section-cream" id="faq" style="padding-top:0">
+<section class="section sec-white" id="faq">
   <div class="wrap">
-    <div class="section-head reveal"><h2><span class="title-dot" style="background:var(--brand)"></span>{% if s and s.title %}{{ s.title }}{% else %}Questions parents ask{% endif %}</h2></div>
+    <div class="section-head reveal"><h2 class="section-title"><span class="title-dot" style="background:var(--brand)"></span>{% if s and s.title %}{{ s.title }}{% else %}Questions parents ask{% endif %}</h2></div>
     <div class="faq">
       <details><summary>How do I pay?</summary><p>Pay cash to the rider when your parcel arrives. You can also pay in advance by {% if shop.jazzcash_number %}JazzCash{% endif %}{% if shop.jazzcash_number and shop.easypaisa_number %} or {% endif %}{% if shop.easypaisa_number %}EasyPaisa{% endif %} and enter the transaction ID at checkout.</p></details>
       <details><summary>How long does delivery take, and what does it cost?</summary><p>{{ shop.city }} orders usually arrive in 1–2 days, other cities in 3–5 working days. Delivery is {{ shop.delivery_fee|rs }}{% if shop.free_delivery_over %}, and free on orders of {{ shop.free_delivery_over|rs }} or more{% endif %}.</p></details>
@@ -439,39 +373,25 @@
 {% endif %}
 {% endif %}{% endwith %}{% endif %}
 
-{# ── OUR STORY — editorial split with parallax ──────────────────── #}
+{# ── OUR STORY — slim centred band ────────────────────────────────── #}
 {% if section_type == "our_story" %}{% with s=sections.our_story %}{% if not s or s.enabled %}
-{% if our_story and our_story.active %}
-<section class="section section-cream our-story-section">
-  <div class="wrap">
-    <div class="our-story">
-      <div class="our-story-text reveal">
-        <h2><span class="title-dot" style="background:var(--coral)"></span>{% if s and s.title %}{{ s.title }}{% else %}{{ our_story.title }}{% endif %}</h2>
-        <div class="prose" style="margin-top:14px">{{ our_story.body|linebreaks }}</div>
-      </div>
-      <div class="our-story-photo{% if our_story.photo %} has-photo{% endif %}">
-        {% if our_story.photo %}
-        <img src="{{ our_story.photo.url }}" alt="{{ our_story.title }}" loading="lazy" data-parallax>
-        {% elif request.user.is_staff %}
-        <div class="our-story-placeholder admin-hint">
-          <div class="osp-inner">{% illus 'rings' %}{% illus 'blocks' %}{% illus 'balls' %}</div>
-          <p>Upload a photo in <strong>Admin → Our story</strong></p>
-        </div>
-        {% endif %}
-      </div>
-    </div>
+{% if our_story and our_story.active and our_story.body %}
+<div class="our-story-slim sec-alt sec-pad">
+  <div class="wrap" style="max-width:760px;text-align:center">
+    {% with heading=s.title|default:our_story.title %}{% if heading %}<h2 class="section-title">{{ heading }}</h2>{% endif %}{% endwith %}
+    <p style="color:var(--ink);opacity:.75;margin:0">{{ our_story.body|truncatewords:40 }}</p>
   </div>
-</section>
+</div>
 {% endif %}
 {% endif %}{% endwith %}{% endif %}
 
 {# ── WHY US ──────────────────────────────────────────────────────── #}
 {% if section_type == "why_us" %}{% with s=sections.why_us %}{% if not s or s.enabled %}
-<section class="section section-soft">
+<section class="section sec-alt">
   <div class="wrap">
     <div class="section-head reveal">
       <div>
-        <h2><span class="title-dot" style="background:var(--brand)"></span>{% if s and s.title %}{{ s.title }}{% else %}Why parents choose LittleMove{% endif %}</h2>
+        <h2 class="section-title"><span class="title-dot" style="background:var(--brand)"></span>{% if s and s.title %}{{ s.title }}{% else %}Why parents choose LittleMove{% endif %}</h2>
         <p>{% if s and s.subtitle %}{{ s.subtitle }}{% else %}Every toy is picked for a reason.{% endif %}</p>
       </div>
     </div>
@@ -501,18 +421,14 @@
 </section>
 {% endif %}{% endwith %}{% endif %}
 
-{# ── FINAL CTA ────────────────────────────────────────────────────── #}
+{# ── FINAL CTA — slim WhatsApp help strip ─────────────────────────── #}
 {% if section_type == "final_cta" %}{% with s=sections.final_cta %}{% if not s or s.enabled %}
-<section class="final-cta">
-  <div class="wrap" style="text-align:center">
-    <h2>{% if s and s.title %}{{ s.title }}{% else %}Ready to find their next favourite?{% endif %}</h2>
-    <p>{% if s and s.subtitle %}{{ s.subtitle }}{% else %}Therapist-chosen toys, delivered across Pakistan.{% endif %}</p>
-    <div class="final-cta-btns">
-      <a class="btn final-cta-btn-solid" href="{% url 'store:shop' %}">Shop all toys {% icon 'arrow-r' 18 2.4 %}</a>
-      <button class="btn final-cta-btn-ghost" type="button" data-mila-guide>Ask Mila</button>
-    </div>
-  </div>
-</section>
+<div class="wa-help-strip">
+  <span>{% if s and s.subtitle %}{{ s.subtitle }}{% else %}Not sure which toy fits your child?{% endif %}</span>
+  <a href="https://wa.me/{{ shop.whatsapp_number }}" class="btn btn-wa btn-sm" target="_blank" rel="noopener">
+    Ask on WhatsApp
+  </a>
+</div>
 {% endif %}{% endwith %}{% endif %}
 
 {% endfor %}{# end section_order loop #}

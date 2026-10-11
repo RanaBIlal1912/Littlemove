@@ -53,6 +53,16 @@
   --sh-btn: 0 6px 16px rgba(59, 164, 230, .30);
   --wrap: 1240px;
   --gutter: clamp(14px, 3.5vw, 28px);
+
+  /* ── calm palette (visual simplification) ── */
+  --lm-bg-white: #ffffff;
+  --lm-bg-alt: #faf8f4;
+  --lm-border: #e8e4de;
+  --lm-shadow-sm: 0 2px 8px rgba(0,0,0,.06);
+  --lm-shadow-md: 0 4px 16px rgba(0,0,0,.09);
+  --lm-radius-card: 14px;
+  --lm-muted: #8a8580;
+  --brand-blue: var(--brand);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -681,22 +691,8 @@ select:focus, input:focus, textarea:focus { outline: none; border-color: var(--b
   .sticky-buy small { display: block; color: var(--ink-2); font-size: .75rem; font-weight: 700; }
 }
 
-/* ===== 3-D animated background ===== */
-body { background: transparent; }
-#bg-wrap {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background: #fff;
-  overflow: hidden;
-  pointer-events: none;
-}
-#bg-cv {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
+/* ===== 3-D animated background removed (visual simplification) ===== */
+#bg-wrap, #bg-cv { display: none !important; }
 
 /* ===== Mila chat assistant ===== */
 .mila-bot {
@@ -2428,7 +2424,190 @@ body.has-hero.has-topbar .hero-fullbleed {
 .card-img-placeholder {
   width: 100%; aspect-ratio: 4/3;
   display: flex; align-items: center; justify-content: center;
-  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
-  border-radius: 12px;
+  background: var(--lm-bg-alt);
+  border-radius: var(--lm-radius-card);
   font-size: 3rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   VISUAL SIMPLIFICATION — calm the storefront (appended, wins the cascade)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── 1b. Neutralise colourful section backgrounds ─────────────────────── */
+.section-mint,
+.section-pink,
+.section-yellow,
+.section-coral,
+.section-lavender {
+  background: var(--lm-bg-white) !important;
+}
+.section-blue,
+.section-cream,
+.section-soft {
+  background: var(--lm-bg-alt) !important;
+}
+/* promo / age / budget bands: no gradients */
+.promo-band, .age-band, .budget-band {
+  background: var(--lm-bg-alt) !important;
+}
+
+/* ── 1c. Remove marquee / ribbon / spinning badge / scroll cue ────────── */
+.marquee-ribbon,
+.marquee,
+.marquee-track,
+.marquee-item,
+.play-badge,
+.badge-spin,
+.spin-badge,
+.scroll-cue,
+.scroll-down-cue { display: none !important; }
+
+/* ── 1d. Remove wavy dividers ─────────────────────────────────────────── */
+.wave-divider,
+.section-wave,
+svg.divider { display: none !important; }
+.section::before,
+.section::after,
+.section-bottom,
+.wave { clip-path: none !important; }
+
+/* ── 1e. Calm product cards ───────────────────────────────────────────── */
+.pcard {
+  border-radius: var(--lm-radius-card) !important;
+  border: 1px solid var(--lm-border) !important;
+  box-shadow: var(--lm-shadow-sm) !important;
+  background: var(--lm-bg-white) !important;
+}
+.pcard:hover { box-shadow: var(--lm-shadow-md) !important; }
+.pcard-media { background: var(--lm-bg-alt) !important; }
+
+/* ── 1f. Category / skill / age tiles — flat ──────────────────────────── */
+.cat-tile,
+.skill-tile,
+.age-tile,
+.need-card {
+  background: color-mix(in srgb, var(--tint, var(--lm-bg-alt)) 15%, white) !important;
+  color: var(--ink) !important;
+  box-shadow: var(--lm-shadow-sm) !important;
+}
+.cat-tile::before,
+.skill-tile::before,
+.age-tile::before,
+.need-card::before { opacity: 0 !important; background: none !important; }
+/* skill-tile overlay gradient → flat label on light tint */
+.skill-tile-overlay {
+  position: static !important;
+  background: none !important;
+  color: var(--ink) !important;
+  padding: 12px 14px !important;
+}
+.skill-tile-overlay b { color: var(--ink) !important; text-shadow: none !important; }
+.skill-tile-overlay span { color: var(--lm-muted) !important; opacity: 1 !important; }
+.skill-tile-img { aspect-ratio: 4/3 !important; background: var(--lm-bg-alt) !important; }
+
+/* ── 1g. Hero height fix — no clipped buttons ─────────────────────────── */
+.hero-fullbleed,
+.hero-fullbleed.hero-medium,
+.hero-fullbleed.hero-compact {
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+  padding: clamp(56px, 8vw, 96px) 0 !important;
+}
+.hero-swiper, .hero-swiper .swiper-wrapper, .hero-swiper .swiper-slide { height: auto !important; min-height: auto !important; }
+.hero-fullbleed .slide { height: auto !important; min-height: auto !important; }
+
+/* ── 1h. Alternate section background utilities ───────────────────────── */
+.sec-white { background: var(--lm-bg-white); }
+.sec-alt   { background: var(--lm-bg-alt); }
+.sec-pad   { padding-block: clamp(32px, 5vw, 48px); }
+
+/* ── 1i. No-photo placeholder card ────────────────────────────────────── */
+.pcard-no-photo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--lm-bg-alt);
+  aspect-ratio: 4/3;
+  border-radius: var(--lm-radius-card) var(--lm-radius-card) 0 0;
+  color: var(--lm-muted);
+  font-size: .8125rem;
+  gap: 8px;
+}
+.pcard-no-photo svg { width: 36px; height: 36px; opacity: .45; }
+
+/* ── 1j. Shop-by-age / budget chips (small, flat) ─────────────────────── */
+.age-chip, .budget-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: 99px;
+  border: 1.5px solid var(--lm-border);
+  background: var(--lm-bg-white);
+  font-size: .875rem;
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+  transition: border-color .2s, background .2s;
+}
+.age-chip:hover, .budget-chip:hover {
+  border-color: var(--brand-blue);
+  background: color-mix(in srgb, var(--brand-blue) 8%, white);
+}
+.chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+/* ── 2c. Featured products tab switcher ───────────────────────────────── */
+.row-tabs { display:flex; gap:4px; border-bottom:2px solid var(--lm-border); margin-bottom:24px; }
+.row-tab { padding:10px 20px; border:none; background:none; font-weight:600; cursor:pointer;
+           color:var(--lm-muted); border-bottom:2px solid transparent; margin-bottom:-2px; }
+.row-tab--active { color:var(--brand-blue); border-bottom-color:var(--brand-blue); }
+
+/* ── 2g. Slim WhatsApp help strip ─────────────────────────────────────── */
+.wa-help-strip {
+  background: #f0faf4;
+  border-top: 1px solid #c3e8d0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 18px 24px;
+  font-size: .9375rem;
+  flex-wrap: wrap;
+}
+
+/* ── 2k. Section titles consistent ────────────────────────────────────── */
+.section-title { font-size: clamp(1.25rem, 3vw, 1.65rem); font-weight: 700; margin: 0 0 24px; }
+.section-subtitle { font-size: 1rem; font-weight: 600; margin: 0 0 12px; color: var(--lm-muted); }
+
+/* ── Task 5. Shop page: flat banner + white bordered sidebar ──────────── */
+.shop-banner { background: var(--lm-bg-alt) !important; }
+.filters {
+  background: var(--lm-bg-white) !important;
+  border: 1px solid var(--lm-border) !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+
+/* ── Task 6. Product page: white background, plain price ──────────────── */
+.pdp-wrap { background: var(--lm-bg-white); }
+.pdp-main { background: var(--lm-bg-alt) !important; }
+.price-box {
+  background: transparent !important;
+  padding: 8px 0 !important;
+}
+.price-box .price { color: var(--ink) !important; }
+
+/* ── Task 4. Mila toggle position; remove wa-float ────────────────────── */
+.wa-float { display: none !important; }
+.mila-toggle { width: 52px !important; height: 52px !important; }
+.mila-bot { bottom: 24px !important; right: 18px !important; }
+@media (max-width: 760px) {
+  .mila-bot { bottom: 72px !important; right: 18px !important; }
 }

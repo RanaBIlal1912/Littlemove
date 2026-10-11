@@ -2,7 +2,15 @@
 <div class="qv-grid t-{{ product.category.color }}">
   <div class="qv-media">
     {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}" width="500" height="500">
-    {% else %}{% illus product.illustration product.name %}{% endif %}
+    {% else %}
+    <div class="pcard-no-photo" aria-label="No photo yet">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/>
+        <path d="m21 15-5-5L5 21"/>
+      </svg>
+      <span>Photo coming soon</span>
+    </div>
+    {% endif %}
   </div>
   <div class="qv-body">
     <span class="pcard-cat">{{ product.category.name }}</span>

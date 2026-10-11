@@ -2,9 +2,21 @@
   <div class="pcard-media">
     {% if p.image %}
     <img class="photo" src="{{ p.image.url }}" alt="{{ p.name }}" loading="lazy" width="400" height="400" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-    <div class="card-img-placeholder" style="display:none">{% illus p.illustration %}</div>
+    <div class="pcard-no-photo" style="display:none" aria-label="No photo yet">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/>
+        <path d="m21 15-5-5L5 21"/>
+      </svg>
+      <span>Photo coming soon</span>
+    </div>
     {% else %}
-    <div class="card-img-placeholder">{% illus p.illustration %}</div>
+    <div class="pcard-no-photo" aria-label="No photo yet">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/>
+        <path d="m21 15-5-5L5 21"/>
+      </svg>
+      <span>Photo coming soon</span>
+    </div>
     {% endif %}
     {% with ph2=p.photos.first %}{% if ph2 %}<img class="photo-2" src="{{ ph2.image.url }}" alt="" loading="lazy" width="400" height="400">{% endif %}{% endwith %}
     <button class="wishlist-btn" data-pid="{{ p.pk }}" type="button" aria-label="Add {{ p.name }} to wishlist">&#9825;</button>

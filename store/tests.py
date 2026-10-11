@@ -42,45 +42,39 @@ class HomeSectionOrderTests(TestCase):
         HomeSection.objects.all().delete()
 
     def test_sections_render_in_order(self):
-        # shop_by_need (need-grid) at order=1, shop_by_budget (price-row-tiles) at order=2
-        HomeSection.objects.create(type="shop_by_need",   order=1, enabled=True)
-        HomeSection.objects.create(type="shop_by_budget", order=2, enabled=True)
+        # shop_by_skill (skill-tiles) at order=1, why_us (why-us-grid) at order=2
+        HomeSection.objects.create(type="shop_by_skill", order=1, enabled=True)
+        HomeSection.objects.create(type="why_us",        order=2, enabled=True)
         cat = make_category()
-        from store.models import Need
-        Need.objects.create(name="Focus")
         resp = self.client.get("/")
-        pos_need   = resp.content.find(b'class="need-grid"')
-        pos_budget = resp.content.find(b'class="price-row-tiles"')
-        self.assertNotEqual(pos_need, -1, "shop_by_need section not found")
-        self.assertNotEqual(pos_budget, -1, "shop_by_budget section not found")
-        self.assertLess(pos_need, pos_budget, "need should appear before budget")
+        pos_skill = resp.content.find(b'class="skill-tiles"')
+        pos_why   = resp.content.find(b'class="why-us-grid')
+        self.assertNotEqual(pos_skill, -1, "shop_by_skill section not found")
+        self.assertNotEqual(pos_why, -1, "why_us section not found")
+        self.assertLess(pos_skill, pos_why, "skill should appear before why_us")
 
     def test_disabled_section_is_hidden(self):
         HomeSection.objects.create(type="shop_by_skill", order=1, enabled=False)
         HomeSection.objects.create(type="testimonials",  order=2, enabled=True)
         cat = make_category()
         resp = self.client.get("/")
-        # "cat-row" is the CSS class unique to the Shop by skill section body —
+        # "skill-tiles" is the CSS class unique to the Shop by skill section body —
         # it does NOT appear in the navigation header.
-        self.assertNotIn(b'class="cat-row"', resp.content)
+        self.assertNotIn(b'class="skill-tiles"', resp.content)
 
     def test_enabled_section_appears(self):
-        HomeSection.objects.create(type="shop_by_need", order=1, enabled=True)
+        HomeSection.objects.create(type="why_us", order=1, enabled=True)
         cat = make_category()
-        from store.models import Need
-        Need.objects.create(name="Focus and attention")
         resp = self.client.get("/")
-        # "need-grid" only appears inside the shop_by_need section body
-        self.assertIn(b'class="need-grid"', resp.content)
+        # "why-us-grid" only appears inside the why_us section body
+        self.assertIn(b'class="why-us-grid', resp.content)
 
     def test_disabled_section_does_not_appear(self):
-        HomeSection.objects.create(type="shop_by_need", order=1, enabled=False)
+        HomeSection.objects.create(type="why_us", order=1, enabled=False)
         cat = make_category()
-        from store.models import Need
-        Need.objects.create(name="Focus and attention")
         resp = self.client.get("/")
-        # "need-grid" should be absent when the section is disabled
-        self.assertNotIn(b'class="need-grid"', resp.content)
+        # "why-us-grid" should be absent when the section is disabled
+        self.assertNotIn(b'class="why-us-grid', resp.content)
 
     def test_no_sections_still_renders_page(self):
         """Home page should not crash with no sections."""
