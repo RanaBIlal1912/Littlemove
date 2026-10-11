@@ -2295,21 +2295,43 @@ class LanguagePillTests(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, 'id="lang-btn"')
 
-    def test_admin_has_language_select_no_fixed_pill(self):
+    def _admin_client(self):
+        from django.contrib.auth.models import User
+        user = User.objects.create_superuser("adminpill3", "ap3@a.com", "supersecret123")
+        self.client.force_login(user)
+        return self.client
+
+    def test_admin_dashboard_has_lang_pill(self):
         from django.conf import settings
         if not getattr(settings, 'ENABLE_GOOGLE_TRANSLATE', True):
             self.skipTest("GT disabled")
-        user = User.objects.create_superuser("adminpill2", "ap2@a.com", "supersecret123")
-        self.client.force_login(user)
+        self._admin_client()
+        resp = self.client.get("/manage-store/")
+        self.assertIn(resp.status_code, [200, 302])
+        if resp.status_code == 200:
+            self.assertContains(resp, 'lm-admin-pill')
+            self.assertNotIn('position:fixed;top:8px;right:8px', resp.content.decode())
+            self.assertNotIn('position:fixed', resp.content.decode())
+
+    def test_admin_product_add_has_lang_pill(self):
+        from django.conf import settings
+        if not getattr(settings, 'ENABLE_GOOGLE_TRANSLATE', True):
+            self.skipTest("GT disabled")
+        self._admin_client()
+        resp = self.client.get("/manage-store/store/product/add/")
+        self.assertIn(resp.status_code, [200, 302])
+        if resp.status_code == 200:
+            self.assertContains(resp, 'lm-admin-pill')
+
+    def test_admin_product_list_has_lang_pill(self):
+        from django.conf import settings
+        if not getattr(settings, 'ENABLE_GOOGLE_TRANSLATE', True):
+            self.skipTest("GT disabled")
+        self._admin_client()
         resp = self.client.get("/manage-store/store/product/")
         self.assertIn(resp.status_code, [200, 302])
         if resp.status_code == 200:
-            content = resp.content.decode()
-            # Must have the in-flow language select (not position:fixed pill)
-            self.assertIn('lm-admin-lang-select', content)
-            # Must NOT have the old position:fixed injection
-            self.assertNotIn('position:fixed;top:8px;right:8px', content)
-            self.assertNotIn("position:fixed", content)
+            self.assertContains(resp, 'lm-admin-pill')
 
     def test_admin_login_has_language_control(self):
         from django.conf import settings
@@ -2317,6 +2339,8 @@ class LanguagePillTests(TestCase):
             self.skipTest("GT disabled")
         resp = self.client.get("/manage-store/login/")
         self.assertEqual(resp.status_code, 200)
+        # Both the new pill class and the login container class must be present
+        self.assertContains(resp, 'lm-admin-pill')
         self.assertContains(resp, 'lm-login-lang')
 
 
@@ -2379,3 +2403,40 @@ class DropZoneJsTests(TestCase):
         with open("static/admin/drop_zone.js", encoding="utf-8") as f:
             js = f.read()
         self.assertIn("File missing", js)
+
+    def test_drop_zone_hides_unfold_container(self):
+        """After attaching, the Unfold native widget container is hidden."""
+        with open("static/admin/drop_zone.js", encoding="utf-8") as f:
+            js = f.read()
+        # Must set display:none on the Unfold container after injection
+        self.assertIn("container.style.display", js)
+
+    def test_drop_zone_visually_hides_plain_inputs(self):
+        """Plain file inputs get visually hidden after zone creation."""
+        with open("static/admin/drop_zone.js", encoding="utf-8") as f:
+            js = f.read()
+        self.assertIn("clip", js)
+        self.assertIn("1px", js)
+
+    def test_drop_zone_proxies_clear_checkbox(self):
+        """If an Unfold Clear checkbox exists, a proxy is shown in the zone."""
+        with open("static/admin/drop_zone.js", encoding="utf-8") as f:
+            js = f.read()
+        self.assertIn("Clear existing file", js)
+        self.assertIn("origCheck", js)
+
+    def test_drop_zone_rejects_php_in_client(self):
+        """drop_zone.js must reject non-image MIME types client-side."""
+        with open("static/admin/drop_zone.js", encoding="utf-8") as f:
+            js = f.read()
+        self.assertIn("Please choose an image file", js)
+
+    def test_admin_lang_js_exists(self):
+        import os
+        self.assertTrue(os.path.exists("static/admin/admin_lang.js"),
+                        "admin_lang.js must exist for admin language pill")
+
+    def test_admin_lang_css_exists(self):
+        import os
+        self.assertTrue(os.path.exists("static/admin/admin_lang.css"),
+                        "admin_lang.css must exist for admin language pill")

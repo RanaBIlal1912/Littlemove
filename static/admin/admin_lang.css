@@ -1,0 +1,45 @@
+/* LittleMove admin header language pill */
+.lm-admin-pill-wrap { position: relative; display: inline-flex; align-items: center; }
+
+.lm-admin-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    height: 28px; padding: 0 8px; border-radius: 14px;
+    background: transparent; border: 1px solid rgba(128,128,128,.3);
+    color: inherit; cursor: pointer; font-size: .8125rem; font-weight: 500;
+    white-space: nowrap; flex-shrink: 0;
+}
+.lm-admin-pill:hover { border-color: rgba(128,128,128,.6); background: rgba(128,128,128,.08); }
+.lm-admin-pill-icon { font-size: 14px !important; line-height: 1 !important; }
+.lm-admin-pill-code { font-size: .75rem; letter-spacing: .03em; }
+
+.lm-admin-lang-menu {
+    position: absolute; right: 0; top: calc(100% + 4px); z-index: 9999;
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.12); min-width: 200px; max-height: 320px;
+    overflow-y: auto; padding: 4px 0;
+}
+.lm-admin-lang-group {
+    font-size: .6875rem; color: #9ca3af; padding: 6px 12px 2px;
+    text-transform: uppercase; font-weight: 600; letter-spacing: .05em;
+    pointer-events: none;
+}
+.lm-admin-lang-opt {
+    display: block; width: 100%; text-align: left; padding: 6px 12px;
+    border: none; background: none; cursor: pointer;
+    font-size: .8125rem; color: #111827; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+}
+.lm-admin-lang-opt:hover { background: #f3f4f6; }
+.lm-admin-lang-active { background: #eff6ff; color: #1d4ed8; font-weight: 500; }
+.lm-admin-lang-active:hover { background: #dbeafe; }
+.lm-admin-lang-sep { border: none; border-top: 1px solid #e5e7eb; margin: 4px 0; }
+
+/* dark mode */
+.dark .lm-admin-lang-menu { background: #1f2937; border-color: #374151; }
+.dark .lm-admin-lang-opt { color: #f3f4f6; }
+.dark .lm-admin-lang-opt:hover { background: #374151; }
+.dark .lm-admin-lang-active { background: #1e3a5f; color: #93c5fd; }
+.dark .lm-admin-lang-sep { border-color: #374151; }
+
+/* Login page pill (centred below the form) */
+.lm-login-lang { text-align: center; margin-top: 16px; }

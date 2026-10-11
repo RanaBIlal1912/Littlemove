@@ -62,3 +62,7 @@
 
 /* Legacy class kept for compatibility */
 .lm-drop-zone { display: none; }
+
+/* Clear-existing-file proxy checkbox shown in drop zone */
+.lm-dz-clear-label { display: flex; align-items: center; gap: 6px; font-size: .8125rem; cursor: pointer; padding: 4px 0; color: #374151; }
+.dark .lm-dz-clear-label { color: #d1d5db; }

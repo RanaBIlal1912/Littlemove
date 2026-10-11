@@ -119,3 +119,8 @@ GT_LANGUAGES = [
 
 # Codes of RTL languages (for Google-translated languages)
 GT_RTL_CODES = {lang[0] for lang in GT_LANGUAGES if lang[3]}
+
+GT_POPULAR_LANGUAGES = [
+    lang for lang in GT_LANGUAGES
+    if lang[0] in {"ar", "zh-CN", "zh-TW", "fr", "de", "hi", "id", "ja", "ko", "pt", "ru", "es", "tr", "ur"}
+]

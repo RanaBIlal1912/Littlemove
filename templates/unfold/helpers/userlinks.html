@@ -1,0 +1,50 @@
+{% load i18n static unfold %}
+
+{% if not is_popup %}
+    <div class="flex flex-row gap-3 items-center ml-auto">
+        {% if ENABLE_GOOGLE_TRANSLATE %}
+        <div class="lm-admin-pill-wrap" id="lm-admin-lang-wrap">
+            <button type="button"
+                    class="lm-admin-pill notranslate"
+                    aria-haspopup="listbox"
+                    aria-expanded="false"
+                    aria-label="{% trans 'Language' %}"
+                    id="lm-admin-lang-btn">
+                <span class="material-symbols-outlined lm-admin-pill-icon" aria-hidden="true">language</span>
+                <span class="lm-admin-pill-code notranslate">{{ current_gt_lang|upper|default:"EN" }}</span>
+            </button>
+            <div class="lm-admin-lang-menu" id="lm-admin-lang-menu" hidden role="listbox" aria-label="{% trans 'Language' %}">
+                {% if GT_POPULAR_LANGUAGES %}
+                <div class="lm-admin-lang-group" role="presentation">{% trans "Popular" %}</div>
+                {% for code, native, english, rtl in GT_POPULAR_LANGUAGES %}
+                <button type="button"
+                        class="lm-admin-lang-opt notranslate{% if code == current_gt_lang %} lm-admin-lang-active{% endif %}"
+                        data-code="{{ code }}" role="option"
+                        {% if code == current_gt_lang %}aria-selected="true"{% else %}aria-selected="false"{% endif %}>{{ native }}</button>
+                {% endfor %}
+                <hr class="lm-admin-lang-sep" role="separator">
+                <div class="lm-admin-lang-group" role="presentation">{% trans "All languages" %}</div>
+                {% endif %}
+                {% for code, native, english, rtl in GT_LANGUAGES %}
+                <button type="button"
+                        class="lm-admin-lang-opt notranslate{% if code == current_gt_lang %} lm-admin-lang-active{% endif %}"
+                        data-code="{{ code }}" role="option"
+                        {% if code == current_gt_lang %}aria-selected="true"{% else %}aria-selected="false"{% endif %}>{{ native }}</button>
+                {% endfor %}
+                {% if current_gt_lang %}
+                <hr class="lm-admin-lang-sep" role="separator">
+                <button type="button" class="lm-admin-lang-opt" data-code="__reset__" role="option">
+                    &#8617; {% trans "English (original)" %}
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% action_list %}
+
+        {% if nav_global_side %}
+            {{ nav_global_side }}
+        {% endif %}
+    </div>
+{% endif %}

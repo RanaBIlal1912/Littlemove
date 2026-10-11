@@ -1,32 +1,37 @@
 {% extends 'admin/login.html' %}
+{% load i18n %}
 
 {% block login_after %}
 {% if ENABLE_GOOGLE_TRANSLATE %}
-<div class="lm-login-lang" style="text-align:center;margin-top:16px">
-  <select aria-label="Language" onchange="lmAdminGTChange(this.value)"
-          style="font-size:.875rem;padding:6px 12px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;color:#374151;cursor:pointer">
-    <option value="">🌐 Language</option>
-    {% for code, native, english, rtl in GT_LANGUAGES %}
-    <option value="{{ code }}" {% if code == current_gt_lang %}selected{% endif %}>{{ native }} — {{ english }}</option>
-    {% endfor %}
-    {% if current_gt_lang %}<option value="__reset__">↩ Show English</option>{% endif %}
-  </select>
-  <script>
-  function lmAdminGTChange(code) {
-    if (!code) return;
-    if (code === '__reset__') {
-      ['lm_gt_lang','googtrans'].forEach(function(n){
-        document.cookie=n+'=;path=/;max-age=0';
-        document.cookie=n+'=;path=/;max-age=0;domain='+location.hostname;
-      });
-      location.reload(); return;
-    }
-    document.cookie='googtrans=/en/'+code+';path=/';
-    document.cookie='googtrans=/en/'+code+';path=/;domain='+location.hostname;
-    document.cookie='lm_gt_lang='+code+';path=/;max-age='+(365*24*3600)+';samesite=Lax';
-    location.reload();
-  }
-  </script>
+<div class="lm-login-lang">
+  <div class="lm-admin-pill-wrap" id="lm-admin-lang-wrap">
+    <button type="button"
+            class="lm-admin-pill notranslate"
+            aria-haspopup="listbox"
+            aria-expanded="false"
+            aria-label="{% trans 'Language' %}"
+            id="lm-admin-lang-btn">
+      <span class="material-symbols-outlined lm-admin-pill-icon" aria-hidden="true">language</span>
+      <span class="lm-admin-pill-code notranslate">{{ current_gt_lang|upper|default:"EN" }}</span>
+    </button>
+    <div class="lm-admin-lang-menu" id="lm-admin-lang-menu" hidden role="listbox">
+      {% if GT_POPULAR_LANGUAGES %}
+      <div class="lm-admin-lang-group">{% trans "Popular" %}</div>
+      {% for code, native, english, rtl in GT_POPULAR_LANGUAGES %}
+      <button type="button" class="lm-admin-lang-opt notranslate{% if code == current_gt_lang %} lm-admin-lang-active{% endif %}" data-code="{{ code }}">{{ native }}</button>
+      {% endfor %}
+      <hr class="lm-admin-lang-sep">
+      <div class="lm-admin-lang-group">{% trans "All languages" %}</div>
+      {% endif %}
+      {% for code, native, english, rtl in GT_LANGUAGES %}
+      <button type="button" class="lm-admin-lang-opt notranslate{% if code == current_gt_lang %} lm-admin-lang-active{% endif %}" data-code="{{ code }}">{{ native }}</button>
+      {% endfor %}
+      {% if current_gt_lang %}
+      <hr class="lm-admin-lang-sep">
+      <button type="button" class="lm-admin-lang-opt" data-code="__reset__">&#8617; {% trans "English (original)" %}</button>
+      {% endif %}
+    </div>
+  </div>
 </div>
 {% endif %}
 {% endblock %}

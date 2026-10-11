@@ -226,9 +226,11 @@ UNFOLD = {
     # Drop-zone upload widget (loaded on every admin page)
     "STYLES": [
         lambda request: static("admin/drop_zone.css"),
+        lambda request: static("admin/admin_lang.css"),
     ],
     "SCRIPTS": [
         lambda request: static("admin/drop_zone.js"),
+        lambda request: static("admin/admin_lang.js"),
     ],
 
     # Dashboard context callback

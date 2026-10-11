@@ -231,12 +231,51 @@
     if (isUnfoldHidden(input)) {
       var container = findUnfoldContainer(input);
       if (container && container.parentNode) {
+        // Inject drop zone card after the Unfold container
         container.parentNode.insertBefore(card, container.nextSibling);
+
+        // Hide the native Unfold file widget (the "Choose file to upload" bar)
+        container.style.display = 'none';
+
+        // Hide the Unfold image-preview thumbnail (the sibling <div> before the container)
+        var prevSib = container.previousElementSibling;
+        if (prevSib && prevSib.querySelector && prevSib.querySelector('img')) {
+          prevSib.style.display = 'none';
+        }
+
+        // If there's a "Clear" checkbox inside the container, proxy it in our zone
+        var origCheck = container.querySelector('input[type="checkbox"]');
+        if (origCheck) {
+          var clearWrap = document.createElement('label');
+          clearWrap.className = 'lm-dz-clear-label';
+          clearWrap.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:.8125rem;cursor:pointer;padding:4px 0;';
+          var proxyCheck = document.createElement('input');
+          proxyCheck.type = 'checkbox';
+          proxyCheck.checked = origCheck.checked;
+          proxyCheck.addEventListener('change', function () {
+            origCheck.checked = proxyCheck.checked;
+          });
+          origCheck.addEventListener('change', function () {
+            proxyCheck.checked = origCheck.checked;
+          });
+          var clearLabel = document.createElement('span');
+          clearLabel.textContent = 'Clear existing file';
+          clearWrap.appendChild(proxyCheck);
+          clearWrap.appendChild(clearLabel);
+          card.insertBefore(clearWrap, card.firstChild);
+        }
         return;
       }
     }
-    // For plain file inputs: inject just before the input
+    // For plain file inputs: inject just before the input, then visually hide it
     input.parentNode.insertBefore(card, input);
+    // Visually hide but keep accessible (the zone's click calls input.click())
+    input.style.position = 'absolute';
+    input.style.width = '1px';
+    input.style.height = '1px';
+    input.style.overflow = 'hidden';
+    input.style.clip = 'rect(0,0,0,0)';
+    input.style.whiteSpace = 'nowrap';
   }
 
   /* ── init all file inputs in a given root element ────────────────────── */

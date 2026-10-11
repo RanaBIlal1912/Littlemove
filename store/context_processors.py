@@ -49,12 +49,13 @@ def site_context(request):
 def lang_context(request):
     """Inject language list and Google Translate state into every template."""
     from django.conf import settings
-    from store.languages import GT_LANGUAGES, GT_RTL_CODES
+    from store.languages import GT_LANGUAGES, GT_RTL_CODES, GT_POPULAR_LANGUAGES
 
     gt_lang = request.COOKIES.get('lm_gt_lang', '')
 
     return {
         'GT_LANGUAGES': GT_LANGUAGES,
+        'GT_POPULAR_LANGUAGES': GT_POPULAR_LANGUAGES,
         # Comma-separated string for safe data-attribute usage in JS
         'GT_RTL_CODES': ','.join(sorted(GT_RTL_CODES)),
         'ENABLE_GOOGLE_TRANSLATE': getattr(settings, 'ENABLE_GOOGLE_TRANSLATE', True),
