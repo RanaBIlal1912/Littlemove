@@ -158,6 +158,13 @@ class StoreSettings(models.Model):
         return self.delivery_fee
 
 
+class CategoryQuerySet(models.QuerySet):
+    def with_toys(self):
+        """Active categories that have at least one toy visible in the shop, so
+        the menu and home tiles never lead to an empty page."""
+        return self.filter(is_active=True, products__is_active=True).distinct()
+
+
 class Category(models.Model):
     """A skill area parents shop by: fine motor, speech, sensory…"""
 
@@ -179,6 +186,8 @@ class Category(models.Model):
     )
     order = models.PositiveSmallIntegerField(default=0)
     is_active = models.BooleanField(default=True)
+
+    objects = CategoryQuerySet.as_manager()
 
     class Meta:
         ordering = ["order", "name"]

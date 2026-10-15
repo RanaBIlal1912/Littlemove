@@ -84,7 +84,7 @@ def home(request):
 
     return render(request, "store/home.html", {
         "banners": Banner.objects.filter(is_active=True),
-        "categories": Category.objects.filter(is_active=True),
+        "categories": Category.objects.with_toys(),
         "needs": Need.objects.filter(is_active=True),
         "featured": featured,
         "on_sale": on_sale,
@@ -167,7 +167,7 @@ def shop(request):
         "max_price": max_price,
         "on_sale": on_sale,
         "picks": picks,
-        "categories": Category.objects.filter(is_active=True),
+        "categories": Category.objects.with_toys(),
         "querystring": params.urlencode(),
     })
 

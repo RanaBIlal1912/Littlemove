@@ -23,7 +23,7 @@ def store(request):
         "shop": StoreSettings.load(),
         "bot": BotSettings.load(),
         "cart_count": Cart(request).count,
-        "nav_categories": Category.objects.filter(is_active=True),
+        "nav_categories": Category.objects.with_toys(),
         "nav_ages": AGE_BANDS,
         "nav_needs": Need.objects.filter(is_active=True),
         "bot_quick_buttons": bot_quick_buttons,
