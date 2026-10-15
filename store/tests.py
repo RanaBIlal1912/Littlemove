@@ -2675,3 +2675,43 @@ class HeroMobilePlaywrightTests(SimpleTestCase):
         hero_block = hero_match.group(1)
         self.assertIn('btn-white', hero_block, "Primary button not in hero block")
         self.assertIn('hero-cta-row', hero_block, "CTA row not in hero block")
+
+
+class SeoAndDiscoveryTests(TestCase):
+    """Share previews, canonical links, favicon/manifest and sitemap coverage."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.full = Category.objects.create(name="Fine motor", slug="fine-motor")
+        cls.empty = Category.objects.create(name="Social & Emotional", slug="social-emotional")
+        cls.toy = Product.objects.create(
+            category=cls.full, name="Rings", slug="rings", summary="Seven wooden rings.",
+            price=1000, stock=5)
+
+    def test_product_page_has_single_og_image_and_canonical(self):
+        html = self.client.get(self.toy.get_absolute_url()).content.decode()
+        self.assertLessEqual(html.count('property="og:image"'), 1)
+        self.assertEqual(html.count('rel="canonical"'), 1)
+        self.assertIn('property="og:description" content="Seven wooden rings."', html)
+        self.assertIn('name="twitter:card"', html)
+
+    def test_favicon_and_manifest(self):
+        self.assertEqual(self.client.get("/favicon.ico").status_code, 301)
+        r = self.client.get("/manifest.webmanifest")
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(json.loads(r.content)["short_name"], "LittleMove")
+
+    def test_sitemap_lists_categories_with_toys_only(self):
+        xml = self.client.get("/sitemap.xml").content.decode()
+        self.assertIn("category=fine-motor", xml)
+        self.assertNotIn("category=social-emotional", xml)
+        self.assertIn("/gallery/", xml)
+
+    def test_empty_category_hidden_from_menu(self):
+        html = self.client.get("/").content.decode()
+        self.assertIn("category=fine-motor", html)
+        self.assertNotIn("category=social-emotional", html)
+
+    def test_robots_does_not_reveal_admin_path(self):
+        from django.conf import settings
+        self.assertNotIn(settings.ADMIN_URL, self.client.get("/robots.txt").content.decode())

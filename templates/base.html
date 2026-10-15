@@ -6,6 +6,7 @@
   <title>{% block title %}{% if shop.seo_title %}{{ shop.seo_title }}{% else %}{{ shop.store_name }} — {{ shop.tagline }} | Kids learning toys in Pakistan{% endif %}{% endblock %}</title>
   <meta name="description" content="{% block description %}{% if shop.seo_description %}{{ shop.seo_description }}{% else %}Developmental, sensory and speech toys for babies and kids, chosen with therapists at Wellness Rehabilitation Clinic, Bahawalpur. Cash on delivery across Pakistan.{% endif %}{% endblock %}">
   <meta name="theme-color" content="#3BA4E6">
+  <link rel="manifest" href="/manifest.webmanifest">
   <link rel="preload" href="{% static 'fonts/fredoka-latin-600-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="{% static 'fonts/nunito-sans-latin-400-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{% static 'vendor/swiper.min.css' %}">
@@ -16,10 +17,15 @@
   <link rel="shortcut icon" href="{% static 'img/favicon.ico' %}">
   <link rel="apple-touch-icon" href="{% static 'img/apple-touch-icon.png' %}">
   {% endif %}
-  {% if shop.share_image %}<meta property="og:image" content="{{ shop.share_image.url|absolute_url:request }}">{% endif %}
+  {# Pages can override og_image (product pages use the product photo); only one og:image is emitted. #}
+  {% block og_image %}{% if shop.share_image %}<meta property="og:image" content="{{ shop.share_image.url|absolute_url:request }}">{% endif %}{% endblock %}
+  <link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
+  <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
   <meta property="og:site_name" content="{{ shop.store_name }}">
   <meta property="og:title" content="{% block og_title %}{{ shop.store_name }} — {{ shop.tagline }}{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}{% if shop.seo_description %}{{ shop.seo_description }}{% else %}Developmental, sensory and speech toys for babies and kids, chosen with therapists. Cash on delivery across Pakistan.{% endif %}{% endblock %}">
   <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+  <meta name="twitter:card" content="summary_large_image">
   {% comment %}LittleMove colour palette lives in site.css — sampled from the logo.{% endcomment %}
 
   {# ── Google Translate: only injected when visitor has an active GT language ── #}

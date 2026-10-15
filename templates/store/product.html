@@ -2,13 +2,14 @@
 {% block title %}{{ product.name }} — {{ shop.store_name }}{% endblock %}
 {% block description %}{{ product.summary }}{% endblock %}
 {% block og_title %}{{ product.name }}{% endblock %}
+{% block og_description %}{{ product.summary }}{% endblock %}
 {% block og_type %}product{% endblock %}
 {% block body_class %}{% if product.in_stock %}has-sticky-buy{% endif %}{% endblock %}
 {% block body_attrs %} data-product-slug="{{ product.slug }}"{% endblock %}
+{% block og_image %}{% if product.image %}<meta property="og:image" content="{{ product.image.url|absolute_url:request }}">{% elif shop.share_image %}<meta property="og:image" content="{{ shop.share_image.url|absolute_url:request }}">{% endif %}{% endblock %}
 {% block head %}
-{% if product.image %}<meta property="og:image" content="{{ product.image.url|absolute_url:request }}">{% endif %}
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"Product","name":"{{ product.name|escapejs }}","description":"{{ product.summary|escapejs }}","sku":"{{ product.sku|escapejs }}","brand":{"@type":"Brand","name":"{{ shop.store_name|escapejs }}"},"offers":{"@type":"Offer","priceCurrency":"PKR","price":"{{ product.price }}","availability":"https://schema.org/{% if product.in_stock %}InStock{% else %}OutOfStock{% endif %}"}}
+{"@context":"https://schema.org","@type":"Product","name":"{{ product.name|escapejs }}","description":"{{ product.summary|escapejs }}","sku":"{{ product.sku|escapejs }}"{% if product.image %},"image":"{{ product.image.url|absolute_url:request|escapejs }}"{% endif %},"url":"{{ request.scheme }}://{{ request.get_host }}{{ request.path }}","brand":{"@type":"Brand","name":"{{ shop.store_name|escapejs }}"},"offers":{"@type":"Offer","priceCurrency":"PKR","price":"{{ product.price }}","availability":"https://schema.org/{% if product.in_stock %}InStock{% else %}OutOfStock{% endif %}"}}
 </script>
 {% endblock %}
 {% block content %}
