@@ -14,7 +14,7 @@
 
     <div class="actions">
       <a class="btn btn-wa" href="{{ whatsapp_url }}" target="_blank" rel="noopener">{% whatsapp_icon %} Send order on WhatsApp</a>
-      <a class="btn btn-ghost" href="{% url 'orders:track' %}?number={{ order.number }}&phone={{ order.phone }}">Track this order</a>
+      <a class="btn btn-ghost" href="{% url 'orders:track' %}?number={{ order.number }}">Track this order</a>
     </div>
 
     {% if order.is_prepaid %}

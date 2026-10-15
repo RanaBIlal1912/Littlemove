@@ -102,6 +102,19 @@ class CheckoutTests(TestCase):
         bad = self.client.get(reverse("orders:track"), {"number": order.number, "phone": "03119999999"})
         self.assertContains(bad, "No order matches")
 
+    def test_track_by_post_keeps_phone_out_of_url(self):
+        self.add(self.rings)
+        self.checkout()
+        order = Order.objects.get()
+        ok = self.client.post(reverse("orders:track"), {"number": order.number, "phone": "0300 1234567"})
+        self.assertContains(ok, f"Order {order.number}")
+        bad = self.client.post(reverse("orders:track"), {"number": order.number, "phone": "03119999999"})
+        self.assertContains(bad, "No order matches")
+        # A number-only link just pre-fills the form, without a validation error.
+        pre = self.client.get(reverse("orders:track"), {"number": order.number})
+        self.assertContains(pre, order.number)
+        self.assertNotContains(pre, "This field is required")
+
     def test_cancel_restocks_once(self):
         self.add(self.rings, 2)
         self.checkout()

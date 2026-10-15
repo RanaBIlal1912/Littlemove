@@ -57,8 +57,15 @@ STEP_LABELS = {
 
 def track(request):
     order = None
-    form = TrackOrderForm(request.GET or None)
-    if request.GET and form.is_valid():
+    # POST keeps the customer's phone number out of the URL (logs, history,
+    # referrers). GET still works for old links and pre-filling the number.
+    data = request.POST if request.method == "POST" else request.GET
+    if request.method == "GET" and not data.get("phone"):
+        form = TrackOrderForm(initial={"number": data.get("number", "")})
+        data = None
+    else:
+        form = TrackOrderForm(data)
+    if data and form.is_valid():
         order = (Order.objects.prefetch_related("items")
                  .filter(number=form.cleaned_data["number"], phone=form.cleaned_data["phone"]).first())
         if order is None:

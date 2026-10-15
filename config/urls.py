@@ -13,8 +13,10 @@ admin.site.index_title = "Orders, toys and settings"
 
 
 def robots(request):
-    lines = ["User-agent: *", f"Disallow: /{settings.ADMIN_URL}", "Disallow: /cart/",
-             "Disallow: /checkout/", "Disallow: /order/",
+    # The admin path is deliberately not listed: robots.txt is public and would
+    # reveal the secret ADMIN_URL. The admin login page is noindex anyway.
+    lines = ["User-agent: *", "Disallow: /cart/",
+             "Disallow: /checkout/", "Disallow: /order/", "Disallow: /track/",
              f"Sitemap: {request.build_absolute_uri('/sitemap.xml')}"]
     return HttpResponse("\n".join(lines), content_type="text/plain")
 

@@ -34,6 +34,45 @@
   })();
 
   /* ---------------- 2. Swiper hero / testimonials / pdp ---------------- */
+  /* Product photos whose file is missing in storage (404) would leave a blank
+     gallery. Drop those slides before Swiper starts; if none survive, show the
+     same "Photo coming soon" tile the cards use. */
+  function settleImg(img) {
+    return new Promise(function (resolve) {
+      if (img.complete) return resolve(img.naturalWidth > 0);
+      img.addEventListener("load", function () { resolve(true); }, { once: true });
+      img.addEventListener("error", function () { resolve(false); }, { once: true });
+      setTimeout(function () { resolve(img.naturalWidth > 0); }, 8000);
+    });
+  }
+
+  function pruneBrokenGallery(done) {
+    var main = $(".pdp-swiper");
+    if (!main) return done();
+    var thumbs = $(".pdp-thumbs");
+    var slides = $$(".swiper-slide", main);
+    Promise.all(slides.map(function (sl) {
+      var img = $("img", sl);
+      img.loading = "eager";
+      return settleImg(img);
+    })).then(function (oks) {
+      var thumbSlides = thumbs ? $$(".swiper-slide", thumbs) : [];
+      var kept = 0;
+      oks.forEach(function (ok, i) {
+        if (ok) { kept++; return; }
+        slides[i].remove();
+        if (thumbSlides[i]) thumbSlides[i].remove();
+      });
+      if (!kept) {
+        var box = main.closest(".pdp-media");
+        if (box) box.innerHTML = '<div class="pdp-main"><div class="pcard-no-photo" aria-label="No photo yet"><span>Photo coming soon</span></div></div>';
+      } else if (kept < 2 && thumbs) {
+        thumbs.remove();
+      }
+      done();
+    });
+  }
+
   function initSwipers() {
     if (typeof Swiper === "undefined") return;
     var hero = $(".hero-swiper");
@@ -135,7 +174,7 @@
       } else {
         list.innerHTML = data.items.map(function (it) {
           var img = it.image
-            ? '<img src="' + escapeHtml(it.image) + '" alt="">'
+            ? '<img src="' + escapeHtml(it.image) + '" alt="" data-fallback>'
             : (it.illustration_svg
               ? '<div class="ph illus-ph">' + it.illustration_svg + '</div>'
               : '<span class="ph"></span>');
@@ -605,7 +644,7 @@
             if (!data.results || !data.results.length) { hide(); return; }
             var html = data.results.map(function(p, i) {
               var img = p.image
-                ? '<img src="' + escapeHtml(p.image) + '" alt="" loading="lazy">'
+                ? '<img src="' + escapeHtml(p.image) + '" alt="" data-fallback loading="lazy">'
                 : '<span class="ph"></span>';
               var price = p.price ? '<span class="ss-price">' + rs(p.price) + '</span>' : '';
               var cat = p.category ? '<small>' + escapeHtml(p.category) + '</small>' : '';
@@ -841,7 +880,7 @@
               a.href = p.url;
               a.className = "mila-product-card";
               var imgHtml = p.image
-                ? '<img src="' + escapeHtml(p.image) + '" alt="" loading="lazy">'
+                ? '<img src="' + escapeHtml(p.image) + '" alt="" data-fallback loading="lazy">'
                 : (p.illustration_svg
                   ? '<div class="mpc-ph">' + p.illustration_svg + '</div>'
                   : '<div class="mpc-ph"></div>');
@@ -913,10 +952,23 @@
     io.observe(hero);
   }
 
+  /* A missing hover photo on a card should simply not show. */
+  document.addEventListener("error", function (e) {
+    var t = e.target;
+    if (!t || t.tagName !== "IMG") return;
+    if (t.classList.contains("photo-2")) t.remove();
+    else if (t.hasAttribute("data-fallback")) {
+      var ph = document.createElement("span");
+      ph.className = "ph";
+      t.replaceWith(ph);
+    }
+  }, true);
+
   /* ---------------- init ---------------- */
   function boot() {
     document.documentElement.classList.remove("js-off");
-    initSwipers();
+    $$("img.photo-2").forEach(function (i) { if (i.complete && i.naturalWidth === 0) i.remove(); });
+    pruneBrokenGallery(initSwipers);
     initReveals();
     initTilt();
     initCartForms();

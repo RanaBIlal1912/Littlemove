@@ -8,7 +8,8 @@
     <p class="muted" style="margin-top:8px">Enter the order number from your confirmation and the mobile number you ordered with.</p>
   </div>
 
-  <form class="track-form" method="get" style="margin-top:20px">
+  <form class="track-form" method="post" style="margin-top:20px">
+    {% csrf_token %}
     {{ form.non_field_errors }}
     {% include "orders/_field.html" with f=form.number %}
     {% include "orders/_field.html" with f=form.phone %}

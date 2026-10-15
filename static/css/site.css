@@ -1535,7 +1535,7 @@ body.has-hero .header:not(.is-scrolled) .header-logo svg rect { fill: #fff; }
   /* Headline: max 2 lines, comfortable size */
   .hero-headline { font-size: clamp(1.6rem, 7vw, 2.1rem) !important; }
   /* Subtitle: max 2 lines */
-  .hero-sub { font-size: .9rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .hero-sub { font-size: .9rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
   /* Slide text: remove the huge 80px bottom pad; pagination dots sit above the gradient overlay */
   .slide-text { padding: 24px 20px 68px; gap: 10px; }
   /* CTA buttons: min 44px tap target, wrap if needed */
@@ -2587,7 +2587,7 @@ svg.divider { display: none !important; }
   /* Subtitle: max 2 lines, centred */
   .hero-fullbleed .hero-sub {
     display: -webkit-box !important;
-    -webkit-line-clamp: 2 !important;
+    -webkit-line-clamp: 3 !important;
     -webkit-box-orient: vertical !important;
     overflow: hidden !important;
     text-align: center !important;
