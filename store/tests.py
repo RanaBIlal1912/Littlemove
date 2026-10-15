@@ -2725,3 +2725,10 @@ class ProductPageSavingLabelTests(TestCase):
         html = self.client.get(p.get_absolute_url()).content.decode()
         self.assertIn("Save Rs 300", html)
         self.assertNotIn("Rs Rs", html)
+
+
+class ChatApiBadInputTests(TestCase):
+    def test_non_object_json_is_a_400_not_a_crash(self):
+        for body in ("[1, 2]", "null", '"hi"', "not json", "5"):
+            r = self.client.post("/api/chat/", data=body, content_type="application/json")
+            self.assertEqual(r.status_code, 400, body)

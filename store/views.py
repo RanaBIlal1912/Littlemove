@@ -393,9 +393,11 @@ def chat_api(request):
     """Handle chatbot messages from the Mila widget."""
     try:
         data = json.loads(request.body)
-        user_message = str(data.get("message", "")).strip()[:500]
     except (json.JSONDecodeError, ValueError):
         return JsonResponse({"error": "Invalid request"}, status=400)
+    if not isinstance(data, dict):
+        return JsonResponse({"error": "Invalid request"}, status=400)
+    user_message = str(data.get("message", "")).strip()[:500]
 
     if not user_message:
         return JsonResponse({"error": "Empty message"}, status=400)
