@@ -2715,3 +2715,13 @@ class SeoAndDiscoveryTests(TestCase):
     def test_robots_does_not_reveal_admin_path(self):
         from django.conf import settings
         self.assertNotIn(settings.ADMIN_URL, self.client.get("/robots.txt").content.decode())
+
+
+class ProductPageSavingLabelTests(TestCase):
+    def test_saving_label_has_single_rs(self):
+        cat = Category.objects.create(name="Gross motor", slug="gross-motor")
+        p = Product.objects.create(category=cat, name="Kite", slug="kite", summary="A kite.",
+                                   price=2800, compare_at_price=3100, stock=3)
+        html = self.client.get(p.get_absolute_url()).content.decode()
+        self.assertIn("Save Rs 300", html)
+        self.assertNotIn("Rs Rs", html)

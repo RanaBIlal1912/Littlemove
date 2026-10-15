@@ -57,7 +57,7 @@
 
       <div class="price-box">
         <span class="price{% if product.on_sale %} price-sale{% endif %} notranslate" translate="no">{{ product.price|rs }}</span>
-        {% if product.on_sale %}<span class="price-old notranslate" translate="no">{{ product.compare_at_price|rs }}</span><span class="save notranslate" translate="no">Save Rs {{ product.saving|rs }}</span>{% endif %}
+        {% if product.on_sale %}<span class="price-old notranslate" translate="no">{{ product.compare_at_price|rs }}</span><span class="save notranslate" translate="no">Save {{ product.saving|rs }}</span>{% endif %}
       </div>
 
       {% if product.in_stock %}
