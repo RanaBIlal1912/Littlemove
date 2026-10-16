@@ -429,6 +429,16 @@ class ChatbotKeywordTests(TestCase):
         self.assertEqual(data["answer"], "I don't know.")
         self.assertFalse(data["matched"])
 
+    def test_greeting_gets_friendly_reply(self):
+        for msg in ("hello", "Hi!", "Assalamualaikum", "  HEY  "):
+            data = self._post(msg).json()
+            self.assertTrue(data["matched"], msg)
+            self.assertIn("Mila", data["answer"])
+
+    def test_greeting_inside_a_question_is_not_swallowed(self):
+        data = self._post("hello how long is delivery").json()
+        self.assertIn("3-5", data["answer"])
+
     def test_chat_is_logged(self):
         self._post("how long is delivery")
         self.assertEqual(ChatLog.objects.count(), 1)
