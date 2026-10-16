@@ -139,17 +139,32 @@
 
   /* ---------------- 4. 3D tilt ---------------- */
   function initTilt() {
-    if (REDUCED) return;
-    $$(".tilt-card").forEach(function (card) {
-      // Tilt the card itself; the .perspective lives on an ancestor via CSS,
-      // but transforming in place still gives a convincing 3D feel.
-      card.addEventListener("pointermove", function (e) {
+    if (REDUCED || !window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+    $$(".tilt-card, .why-card, .bundle-card").forEach(function (card) {
+      var raf = 0, ev = null;
+      function paint() {
+        raf = 0;
         var r = card.getBoundingClientRect();
-        var px = (e.clientX - r.left) / r.width - .5;
-        var py = (e.clientY - r.top) / r.height - .5;
-        card.style.transform = "perspective(900px) rotateX(" + (-py * 6) + "deg) rotateY(" + (px * 6) + "deg) translateZ(4px)";
+        var px = (ev.clientX - r.left) / r.width;
+        var py = (ev.clientY - r.top) / r.height;
+        card.style.setProperty("--rx", ((.5 - py) * 14).toFixed(2) + "deg");
+        card.style.setProperty("--ry", ((px - .5) * 14).toFixed(2) + "deg");
+        card.style.setProperty("--mx", (px * 100).toFixed(1) + "%");
+        card.style.setProperty("--my", (py * 100).toFixed(1) + "%");
+      }
+      card.addEventListener("pointerenter", function (e) {
+        if (e.pointerType === "mouse") card.classList.add("is-tilting");
       });
-      card.addEventListener("pointerleave", function () { card.style.transform = ""; });
+      card.addEventListener("pointermove", function (e) {
+        if (e.pointerType !== "mouse") return;
+        ev = e;
+        if (!raf) raf = requestAnimationFrame(paint);
+      });
+      card.addEventListener("pointerleave", function () {
+        card.classList.remove("is-tilting");
+        card.style.removeProperty("--rx");
+        card.style.removeProperty("--ry");
+      });
     });
   }
 
