@@ -3120,3 +3120,11 @@ a.lifestyle-video-placeholder:hover::before { transform: scale(1.1); }
 .shop-banner .illus { filter: drop-shadow(0 10px 12px rgba(0,0,0,.3)); }
 .filters { box-shadow: 0 6px 0 rgba(35,49,74,.1), 0 18px 24px -14px rgba(35,49,74,.35) !important; border: 2px solid #fff !important; }
 .flist a[aria-current="true"], .flist a.active { background: var(--g-sky); color: #fff; }
+
+/* the older "no gradients" rules use !important on these bands; the gradient theme wins */
+.section-soft { background: linear-gradient(135deg, #FF9A8B 0%, #FF4F7B 100%) !important; }
+.section-blue { background: var(--g-violet) !important; }
+.section-mint { background: linear-gradient(135deg, #B8F7DE 0%, #8FE6F4 100%) !important; }
+.sec-row:not(.section-soft) { background: var(--g-sky) !important; }
+.section-blue .quote { color: var(--ink); }
+.section-soft .lifestyle-item figcaption { opacity: 1; }
