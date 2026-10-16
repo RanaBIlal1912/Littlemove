@@ -2798,9 +2798,8 @@ svg.divider { display: none !important; }
 .tilt-card.is-tilting::after, .why-card.is-tilting::after, .bundle-card.is-tilting::after { opacity: 1; }
 .tilt-card.is-tilting, .why-card.is-tilting, .bundle-card.is-tilting {
   transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry)) translateY(-8px) scale(1.025) !important;
-  box-shadow: 0 2px 4px rgba(30,30,60,.06), 0 18px 28px -8px rgba(30,30,60,.22), 0 36px 60px -20px rgba(30,30,60,.25) !important;
+  box-shadow: 0 16px 28px -10px rgba(30,30,60,.28) !important;
   transition: transform .08s linear, box-shadow .25s ease;
-  will-change: transform;
 }
 .why-card, .bundle-card { transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .3s ease; }
 
