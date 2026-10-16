@@ -57,6 +57,15 @@
     </div>
   </div>
 </section>{# end hero #}
+<nav class="quick-strip" aria-label="Quick picks">
+  <div class="wrap quick-row">
+    <a class="quick-pill" href="{% url 'store:shop' %}?sort=new"><span class="qi" style="--q:#3BA4E6">{% icon 'star' 16 2.4 %}</span>New arrivals</a>
+    <a class="quick-pill" href="{% url 'store:shop' %}?sale=1"><span class="qi" style="--q:#E5232B">{% icon 'tag' 16 2.4 %}</span>On sale</a>
+    <a class="quick-pill" href="{% url 'store:shop' %}?pick=1"><span class="qi" style="--q:#14996B">{% icon 'shield' 16 2.4 %}</span>Therapist picks</a>
+    <a class="quick-pill" href="{% url 'store:shop' %}?max=1000"><span class="qi" style="--q:#E8590C">{% icon 'cash' 16 2.4 %}</span>Under {{ 1000|rs }}</a>
+    <a class="quick-pill" href="{% url 'store:shop' %}"><span class="qi" style="--q:#9B7BEA">{% icon 'cart' 16 2.4 %}</span>All toys</a>
+  </div>
+</nav>
 {% endif %}{% endwith %}{% endif %}
 
 {# ── SHOP BY SKILL — big image tiles ────────────────────────────── #}
