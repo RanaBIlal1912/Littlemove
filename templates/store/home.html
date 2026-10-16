@@ -11,90 +11,39 @@
 
 {# ── HERO SLIDER (full-bleed 100vh) ──────────────────────────────── #}
 {% if section_type == "hero_slider" %}{% with s=sections.hero_slider %}{% if not s or s.enabled %}
-<section class="hero hero-fullbleed{% if shop.hero_height == 'compact' %} hero-compact{% elif shop.hero_height == 'medium' %} hero-medium{% endif %}">
-  <div class="swiper hero-swiper" aria-roledescription="carousel" aria-label="Offers">
-    <div class="swiper-wrapper slides" id="slides">
-      {% for b in banners %}
-        {% if b.video %}
-        <div class="swiper-slide">
-          <div class="slide has-video">
-            <div class="hero-video-wrap">
-              <video autoplay muted loop playsinline {% if b.image %}poster="{{ b.image.url }}"{% endif %}>
-                <source src="{{ b.video.url }}" type="video/mp4">
-              </video>
-            </div>
-            {% if not b.image_has_text %}
-            <div class="slide-text">
-              <h1 class="hero-headline">{{ b.title }}</h1>
-              {% if b.subtitle %}<p class="hero-sub">{{ b.subtitle }}</p>{% endif %}
-              <div class="hero-cta-row" style="padding-bottom:8px;overflow:visible">
-                <a class="btn btn-white" href="{{ b.link }}">{{ b.button_text }} {% icon 'arrow-r' 18 2.4 %}</a>
-                <button class="btn btn-hero-ghost" type="button" data-mila-guide>Find the right toy</button>
-              </div>
-            </div>
-            {% endif %}
-          </div>
+<section class="hero hero-play">
+  {% with b=banners.first %}
+  <div class="hp-stage">
+    <span class="hp-shape hp-s1" aria-hidden="true"></span><span class="hp-shape hp-s2" aria-hidden="true"></span>
+    <span class="hp-shape hp-s3" aria-hidden="true"></span><span class="hp-shape hp-s4" aria-hidden="true"></span>
+    <span class="hp-shape hp-s5" aria-hidden="true"></span><span class="hp-shape hp-s6" aria-hidden="true"></span>
+    <div class="wrap hp-grid">
+      <div class="hp-copy">
+        <span class="hp-pill">{% icon 'shield' 16 2.4 %} Chosen with therapists</span>
+        <h1 class="hero-headline hp-title">{% if b and b.title %}{{ b.title }}{% else %}Toys that help little ones grow{% endif %}</h1>
+        <p class="hero-sub hp-sub">{% if b and b.subtitle %}{{ b.subtitle }}{% else %}Sensory, motor and speech toys chosen with therapists. Cash on delivery across Pakistan.{% endif %}</p>
+        <div class="hp-cta">
+          <a class="btn btn-white hp-btn" href="{% if b and b.link %}{{ b.link }}{% else %}{% url 'store:shop' %}{% endif %}">{% if b and b.button_text %}{{ b.button_text }}{% else %}Shop all toys{% endif %} {% icon 'arrow-r' 18 2.4 %}</a>
+          <button class="btn btn-hero-ghost" type="button" data-mila-guide>Find the right toy</button>
         </div>
-        {% elif b.image %}
-        <div class="swiper-slide">
-          <div class="slide has-photo">
-            <a class="slide-bg-link" href="{{ b.link }}" aria-label="{{ b.title }}" tabindex="-1"></a>
-            <picture>
-              {% if b.mobile_image %}<source media="(max-width: 760px)" srcset="{{ b.mobile_image.url }}">{% endif %}
-              <img src="{{ b.image.url }}" alt="{% if b.image_has_text %}{{ b.title }}{% endif %}" {% if not forloop.first %}loading="lazy"{% else %}fetchpriority="high"{% endif %}>
-            </picture>
-            {% if not b.image_has_text %}
-            <div class="slide-text">
-              <h1 class="hero-headline">{{ b.title }}</h1>
-              {% if b.subtitle %}<p class="hero-sub">{{ b.subtitle }}</p>{% endif %}
-              <div class="hero-cta-row" style="padding-bottom:8px;overflow:visible">
-                <a class="btn btn-white" href="{{ b.link }}">{{ b.button_text }} {% icon 'arrow-r' 18 2.4 %}</a>
-                <button class="btn btn-hero-ghost" type="button" data-mila-guide>Find the right toy</button>
-              </div>
-            </div>
-            {% endif %}
-          </div>
-        </div>
-        {% else %}
-        <div class="swiper-slide">
-          <div class="slide s-{{ b.style }}">
-            <span class="confetti c1"></span><span class="confetti c2"></span><span class="confetti c3"></span><span class="confetti c4"></span>
-            <div>
-              <h1 class="hero-headline">{{ b.title }}</h1>
-              {% if b.subtitle %}<p class="hero-sub">{{ b.subtitle }}</p>{% endif %}
-              <div class="hero-cta-row" style="padding-bottom:8px;overflow:visible">
-                <a class="btn btn-white" href="{{ b.link }}">{{ b.button_text }} {% icon 'arrow-r' 18 2.4 %}</a>
-                <button class="btn btn-hero-ghost" type="button" data-mila-guide>Find the right toy</button>
-              </div>
-            </div>
-            <div class="slide-art">{% illus b.illustration %}</div>
-          </div>
-        </div>
-        {% endif %}
-      {% empty %}
-        {# Default gradient hero with stock illustration #}
-        <div class="swiper-slide">
-          <div class="slide hero-default s-sky">
-            <span class="confetti c1"></span><span class="confetti c2"></span><span class="confetti c3"></span><span class="confetti c4"></span>
-            <div>
-              <h1 class="hero-headline">Toys that help<br>little ones grow</h1>
-              <p class="hero-sub">Sensory, motor and speech toys chosen with therapists.<br>Cash on delivery across Pakistan.</p>
-              <div class="hero-cta-row" style="padding-bottom:8px;overflow:visible">
-                <a class="btn btn-white" href="{% url 'store:shop' %}">Shop all toys {% icon 'arrow-r' 18 2.4 %}</a>
-                <button class="btn btn-hero-ghost" type="button" data-mila-guide>Find the right toy</button>
-              </div>
-            </div>
-            <div class="slide-art">{% illus 'rings' %}</div>
-          </div>
-        </div>
-      {% endfor %}
+        <ul class="hp-points">
+          <li>Cash on delivery</li><li>All over Pakistan</li><li>Easy replacement</li>
+        </ul>
+      </div>
+      <div class="hp-visual">
+        {% for p in hero_products %}
+        <a class="hp-card hp-card-{{ forloop.counter }} tilt-card" href="{{ p.get_absolute_url }}" aria-label="{{ p.name }}">
+          <img src="{{ p.image.url }}" alt="{{ p.name }}" width="400" height="400"{% if forloop.first %} fetchpriority="high"{% endif %} onerror="this.closest('.hp-card').remove()">
+          <span class="hp-tag"><b>{{ p.name }}</b><i class="notranslate" translate="no">{{ p.price|rs }}</i></span>
+        </a>
+        {% empty %}
+        <div class="hp-art">{% illus 'rings' %}</div>
+        {% endfor %}
+        <span class="hp-sticker" aria-hidden="true">Cash on<br>delivery</span>
+      </div>
     </div>
-    <div class="swiper-pagination slider-nav"></div>
-    {% if banners|length > 1 %}
-    <button class="swiper-button-prev slider-arrow prev" type="button" aria-label="Previous banner"></button>
-    <button class="swiper-button-next slider-arrow next" type="button" aria-label="Next banner"></button>
-    {% endif %}
   </div>
+  {% endwith %}
 {% endif %}{% endwith %}{% endif %}
 
 {# ── TRUST BADGES (closes hero section) ─────────────────────────── #}
@@ -126,6 +75,7 @@
       <a class="skill-tile t-{{ c.color }}" href="{{ c.get_absolute_url }}">
         <div class="skill-tile-img">
           {% if c.image %}<img src="{{ c.image.url }}" alt="" loading="lazy">
+          {% elif c.cover %}<img src="{{ c.cover.image.url }}" alt="" loading="lazy">
           {% else %}{% with first=c.products.first %}{% illus first.illustration|default:'blocks' %}{% endwith %}{% endif %}
         </div>
         <div class="skill-tile-overlay">
@@ -245,16 +195,16 @@ document.querySelectorAll('.row-tab').forEach(function(btn){
     </div>
     <div class="lifestyle-grid">
       {% if media_items %}
-        {% for item in media_items %}
+        {% for item in media_items %}{% if item.file or item.youtube_url %}
         <figure class="lifestyle-item{% if item.type == 'image' and item.file %} lifestyle-clickable{% endif %}"
           {% if item.type == 'image' and item.file %}onclick="openLightbox('{{ item.file.url }}')"{% endif %}>
-          {% if item.file and item.type == 'image' %}<img src="{{ item.file.url }}" alt="{{ item.alt_text }}" loading="lazy">
+          {% if item.file and item.type == 'image' %}<img src="{{ item.file.url }}" alt="{{ item.alt_text }}" loading="lazy" onerror="this.closest('figure').remove()">
           {% elif item.file and item.type == 'video' %}<video src="{{ item.file.url }}" preload="none" class="lifestyle-video" controls></video>
           {% elif item.youtube_url %}<div class="lifestyle-video-placeholder">▶</div>
           {% else %}<div class="lifestyle-placeholder"></div>{% endif %}
           {% if item.title %}<figcaption>{{ item.title }}</figcaption>{% endif %}
         </figure>
-        {% endfor %}
+        {% endif %}{% endfor %}
       {% elif request.user.is_staff %}
         <div class="admin-hint" style="grid-column:1/-1">Upload customer photos in <strong>Admin → Gallery &amp; media</strong>. They will appear here in a 4-column grid.</div>
       {% endif %}

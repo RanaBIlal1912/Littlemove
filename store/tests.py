@@ -2632,14 +2632,26 @@ class HeroMobileRenderTests(SimpleTestCase):
         html = self._get_home_html()
         # Find the hero section opening tag
         import re
-        m = re.search(r'<section class="hero hero-fullbleed([^"]*)"', html)
+        m = re.search(r'<section class="hero hero-play([^"]*)"', html)
         self.assertIsNotNone(m, "Hero section not found")
         self.assertNotIn('sec-pad', m.group(1), "sec-pad must not be on the hero section")
 
     def test_hero_cta_row_overflow_visible(self):
-        """CTA row must have overflow:visible to prevent button clipping."""
+        """The hero stage clips only its decorations; the CTA row itself must not clip its buttons."""
+        import re
+        css = open("static/css/site.css", encoding="utf-8").read()
         html = self._get_home_html()
-        self.assertIn('overflow:visible', html)
+        self.assertIn('class="hp-cta"', html)
+        rule = re.search(r'\.hp-cta\s*\{([^}]*)\}', css)
+        self.assertIsNotNone(rule, ".hp-cta rule missing")
+        self.assertNotIn('overflow: hidden', rule.group(1))
+
+    def test_hero_is_static_not_a_slider(self):
+        """The hero must not auto-rotate: no swiper markup in the hero section."""
+        html = self._get_home_html()
+        start = html.index('<section class="hero hero-play"')
+        end = html.index('{# ── TRUST BADGES')
+        self.assertNotIn('swiper', html[start:end])
 
     def test_hero_secondary_btn_present(self):
         """Secondary button must be present (may be styled as text link but must render)."""
