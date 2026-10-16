@@ -13,7 +13,7 @@
 {% if section_type == "hero_slider" %}{% with s=sections.hero_slider %}{% if not s or s.enabled %}
 <section class="hero hero-play">
   {% with b=banners.first %}
-  <div class="hp-stage">
+  <div class="hp-stage"{% if b and b.image %} style="background-image:linear-gradient(90deg,rgba(10,50,130,.55),rgba(10,50,130,0) 65%),url('{{ b.image.url }}')"{% endif %}>
     <span class="hp-shape hp-s1" aria-hidden="true"></span><span class="hp-shape hp-s2" aria-hidden="true"></span>
     <span class="hp-shape hp-s3" aria-hidden="true"></span><span class="hp-shape hp-s4" aria-hidden="true"></span>
     <span class="hp-shape hp-s5" aria-hidden="true"></span><span class="hp-shape hp-s6" aria-hidden="true"></span>
