@@ -195,12 +195,12 @@ document.querySelectorAll('.row-tab').forEach(function(btn){
     </div>
     <div class="lifestyle-grid">
       {% if media_items %}
-        {% for item in media_items %}{% if item.file %}
+        {% for item in media_items %}{% if item.file or item.youtube_url %}
         <figure class="lifestyle-item{% if item.type == 'image' and item.file %} lifestyle-clickable{% endif %}"
           {% if item.type == 'image' and item.file %}onclick="openLightbox('{{ item.file.url }}')"{% endif %}>
-          {% if item.file and item.type == 'image' %}<img src="{{ item.file.url }}" alt="{{ item.alt_text }}" loading="lazy" onerror="this.closest('figure').remove()">
+          {% if item.file and item.type == 'image' %}<img src="{{ item.file.url }}" alt="{{ item.alt_text }}" loading="lazy" onerror="this.closest('figure').remove();lmGalleryCheck()">
           {% elif item.file and item.type == 'video' %}<video src="{{ item.file.url }}" preload="none" class="lifestyle-video" controls></video>
-          {% elif item.youtube_url %}<div class="lifestyle-video-placeholder">▶</div>
+          {% elif item.youtube_url %}<a class="lifestyle-video-placeholder" href="{{ item.youtube_url }}" target="_blank" rel="noopener" aria-label="Watch video: {{ item.title }}">▶</a>
           {% else %}<div class="lifestyle-placeholder"></div>{% endif %}
           {% if item.title %}<figcaption>{{ item.title }}</figcaption>{% endif %}
         </figure>
@@ -360,6 +360,14 @@ document.querySelectorAll('.row-tab').forEach(function(btn){
 
 {% block scripts %}
 <script>
+/* Hide the gallery section once none of its items could be shown */
+function lmGalleryCheck() {
+  document.querySelectorAll('.lifestyle-grid').forEach(function (g) {
+    if (!g.querySelector('figure') && !g.querySelector('.admin-hint')) {
+      var s = g.closest('section'); if (s) s.style.display = 'none';
+    }
+  });
+}
 /* Lifestyle grid lightbox */
 function openLightbox(src) {
   if (!src) return;
