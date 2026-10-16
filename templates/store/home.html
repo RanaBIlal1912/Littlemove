@@ -70,18 +70,16 @@
       </div>
       <a class="link" href="{% url 'store:shop' %}">All toys</a>
     </div>
-    <div class="skill-tiles">
+    <div class="cat-circles">
       {% for c in categories %}
-      <a class="skill-tile t-{{ c.color }}" href="{{ c.get_absolute_url }}">
-        <div class="skill-tile-img">
+      <a class="cat-circle t-{{ c.color }}" href="{{ c.get_absolute_url }}">
+        <span class="cc-img">
           {% if c.image %}<img src="{{ c.image.url }}" alt="" loading="lazy">
           {% elif c.cover %}<img src="{{ c.cover.image.url }}" alt="" loading="lazy">
           {% else %}{% with first=c.products.first %}{% illus first.illustration|default:'blocks' %}{% endwith %}{% endif %}
-        </div>
-        <div class="skill-tile-overlay">
-          <b>{{ c.name }}</b>
-          {% if c.short %}<span>{{ c.short }}</span>{% endif %}
-        </div>
+        </span>
+        <b>{{ c.name }}</b>
+        {% if c.short %}<span class="cc-short">{{ c.short }}</span>{% endif %}
       </a>
       {% endfor %}
     </div>
@@ -136,22 +134,36 @@ document.querySelectorAll('.row-tab').forEach(function(btn){
 {% if section_type == "shop_by_age" %}{% with s=sections.shop_by_age %}{% if not s or s.enabled %}
 <section class="sec-white sec-pad sec-age">
   <div class="wrap">
-    <h2 class="section-title">{% if s and s.title %}{{ s.title }}{% else %}Shop by age{% endif %}</h2>
-    <div class="chips-row" style="margin-bottom:24px">
-      {% for key, band in age_bands.items %}
-      <a href="{% url 'store:shop' %}?age={{ key }}" class="age-chip">{{ band.0 }}</a>
+    <div class="section-head reveal"><div>
+      <h2 class="section-title">{% if s and s.title %}{{ s.title }}{% else %}Shop by little one{% endif %}</h2>
+      <p>Find the right toys for every age.</p>
+    </div></div>
+    <div class="age-cards">
+      {% for c in age_cards %}
+      <a class="age-card tone-{{ c.tone }}" href="{% url 'store:shop' %}?age={{ c.key }}">
+        <span class="age-card-img"><img src="{% static c.img %}" alt="" loading="lazy" width="300" height="300"></span>
+        <span class="age-card-body"><span><b>{{ c.title }}</b><small>{{ c.label }} · {{ c.blurb }}</small></span><i class="age-go" aria-hidden="true">&rsaquo;</i></span>
+      </a>
       {% endfor %}
     </div>
     {% if sections.shop_by_budget.enabled %}
-    <div class="chips-row" style="align-items:center;margin-top:24px">
-      <span class="section-subtitle" style="margin:0;white-space:nowrap">By budget:</span>
-      {% for cap in price_caps %}
-      <a href="{% url 'store:shop' %}?max={{ cap }}" class="budget-chip">Under {{ cap|rs }}</a>
+    <div class="section-head reveal" style="margin-top:48px"><div>
+      <h2 class="section-title">Pick your price</h2>
+      <p>From small treats to special gifts.</p>
+    </div></div>
+    <div class="price-cards">
+      {% for p in price_cards %}
+      <a class="price-card tone-{{ p.tone }}" href="{% url 'store:shop' %}?max={{ p.cap }}">
+        <span class="price-ribbon"><small>UNDER</small> {{ p.cap|rs }}</span>
+        <b>{{ p.title }}</b>
+        <span class="price-blurb">{{ p.blurb }}</span>
+        <em>Explore toys &rarr;</em>
+      </a>
       {% endfor %}
     </div>
     {% endif %}
-    {# WhatsApp help strip — single line right after age/budget chips #}
-    <div class="wa-help-strip" style="margin-top:28px;border-radius:10px">
+    {# WhatsApp help strip #}
+    <div class="wa-help-strip" style="margin-top:36px;border-radius:14px">
       <span>Not sure which toy fits your child?</span>
       <a href="https://wa.me/{{ shop.whatsapp_number }}?text={{ 'Assalam o Alaikum! I need help choosing a toy. '|urlencode }}" class="btn btn-wa btn-sm" target="_blank" rel="noopener">Ask on WhatsApp</a>
     </div>

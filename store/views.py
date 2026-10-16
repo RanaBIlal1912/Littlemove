@@ -44,6 +44,20 @@ AGE_BANDS = {
 }
 PRICE_CAPS = [1000, 2000, 3000, 5000]
 
+# Cartoon child + copy for each "Shop by little one" card (images from scripts/make_kids.py).
+AGE_CARD_ART = {
+    "0-2": ("Babies", "Toys for little explorers", "baby", "mint"),
+    "2-4": ("Toddlers", "Hands-on first play", "toddler", "sky"),
+    "4-6": ("Kids", "Build, pretend and learn", "kid", "sun"),
+    "6+": ("Big kids", "Smart toys that challenge", "bigkid", "pink"),
+}
+PRICE_CARD_COPY = {
+    1000: ("Tiny joys, big smiles", "Little treats they will adore.", "blue"),
+    2000: ("More fun, more play", "Best sellers kids love.", "pink"),
+    3000: ("The toys they talk about", "Big favourites for every skill.", "green"),
+    5000: ("Gifts to remember", "Premium picks for special days.", "orange"),
+}
+
 
 def home(request):
     live = Product.objects.live().select_related("category")
@@ -105,7 +119,16 @@ def home(request):
         "picks": picks,
         "testimonials": Testimonial.objects.filter(is_active=True)[:6],
         "age_bands": AGE_BANDS,
+        "age_cards": [
+            {"key": k, "label": b[0], "title": AGE_CARD_ART[k][0], "blurb": AGE_CARD_ART[k][1],
+             "img": f"img/kids/{AGE_CARD_ART[k][2]}.png", "tone": AGE_CARD_ART[k][3]}
+            for k, b in AGE_BANDS.items() if k in AGE_CARD_ART
+        ],
         "price_caps": PRICE_CAPS,
+        "price_cards": [
+            {"cap": c, "title": PRICE_CARD_COPY[c][0], "blurb": PRICE_CARD_COPY[c][1], "tone": PRICE_CARD_COPY[c][2]}
+            for c in PRICE_CAPS if c in PRICE_CARD_COPY
+        ],
         "sections": sections,
         "section_order": list(HomeSection.objects.order_by("order").values_list("type", flat=True)),
         "bundles": bundles,
