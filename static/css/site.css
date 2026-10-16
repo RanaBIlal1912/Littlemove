@@ -2787,3 +2787,38 @@ svg.divider { display: none !important; }
 }
 .faq-see-all:hover { text-decoration: underline; }
 .faq-hidden > details { margin-top: 0; }
+
+/* ---------- 3D polish: tilt + glare, raised buttons, depth icons ---------- */
+.tilt-card, .why-card, .bundle-card { --rx: 0deg; --ry: 0deg; --mx: 50%; --my: 50%; position: relative; }
+.tilt-card::after, .why-card::after, .bundle-card::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 5;
+  background: radial-gradient(circle at var(--mx) var(--my), rgba(255,255,255,.55), rgba(255,255,255,0) 55%);
+  opacity: 0; transition: opacity .25s ease;
+}
+.tilt-card.is-tilting::after, .why-card.is-tilting::after, .bundle-card.is-tilting::after { opacity: 1; }
+.tilt-card.is-tilting, .why-card.is-tilting, .bundle-card.is-tilting {
+  transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry)) translateY(-8px) scale(1.025) !important;
+  box-shadow: 0 2px 4px rgba(30,30,60,.06), 0 18px 28px -8px rgba(30,30,60,.22), 0 36px 60px -20px rgba(30,30,60,.25) !important;
+  transition: transform .08s linear, box-shadow .25s ease;
+  will-change: transform;
+}
+.why-card, .bundle-card { transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .3s ease; }
+
+/* soft floating idle motion on hero blobs already exist; give icons depth */
+.why-card-icon {
+  box-shadow: inset 0 -4px 0 rgba(0,0,0,.08), inset 0 3px 0 rgba(255,255,255,.7), 0 8px 14px -4px rgba(30,30,60,.25);
+}
+
+/* raised "3D" hero buttons */
+.hero-fullbleed .btn:not(.btn-hero-ghost) {
+  box-shadow: 0 5px 0 rgba(0,0,0,.18), 0 12px 22px -6px rgba(0,0,0,.35);
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.hero-fullbleed .btn:not(.btn-hero-ghost):hover { transform: translateY(-2px); box-shadow: 0 7px 0 rgba(0,0,0,.18), 0 16px 26px -6px rgba(0,0,0,.35); }
+.hero-fullbleed .btn:not(.btn-hero-ghost):active { transform: translateY(4px); box-shadow: 0 1px 0 rgba(0,0,0,.18), 0 4px 8px -2px rgba(0,0,0,.3); }
+.hero-headline { text-shadow: 0 2px 0 rgba(0,0,0,.08), 0 10px 24px rgba(0,0,0,.22); }
+
+@media (hover: none), (prefers-reduced-motion: reduce) {
+  .tilt-card::after, .why-card::after, .bundle-card::after { display: none; }
+  .tilt-card.is-tilting, .why-card.is-tilting, .bundle-card.is-tilting { transform: none !important; }
+}
