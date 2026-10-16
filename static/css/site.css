@@ -1418,7 +1418,7 @@ body.has-hero .header:not(.is-scrolled) .header-logo svg rect { fill: #fff; }
   .pcard-body { padding-bottom: 8px; }
 }
 /* ensure card body doesn't have old cart btn */
-.pcard-body form { display: none; }
+.pcard-body form:not(.card-add-form) { display: none; }
 /* ensure pcard media is relative for the overlay */
 .pcard-media { position: relative; }
 
@@ -3145,3 +3145,9 @@ a.lifestyle-video-placeholder:hover::before { transform: scale(1.1); }
 .shop-banner { background: linear-gradient(135deg, #FFF3C4, #DDF7EC) !important; }
 .section-head h2::after, .section-title::after { background: var(--orange); }
 .wa-help-strip { background: #DDF7EC; }
+
+/* Add to cart now lives under the price on every card (desktop and phone) */
+.pcard-body { flex: 1; display: flex; flex-direction: column; }
+.card-add { margin-top: auto; padding-top: 12px; }
+.card-add .add-slide { transform: none !important; transition: none; border-radius: 999px !important; padding: 11px 14px !important; font-size: .92rem !important; }
+.card-add .btn svg { margin-right: 2px; }
