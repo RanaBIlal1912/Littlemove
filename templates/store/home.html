@@ -195,7 +195,7 @@ document.querySelectorAll('.row-tab').forEach(function(btn){
     </div>
     <div class="lifestyle-grid">
       {% if media_items %}
-        {% for item in media_items %}{% if item.file or item.youtube_url %}
+        {% for item in media_items %}{% if item.file %}
         <figure class="lifestyle-item{% if item.type == 'image' and item.file %} lifestyle-clickable{% endif %}"
           {% if item.type == 'image' and item.file %}onclick="openLightbox('{{ item.file.url }}')"{% endif %}>
           {% if item.file and item.type == 'image' %}<img src="{{ item.file.url }}" alt="{{ item.alt_text }}" loading="lazy" onerror="this.closest('figure').remove()">
