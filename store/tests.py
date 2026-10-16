@@ -49,12 +49,12 @@ class HomeSectionOrderTests(TestCase):
         HomeSection.objects.all().delete()
 
     def test_sections_render_in_order(self):
-        # shop_by_skill (skill-tiles) at order=1, why_us (why-us-grid) at order=2
+        # shop_by_skill (cat-circles) at order=1, why_us (why-us-grid) at order=2
         HomeSection.objects.create(type="shop_by_skill", order=1, enabled=True)
         HomeSection.objects.create(type="why_us",        order=2, enabled=True)
         cat = make_category()
         resp = self.client.get("/")
-        pos_skill = resp.content.find(b'class="skill-tiles"')
+        pos_skill = resp.content.find(b'class="cat-circles"')
         pos_why   = resp.content.find(b'class="why-us-grid')
         self.assertNotEqual(pos_skill, -1, "shop_by_skill section not found")
         self.assertNotEqual(pos_why, -1, "why_us section not found")
@@ -65,9 +65,9 @@ class HomeSectionOrderTests(TestCase):
         HomeSection.objects.create(type="testimonials",  order=2, enabled=True)
         cat = make_category()
         resp = self.client.get("/")
-        # "skill-tiles" is the CSS class unique to the Shop by skill section body —
+        # "cat-circles" is the CSS class unique to the Shop by skill section body —
         # it does NOT appear in the navigation header.
-        self.assertNotIn(b'class="skill-tiles"', resp.content)
+        self.assertNotIn(b'class="cat-circles"', resp.content)
 
     def test_enabled_section_appears(self):
         HomeSection.objects.create(type="why_us", order=1, enabled=True)

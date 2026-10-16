@@ -3059,3 +3059,89 @@ a.lifestyle-video-placeholder:hover::before { transform: scale(1.1); }
 .filters { box-shadow: var(--sh-1) !important; border: 1px solid var(--line) !important; }
 .flist a[aria-current="true"], .flist a.active { background: var(--brand-soft); color: var(--brand-dark); }
 .nav-btn.is-primary, .nav .nav-btn:first-child { background: var(--brand); box-shadow: 0 3px 0 var(--brand-dark); }
+
+/* =====================================================================
+   FUN, FRIENDLY LAYOUT (inspired by Pakistani toy shops):
+   mint page tint, orange buttons, floating header, round category photos,
+   cartoon "shop by little one" cards, coloured price cards.
+   ===================================================================== */
+:root { --calm-cream: #E8F8F2; --orange: #EA580C; --orange-d: #B8420A; --orange-l: #F26A1F; }
+
+/* floating, rounded header */
+.header { margin: 10px 14px 0; border-radius: 26px; border: 0; border-image: none; box-shadow: 0 10px 26px -12px rgba(35,49,74,.3); }
+@media (max-width: 760px) { .header { margin: 8px 8px 0; border-radius: 20px; } }
+.nav-btn.is-primary, .nav .nav-btn:first-child, .nav-all, .nav-skill-btn { background: var(--yellow) !important; color: var(--navy) !important; box-shadow: 0 3px 0 #D9A400 !important; }
+
+/* buttons: orange for "add to cart" style actions, navy for Buy now */
+.btn, .hp-cta a.btn-white, .hp-cta .btn-white { background: var(--orange) !important; color: #fff !important; border: 0 !important; box-shadow: 0 4px 0 var(--orange-d) !important; }
+.btn:hover, .hp-cta .btn-white:hover { background: var(--orange-l) !important; }
+.btn:active { box-shadow: 0 1px 0 var(--orange-d) !important; }
+.btn-pink, .btn-pink:hover { background: var(--navy) !important; box-shadow: 0 4px 0 #0A1020 !important; }
+.btn-wa, .btn-wa:hover { background: #25D366 !important; box-shadow: 0 4px 0 #1BA34E !important; }
+.btn-ghost, .btn-wa-ghost, .hp-cta .btn-hero-ghost, .hp-cta button.btn-hero-ghost { background: #fff !important; box-shadow: 0 3px 0 #D5DCE8 !important; }
+.btn-ghost, .hp-cta .btn-hero-ghost, .hp-cta button.btn-hero-ghost { color: var(--navy) !important; border: 2px solid #D5DCE8 !important; }
+.btn-wa-ghost { color: #138A45 !important; border: 2px solid var(--wa) !important; box-shadow: 0 3px 0 #BFEBD2 !important; }
+.btn-white { background: #fff !important; color: var(--navy) !important; box-shadow: 0 4px 0 #D5DCE8 !important; }
+.btn[disabled], .btn.is-disabled { background: #E7E5F0 !important; color: #8D8AAA !important; box-shadow: none !important; }
+.age-card .btn, .price-card .btn { box-shadow: none !important; }
+.badge-sale { background: #E5232B; border-radius: 999px; }
+.pcard .price-sale { color: #E5232B; }
+
+/* hero: sunny cream-to-mint stage */
+.hp-stage { background: linear-gradient(135deg, #FFF3C4 0%, #FDF7E3 45%, #DDF7EC 100%) !important; border-bottom: 0; }
+.hp-pill { background: #fff; color: #138A6E; border-color: #BDEBDD; }
+.hp-points li::before { background: var(--orange); color: #fff; }
+.hero-play .trust .ti { background: #DDF7EC; color: #138A6E; }
+
+/* round category photos */
+.cat-circles { display: flex; gap: clamp(14px, 2.4vw, 34px); justify-content: center; flex-wrap: wrap; margin-top: 8px; }
+.cat-circle { display: flex; flex-direction: column; align-items: center; gap: 8px; width: clamp(104px, 14vw, 150px); text-align: center; text-decoration: none; color: var(--navy); }
+.cc-img { width: 100%; aspect-ratio: 1; border-radius: 50%; overflow: hidden; background: #fff; border: 5px solid #fff; box-shadow: 0 0 0 3px var(--tc, var(--brand)), 0 14px 22px -10px rgba(35,49,74,.45); display: grid; place-items: center; transition: transform .25s cubic-bezier(.2,.8,.2,1); }
+.cc-img img, .cc-img .illus { width: 100%; height: 100%; object-fit: cover; }
+.cat-circle:hover .cc-img { transform: translateY(-6px) scale(1.05); }
+.cat-circle b { font: 700 .98rem var(--display); }
+.cc-short { font-size: .78rem; color: var(--ink-2); line-height: 1.3; }
+.cat-circle.t-mint  { --tc: #3CCB9A; } .cat-circle.t-peach { --tc: #FF8A5C; } .cat-circle.t-sky { --tc: #3BA4E6; }
+.cat-circle.t-lilac { --tc: #9B7BEA; } .cat-circle.t-sun { --tc: #F5B514; } .cat-circle.t-rose { --tc: #FF7FA1; }
+@media (max-width: 760px) {
+  .cat-circles { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; padding: 6px 4px 14px; scroll-snap-type: x mandatory; scrollbar-width: none; }
+  .cat-circles::-webkit-scrollbar { display: none; }
+  .cat-circle { flex: 0 0 104px; scroll-snap-align: start; }
+}
+
+/* "Shop by little one" cards with cartoon children */
+.age-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-top: 22px; }
+.age-card { --bgc: #DDF7EC; --tt: #14996B; display: flex; flex-direction: column; border-radius: 30px; background: var(--bgc); text-decoration: none; color: var(--navy); overflow: hidden; box-shadow: 0 14px 24px -14px rgba(35,49,74,.4); transition: transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s; }
+.age-card:hover { transform: translateY(-8px) rotate(-.6deg); box-shadow: 0 22px 32px -14px rgba(35,49,74,.5); }
+.age-card-img { display: grid; place-items: end center; padding-top: 14px; aspect-ratio: 1 / .86; background: radial-gradient(circle at 50% 70%, rgba(255,255,255,.85) 0 38%, transparent 39%); }
+.age-card-img img { width: 82%; height: auto; max-height: 100%; object-fit: contain; transition: transform .3s; }
+.age-card:hover .age-card-img img { transform: scale(1.06) translateY(-4px); }
+.age-card-body { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 12px 12px; padding: 12px 14px 12px 18px; background: #fff; border-radius: 20px; }
+.age-card-body b { display: block; font: 700 1.2rem var(--display); color: var(--tt); }
+.age-card-body small { display: block; font-size: .78rem; color: var(--ink-2); margin-top: 2px; line-height: 1.3; }
+.age-go { flex: none; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--tt); color: #fff; font-style: normal; font-size: 1.5rem; line-height: 1; padding-bottom: 3px; }
+.age-card.tone-sky  { --bgc: #DCEEFF; --tt: #1F7AD6; }
+.age-card.tone-sun  { --bgc: #FFF0C2; --tt: #C98A00; }
+.age-card.tone-pink { --bgc: #FFE1E9; --tt: #E0457B; }
+
+/* "Pick your price" cards */
+.price-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-top: 22px; }
+.price-card { --pc: #1F6FE0; --pb: #E3EEFF; position: relative; display: flex; flex-direction: column; gap: 6px; padding: 64px 20px 20px; border-radius: 28px; background: var(--pb); text-decoration: none; color: var(--navy); box-shadow: 0 14px 24px -14px rgba(35,49,74,.4); transition: transform .25s cubic-bezier(.2,.8,.2,1); }
+.price-card:hover { transform: translateY(-8px); }
+.price-ribbon { position: absolute; top: 16px; left: 0; padding: 8px 18px 8px 16px; background: var(--pc); color: #fff; font: 700 1.2rem var(--display); border-radius: 0 999px 999px 0; box-shadow: 0 5px 10px -4px rgba(0,0,0,.3); }
+.price-ribbon small { font: 800 .62rem var(--body); letter-spacing: .08em; margin-right: 4px; opacity: .9; }
+.price-card b { font: 700 1.25rem/1.15 var(--display); }
+.price-blurb { font-size: .88rem; color: var(--ink-2); min-height: 2.6em; }
+.price-card em { align-self: flex-start; margin-top: 10px; padding: 9px 16px; border-radius: 999px; background: #fff; color: var(--pc); font: 800 .85rem var(--body); font-style: normal; box-shadow: 0 3px 0 rgba(35,49,74,.12); }
+.price-card.tone-pink   { --pc: #E0457B; --pb: #FFE3EC; }
+.price-card.tone-green  { --pc: #14996B; --pb: #DDF7EC; }
+.price-card.tone-orange { --pc: #E8590C; --pb: #FFEBD2; }
+@media (max-width: 900px) { .age-cards, .price-cards { grid-template-columns: repeat(2, 1fr); gap: 12px; } .price-card { padding-top: 58px; } }
+@media (max-width: 420px) { .age-card-body b { font-size: 1rem; } .age-card-body small { font-size: .7rem; } .age-go { width: 30px; height: 30px; } }
+
+/* sections tint mint instead of beige */
+.sec-alt, .sec-feat, .sec-row, .section-soft, .section-blue, .section-mint, .our-story-slim { background: var(--calm-cream) !important; }
+.sec-age { background: #fff !important; }
+.shop-banner { background: linear-gradient(135deg, #FFF3C4, #DDF7EC) !important; }
+.section-head h2::after, .section-title::after { background: var(--orange); }
+.wa-help-strip { background: #DDF7EC; }
