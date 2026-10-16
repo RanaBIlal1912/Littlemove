@@ -78,13 +78,26 @@ def home(request):
     picks_all = list(live.filter(therapist_pick=True)[:len(shown) + 9])
     picks = pick_row(picks_all)
 
+    # Real product photos for the hero collage: therapist picks first, then anything with a photo.
+    with_photo = live.exclude(image="").filter(stock__gt=0)
+    hero_products = list(with_photo.filter(therapist_pick=True)[:3])
+    if len(hero_products) < 3:
+        extra = with_photo.exclude(pk__in=[p.pk for p in hero_products])[:3 - len(hero_products)]
+        hero_products += list(extra)
+
+    # One real product photo per skill tile (category photo wins in the template).
+    categories = list(Category.objects.with_toys())
+    for c in categories:
+        c.cover = with_photo.filter(category=c).first()
+
     sections = {s.type: s for s in HomeSection.objects.all()}
     bundles = Bundle.objects.filter(active=True).prefetch_related("products")
     our_story = OurStory.load()
 
     return render(request, "store/home.html", {
         "banners": Banner.objects.filter(is_active=True),
-        "categories": Category.objects.with_toys(),
+        "categories": categories,
+        "hero_products": hero_products,
         "needs": Need.objects.filter(is_active=True),
         "featured": featured,
         "on_sale": on_sale,

@@ -140,7 +140,7 @@
   /* ---------------- 4. 3D tilt ---------------- */
   function initTilt() {
     if (REDUCED || !window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
-    $$(".tilt-card, .why-card, .bundle-card").forEach(function (card) {
+    $$(".tilt-card, .why-card, .bundle-card, .skill-tile").forEach(function (card) {
       var raf = 0, ev = null;
       function paint() {
         raf = 0;
@@ -165,6 +165,20 @@
         card.style.removeProperty("--rx");
         card.style.removeProperty("--ry");
       });
+    });
+  }
+
+  /* Hide the #LittleMoveKids section when none of its photos could be loaded. */
+  function initGalleryCleanup() {
+    window.addEventListener("load", function () {
+      setTimeout(function () {
+        $$(".lifestyle-grid").forEach(function (grid) {
+          if (!grid.querySelector("figure") && !grid.querySelector(".admin-hint")) {
+            var sec = grid.closest("section");
+            if (sec) sec.style.display = "none";
+          }
+        });
+      }, 600);
     });
   }
 
@@ -986,6 +1000,7 @@
     pruneBrokenGallery(initSwipers);
     initReveals();
     initTilt();
+    initGalleryCleanup();
     initCartForms();
     initDrawerControls();
     initDrawerItemControls();
