@@ -2822,3 +2822,6 @@ svg.divider { display: none !important; }
   .tilt-card::after, .why-card::after, .bundle-card::after { display: none; }
   .tilt-card.is-tilting, .why-card.is-tilting, .bundle-card.is-tilting { transform: none !important; }
 }
+
+/* room for lifted/tilted cards + their shadow inside the horizontal rows */
+.row-scroll { padding: 22px 14px 48px; margin: -22px -14px -30px; scroll-padding-left: 14px; }
