@@ -61,7 +61,7 @@
 
 {# ── SHOP BY SKILL — big image tiles ────────────────────────────── #}
 {% if section_type == "shop_by_skill" %}{% with s=sections.shop_by_skill %}{% if not s or s.enabled %}
-<section class="section sec-white" {% if s and s.bg_image %}style="background-image:url('{{ s.bg_image.url }}');background-size:cover;background-position:center"{% endif %}>
+<section class="section sec-white sec-skill" {% if s and s.bg_image %}style="background-image:url('{{ s.bg_image.url }}');background-size:cover;background-position:center"{% endif %}>
   <div class="wrap">
     <div class="section-head reveal">
       <div>
@@ -94,7 +94,7 @@
 
 {# ── FEATURED PRODUCTS + NEW ARRIVALS (tab switcher) ──────────────── #}
 {% if section_type == "featured_products" %}{% with s=sections.featured_products %}{% if not s or s.enabled %}
-<section class="section sec-alt" aria-label="Featured products">
+<section class="section sec-alt sec-feat" aria-label="Featured products">
   <div class="wrap">
     <div class="row-tabs" role="tablist">
       <button class="row-tab row-tab--active" type="button" role="tab" aria-selected="true"
@@ -134,7 +134,7 @@ document.querySelectorAll('.row-tab').forEach(function(btn){
 
 {# ── SHOP BY AGE + BUDGET (flat chips) ───────────────────────────── #}
 {% if section_type == "shop_by_age" %}{% with s=sections.shop_by_age %}{% if not s or s.enabled %}
-<section class="sec-white sec-pad">
+<section class="sec-white sec-pad sec-age">
   <div class="wrap">
     <h2 class="section-title">{% if s and s.title %}{{ s.title }}{% else %}Shop by age{% endif %}</h2>
     <div class="chips-row" style="margin-bottom:24px">
@@ -317,7 +317,7 @@ document.querySelectorAll('.row-tab').forEach(function(btn){
 
 {# ── WHY US ──────────────────────────────────────────────────────── #}
 {% if section_type == "why_us" %}{% with s=sections.why_us %}{% if not s or s.enabled %}
-<section class="section sec-alt">
+<section class="section sec-alt sec-why">
   <div class="wrap">
     <div class="section-head reveal">
       <div>
