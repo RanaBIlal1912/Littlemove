@@ -6,6 +6,7 @@ AI fallback via Anthropic claude-haiku requires ANTHROPIC_API_KEY env var.
 """
 import logging
 import os
+import re
 
 from django.utils import timezone
 
@@ -118,6 +119,20 @@ def _ai_response(user_msg, bot_answers, faqs, products, store_settings):
 
 # ── Main entry point ──────────────────────────────────────────────────────────
 
+GREETINGS = {"hi", "hii", "hello", "hey", "salam", "salaam", "assalamualaikum", "assalam o alaikum",
+             "aoa", "asalam o alaikum", "good morning", "good evening", "good afternoon"}
+
+
+def _greeting_reply(message):
+    """Friendly reply for a bare greeting, or None when the message is anything else."""
+    cleaned = re.sub(r"[^a-z\s]", "", message.lower()).strip()
+    cleaned = re.sub(r"\s+", " ", cleaned)
+    if cleaned in GREETINGS:
+        return ("Hi! \U0001F44B I'm Mila from LittleMove. Tell me your child's age and what you'd like "
+                "to help with (speech, sensory play, motor skills...) and I'll suggest the right toy.")
+    return None
+
+
 def get_bot_response(request, user_message):
     """
     Process a visitor message and return a response dict:
@@ -154,6 +169,9 @@ def get_bot_response(request, user_message):
 
     if match:
         answer_text = match["text"]
+        matched = True
+    elif _greeting_reply(user_message):
+        answer_text = _greeting_reply(user_message)
         matched = True
     elif bot.use_ai:
         products = list(Product.objects.live().select_related("category")[:50])
