@@ -2957,3 +2957,30 @@ a.lifestyle-video-placeholder::before {
 }
 a.lifestyle-video-placeholder:hover::before { transform: scale(1.1); }
 .lifestyle-item:has(a.lifestyle-video-placeholder) figcaption { opacity: 1; }
+
+/* =====================================================================
+   Softer, easier-on-the-eyes hero: pastel stage, dark text, one calm CTA
+   ===================================================================== */
+.hp-stage {
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 8% 18%, #FFE3EA 0 120px, transparent 121px),
+    radial-gradient(circle at 92% 88%, #D8F5E9 0 150px, transparent 151px),
+    radial-gradient(circle at 70% 8%, #FFF0C2 0 90px, transparent 91px),
+    linear-gradient(135deg, #E4F3FF 0%, #F6F1FF 55%, #FFF3E4 100%);
+}
+.hp-title { color: var(--ink); text-shadow: none; }
+.hp-sub { color: var(--ink-2); }
+.hp-pill { background: #fff; color: var(--brand-dark); border: 1px solid #CFE8FA; backdrop-filter: none; box-shadow: 0 4px 10px -4px rgba(35,49,74,.15); }
+.hp-cta a.btn-white, .hp-cta .btn-white { background: var(--brand) !important; color: #fff !important; border-color: var(--brand) !important; box-shadow: 0 5px 0 var(--brand-dark), 0 12px 20px -8px rgba(34,134,200,.5) !important; }
+.hp-cta a.btn-white:hover, .hp-cta .btn-white:hover { background: #4FB1EF !important; color: #fff !important; }
+.hp-cta .btn-white:active { box-shadow: 0 2px 0 var(--brand-dark) !important; }
+.hp-cta .btn-hero-ghost, .hp-cta button.btn-hero-ghost { background: #fff !important; color: var(--brand-dark) !important; border: 2px solid #BFE0F7 !important; box-shadow: none !important; text-shadow: none !important; }
+.hp-cta .btn-hero-ghost:hover { background: var(--brand-soft) !important; color: var(--brand-dark) !important; }
+.hp-points { color: var(--ink); }
+.hp-card { box-shadow: 0 12px 26px -12px rgba(35,49,74,.35); }
+.hp-card:hover, .hp-card.is-tilting { box-shadow: 0 20px 32px -12px rgba(35,49,74,.4) !important; }
+.hp-sticker { box-shadow: 0 0 0 5px #FFD966, 0 0 0 7px #fff, 0 10px 18px -6px rgba(35,49,74,.3); background: #FFD966; }
+.hp-s1 { background: #FFB3B8; } .hp-s2 { background: #FFD966; } .hp-s3 { border-color: #9BE3C9; }
+.hp-s4 { background: #FFD1DC; } .hp-s5 { background: #BFE0F7; opacity: .9; } .hp-s6 { background: #FFD966; }
+.hero-play .trust div { box-shadow: 0 8px 22px -10px rgba(35,49,74,.25); }
