@@ -2754,3 +2754,24 @@ class ChatApiBadInputTests(TestCase):
         for body in ("[1, 2]", "null", '"hi"', "not json", "5"):
             r = self.client.post("/api/chat/", data=body, content_type="application/json")
             self.assertEqual(r.status_code, 400, body)
+
+
+class ReviewPromptTests(TestCase):
+    """The site never invents reviews: with none it invites real customers to send one."""
+
+    def setUp(self):
+        HomeSection.objects.all().delete()
+        HomeSection.objects.create(type="testimonials", order=1, enabled=True)
+
+    def test_share_review_strip_when_there_are_no_testimonials(self):
+        resp = self.client.get("/")
+        self.assertContains(resp, "Bought from LittleMove?")
+        self.assertContains(resp, "wa.me/")
+        self.assertNotContains(resp, "testimonials-swiper")
+
+    def test_real_testimonials_replace_the_strip(self):
+        from .models import Testimonial
+        Testimonial.objects.create(name="Sana, Multan", text="Arrived fast.", rating=5)
+        resp = self.client.get("/")
+        self.assertContains(resp, "testimonials-swiper")
+        self.assertNotContains(resp, "Bought from LittleMove?")

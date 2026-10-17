@@ -262,6 +262,16 @@ document.querySelectorAll('.row-tab').forEach(function(btn){
     </div>
   </div>
 </section>
+{% else %}
+<section class="section review-strip">
+  <div class="wrap review-strip-inner">
+    <div>
+      <h2 class="section-title" style="margin-bottom:6px">Bought from LittleMove?</h2>
+      <p style="margin:0;color:var(--ink-2)">Tell other parents how it went. Send us a few words on WhatsApp.</p>
+    </div>
+    <a class="btn btn-wa" target="_blank" rel="noopener" href="https://wa.me/{{ shop.whatsapp_number }}?text={{ 'Assalam o Alaikum! LittleMove se khareedne ke baad mera review: '|urlencode }}">{% whatsapp_icon %} Share your review</a>
+  </div>
+</section>
 {% endif %}
 {% endif %}{% endwith %}{% endif %}
 
