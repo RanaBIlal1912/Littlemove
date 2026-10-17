@@ -3163,3 +3163,11 @@ a.lifestyle-video-placeholder:hover::before { transform: scale(1.1); }
   .quick-row::-webkit-scrollbar { display: none; }
   .quick-pill { flex: none; scroll-snap-align: start; }
 }
+
+/* review request prompts (no fake reviews: just a way for real customers to send one) */
+.review-cta { text-align: center; }
+.review-cta p { max-width: 34em; margin: 6px auto 16px; color: var(--ink-2); }
+.review-strip { background: #fff !important; padding: 34px 0; }
+.review-strip-inner { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; padding: 22px 26px; border-radius: 26px; background: #DDF7EC; }
+@media (max-width: 640px) { .review-strip-inner { flex-direction: column; text-align: center; } }
+.review-strip-inner { box-sizing: border-box; width: calc(100% - 2 * var(--gutter)); max-width: calc(var(--wrap) - 56px); margin-inline: auto; padding-inline: 26px; }
