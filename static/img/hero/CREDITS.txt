@@ -1,0 +1,5 @@
+Hero photo: "Free photo image Wooden toys train" by Markus Spiske.
+Licence: CC0 1.0 (public domain dedication) - free for commercial use, no attribution required.
+Source: https://www.rawpixel.com/image/432769/free-photo-image-wooden-toys-train
+Found via the Openverse API (api.openverse.org), filtered to CC0/public-domain images.
+hero-d.jpg (desktop) and hero-m.jpg (phone) are crops of it. Replace by uploading a banner image in Admin > Banners.
