@@ -13,7 +13,8 @@
 {% if section_type == "hero_slider" %}{% with s=sections.hero_slider %}{% if not s or s.enabled %}
 <section class="hero hero-play">
   {% with b=banners.first %}
-  <div class="hp-stage{% if b and b.image %} has-photo{% endif %}"{% if b and b.image %} style="--hero-img:url('{{ b.image.url }}'){% if b.mobile_image %};--hero-img-m:url('{{ b.mobile_image.url }}'){% endif %}"{% endif %}>
+  {% static 'img/hero/hero-d.jpg' as hero_d %}{% static 'img/hero/hero-m.jpg' as hero_m %}
+    <div class="hp-stage has-photo" style="--hero-img:url('{% if b and b.image %}{{ b.image.url }}{% else %}{{ hero_d }}{% endif %}');--hero-img-m:url('{% if b and b.mobile_image %}{{ b.mobile_image.url }}{% elif b and b.image %}{{ b.image.url }}{% else %}{{ hero_m }}{% endif %}')">
     <span class="hp-shape hp-s1" aria-hidden="true"></span><span class="hp-shape hp-s2" aria-hidden="true"></span>
     <span class="hp-shape hp-s3" aria-hidden="true"></span><span class="hp-shape hp-s4" aria-hidden="true"></span>
     <span class="hp-shape hp-s5" aria-hidden="true"></span><span class="hp-shape hp-s6" aria-hidden="true"></span>
