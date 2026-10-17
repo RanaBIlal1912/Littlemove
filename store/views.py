@@ -104,6 +104,17 @@ def home(request):
     for c in categories:
         c.cover = with_photo.filter(category=c).first()
 
+    # Store-style rows: the busiest categories each get their own "View all" row.
+    category_rows = []
+    for c in categories:
+        items = list(live.filter(category=c, stock__gt=0)[:8])
+        if len(items) >= 3:
+            category_rows.append({"cat": c, "items": items, "rid": f"row-cat-{c.pk}"})
+    category_rows.sort(key=lambda r: -len(r["items"]))
+    category_rows = category_rows[:4]
+    for i, r in enumerate(category_rows):
+        r["soft"] = i % 2 == 1
+
     sections = {s.type: s for s in HomeSection.objects.all()}
     bundles = Bundle.objects.filter(active=True).prefetch_related("products")
     our_story = OurStory.load()
@@ -112,6 +123,7 @@ def home(request):
         "banners": Banner.objects.filter(is_active=True),
         "categories": categories,
         "hero_products": hero_products,
+        "category_rows": category_rows,
         "needs": Need.objects.filter(is_active=True),
         "featured": featured,
         "on_sale": on_sale,

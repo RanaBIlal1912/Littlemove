@@ -3171,3 +3171,7 @@ a.lifestyle-video-placeholder:hover::before { transform: scale(1.1); }
 .review-strip-inner { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; padding: 22px 26px; border-radius: 26px; background: #DDF7EC; }
 @media (max-width: 640px) { .review-strip-inner { flex-direction: column; text-align: center; } }
 .review-strip-inner { box-sizing: border-box; width: calc(100% - 2 * var(--gutter)); max-width: calc(var(--wrap) - 56px); margin-inline: auto; padding-inline: 26px; }
+
+/* product rows alternate white / mint like a store front */
+.sec-row:not(.section-soft) { background: #fff !important; }
+.sec-row .section-head h2 { font-size: clamp(1.3rem, 2.6vw, 1.8rem); }

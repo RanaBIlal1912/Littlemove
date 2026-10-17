@@ -2775,3 +2775,33 @@ class ReviewPromptTests(TestCase):
         resp = self.client.get("/")
         self.assertContains(resp, "testimonials-swiper")
         self.assertNotContains(resp, "Bought from LittleMove?")
+
+
+class CategoryRowsTests(TestCase):
+    """Store-style home page: busy categories get their own product row."""
+
+    def setUp(self):
+        HomeSection.objects.all().delete()
+        HomeSection.objects.create(type="featured_products", order=1, enabled=True)
+
+    def test_busy_category_gets_a_row_with_view_all(self):
+        cat = make_category("Wooden toys")
+        for i in range(4):
+            make_product(cat, name=f"Toy {i}")
+        resp = self.client.get("/")
+        self.assertContains(resp, f'id="row-cat-{cat.pk}"')
+        self.assertContains(resp, cat.get_absolute_url())
+
+    def test_thin_category_gets_no_row(self):
+        cat = make_category("Tiny")
+        make_product(cat, name="One")
+        make_product(cat, name="Two")
+        resp = self.client.get("/")
+        self.assertNotContains(resp, f'id="row-cat-{cat.pk}"')
+
+    def test_sold_out_products_do_not_count(self):
+        cat = make_category("Sold out")
+        for i in range(4):
+            make_product(cat, name=f"Gone {i}", stock=0)
+        resp = self.client.get("/")
+        self.assertNotContains(resp, f'id="row-cat-{cat.pk}"')
