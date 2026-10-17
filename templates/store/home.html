@@ -138,6 +138,7 @@ document.querySelectorAll('.row-tab').forEach(function(btn){
   });
 });
 </script>
+{% for r in category_rows %}{% include "store/_row.html" with items=r.items title=r.cat.name sub=r.cat.short link=r.cat.get_absolute_url rid=r.rid soft=r.soft %}{% endfor %}
 {% endif %}{% endwith %}{% endif %}
 
 {# ── SHOP BY AGE + BUDGET (flat chips) ───────────────────────────── #}
