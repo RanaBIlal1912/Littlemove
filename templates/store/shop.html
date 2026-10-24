@@ -1,5 +1,6 @@
 {% extends "base.html" %}{% load store_tags %}
 {% block title %}{% if category %}{{ category.name }} toys{% elif need %}Toys for {{ need.name|lower }}{% elif on_sale %}Toys on sale{% elif picks %}Therapist picks{% elif q %}Search: {{ q }}{% else %}All toys{% endif %} — {{ shop.store_name }}{% endblock %}
+{% block description %}{% if category %}Shop {{ category.name|lower }} toys online in Pakistan{% if category.short %} — {{ category.short|lower }}{% endif %}. Cash on delivery across Pakistan from {{ shop.store_name }}.{% elif need %}Toys for {{ need.name|lower }}, chosen with therapists. Cash on delivery across Pakistan from {{ shop.store_name }}.{% elif on_sale %}Kids toys on sale at {{ shop.store_name }}: lower prices while stock lasts, cash on delivery across Pakistan.{% elif picks %}Therapist-recommended toys for practice at home. Cash on delivery across Pakistan from {{ shop.store_name }}.{% elif q %}Search results for {{ q }} at {{ shop.store_name }}.{% else %}Browse all kids toys: sensory, fine motor, gross motor, speech and puzzles. Cash on delivery across Pakistan from {{ shop.store_name }}.{% endif %}{% endblock %}
 {% block content %}
 <div class="wrap">
   <div class="page-head">

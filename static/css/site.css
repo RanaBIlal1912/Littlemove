@@ -3258,3 +3258,14 @@ body {
 }
 @media (max-width: 480px) { .hg-chip { font-size: .78rem; padding: 6px 12px 6px 6px; } .hg-chip i { width: 24px; height: 24px; } .hg-tab { padding: 7px 12px; font-size: .84rem; } }
 .hero-glass .trust-wrap { margin-top: 26px; }
+
+/* comfortable touch targets on phones */
+@media (max-width: 760px) {
+  .footer ul a, .footer .footer-bottom a { display: inline-block; padding: 9px 0; }
+  .pcard h3 a { display: inline-block; padding: 6px 0; }
+  .pcard-cat { padding: 4px 0; }
+  .lang-btn { min-width: 40px; min-height: 40px; }
+  .faq-see-all { min-height: 44px; }
+  .mila-opt, .mila-chip { min-height: 36px; padding-top: 8px; padding-bottom: 8px; display: inline-flex; align-items: center; }
+  .mila-x { min-width: 40px; min-height: 40px; }
+}
