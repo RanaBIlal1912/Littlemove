@@ -2649,7 +2649,7 @@ class HeroMobileRenderTests(SimpleTestCase):
     def test_hero_is_static_not_a_slider(self):
         """The hero must not auto-rotate: no swiper markup in the hero section."""
         html = self._get_home_html()
-        start = html.index('<section class="hero hero-play"')
+        start = html.index('<section class="hero hero-play')
         end = html.index('{# ── TRUST BADGES')
         self.assertNotIn('swiper', html[start:end])
 
@@ -2805,3 +2805,19 @@ class CategoryRowsTests(TestCase):
             make_product(cat, name=f"Gone {i}", stock=0)
         resp = self.client.get("/")
         self.assertNotContains(resp, f'id="row-cat-{cat.pk}"')
+
+
+class HeroSearchTests(TestCase):
+    """The glass hero has a working search box and age tabs."""
+
+    def test_hero_has_search_form_pointing_at_the_shop(self):
+        resp = self.client.get("/")
+        self.assertContains(resp, 'class="hg-search"')
+        self.assertContains(resp, 'action="/shop/"')
+        self.assertContains(resp, 'name="q"')
+
+    def test_hero_search_finds_products(self):
+        cat = make_category("Search cat")
+        make_product(cat, name="Rainbow Stacking Rings")
+        resp = self.client.get("/shop/", {"q": "rainbow"})
+        self.assertContains(resp, "Rainbow Stacking Rings")

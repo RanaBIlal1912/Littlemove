@@ -11,36 +11,34 @@
 
 {# ── HERO SLIDER (full-bleed 100vh) ──────────────────────────────── #}
 {% if section_type == "hero_slider" %}{% with s=sections.hero_slider %}{% if not s or s.enabled %}
-<section class="hero hero-play">
+<section class="hero hero-play hero-glass">
   {% with b=banners.first %}
   {% static 'img/hero/hero-d.jpg' as hero_d %}{% static 'img/hero/hero-m.jpg' as hero_m %}
-    <div class="hp-stage has-photo" style="--hero-img:url('{% if b and b.image %}{{ b.image.url }}{% else %}{{ hero_d }}{% endif %}');--hero-img-m:url('{% if b and b.mobile_image %}{{ b.mobile_image.url }}{% elif b and b.image %}{{ b.image.url }}{% else %}{{ hero_m }}{% endif %}')">
-    <span class="hp-shape hp-s1" aria-hidden="true"></span><span class="hp-shape hp-s2" aria-hidden="true"></span>
-    <span class="hp-shape hp-s3" aria-hidden="true"></span><span class="hp-shape hp-s4" aria-hidden="true"></span>
-    <span class="hp-shape hp-s5" aria-hidden="true"></span><span class="hp-shape hp-s6" aria-hidden="true"></span>
-    <div class="wrap hp-grid">
-      <div class="hp-copy">
+  <span class="hg-blob hg-b1" aria-hidden="true"></span><span class="hg-blob hg-b2" aria-hidden="true"></span><span class="hg-blob hg-b3" aria-hidden="true"></span>
+  <div class="wrap">
+    <div class="hg-card">
+      <div class="hg-copy">
         <span class="hp-pill">{% icon 'shield' 16 2.4 %} Chosen with therapists</span>
         <h1 class="hero-headline hp-title">{% if b and b.title %}{{ b.title }}{% else %}Toys that help little ones grow{% endif %}</h1>
         <p class="hero-sub hp-sub">{% if b and b.subtitle %}{{ b.subtitle }}{% else %}Sensory, motor and speech toys chosen with therapists. Cash on delivery across Pakistan.{% endif %}</p>
+        <div class="hg-tabs" role="group" aria-label="Shop by age">
+          {% for c in age_cards %}<a class="hg-tab" href="{% url 'store:shop' %}?age={{ c.key }}">{{ c.title }}</a>{% endfor %}
+        </div>
+        <form class="hg-search" action="{% url 'store:shop' %}" method="get" role="search">
+          <span class="hg-search-ico" aria-hidden="true">{% icon 'search' 20 2.2 %}</span>
+          <input name="q" type="search" placeholder="Search for any toy, e.g. stacking rings" aria-label="Search toys" autocomplete="off">
+          <button class="btn" type="submit">Search</button>
+        </form>
         <div class="hp-cta">
           <a class="btn btn-white hp-btn" href="{% if b and b.link %}{{ b.link }}{% else %}{% url 'store:shop' %}{% endif %}">{% if b and b.button_text %}{{ b.button_text }}{% else %}Shop all toys{% endif %} {% icon 'arrow-r' 18 2.4 %}</a>
           <button class="btn btn-hero-ghost" type="button" data-mila-guide>Find the right toy</button>
         </div>
-        <ul class="hp-points">
-          <li>Cash on delivery</li><li>All over Pakistan</li><li>Easy replacement</li>
-        </ul>
       </div>
-      <div class="hp-visual">
-        {% for p in hero_products %}
-        <a class="hp-card hp-card-{{ forloop.counter }} tilt-card" href="{{ p.get_absolute_url }}" aria-label="{{ p.name }}">
-          <img src="{{ p.image.url }}" alt="{{ p.name }}" width="400" height="400"{% if forloop.first %} fetchpriority="high"{% endif %} onerror="this.closest('.hp-card').remove()">
-          <span class="hp-tag"><b>{{ p.name }}</b><i class="notranslate" translate="no">{{ p.price|rs }}</i></span>
-        </a>
-        {% empty %}
-        <div class="hp-art">{% illus 'rings' %}</div>
-        {% endfor %}
-        <span class="hp-sticker" aria-hidden="true">Cash on<br>delivery</span>
+      <div class="hg-visual">
+        <div class="hg-photo" role="img" aria-label="Wooden toy train on a play table" style="--hg-img:url('{% if b and b.image %}{{ b.image.url }}{% else %}{{ hero_d }}{% endif %}');--hg-img-m:url('{% if b and b.mobile_image %}{{ b.mobile_image.url }}{% elif b and b.image %}{{ b.image.url }}{% else %}{{ hero_m }}{% endif %}')"></div>
+        <span class="hg-chip hg-c1"><i>{% icon 'shield' 16 2.4 %}</i>Therapist chosen</span>
+        <span class="hg-chip hg-c2"><i>{% icon 'cash' 16 2.4 %}</i>Cash on delivery</span>
+        <span class="hg-chip hg-c3"><i>{% icon 'return' 16 2.4 %}</i>Easy replacement</span>
       </div>
     </div>
   </div>
