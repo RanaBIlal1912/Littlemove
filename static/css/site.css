@@ -3283,3 +3283,37 @@ body {
   --page-a: #F0E2FF; --page-b: #FFE0EC; --page-c: #FFF1C9; --page-base: #FBF7FF;
   --blob-a: #D4B4FF; --blob-b: #FFB3D1; --blob-c: #FFE08A;
 }
+
+/* =====================================================================
+   COLOURFUL PAGE BACKGROUND (replaces the near-white glass wash)
+   The page itself is a rich gradient; cards, panels and the hero stay
+   white/glass so they pop and text stays readable.
+   ===================================================================== */
+:root {
+  --bg-g1: #C6A4FF; --bg-g2: #FFA6C9; --bg-g3: #FFDE85;
+}
+html { background: var(--bg-g1); }
+body {
+  background: linear-gradient(150deg, var(--bg-g1) 0%, var(--bg-g2) 50%, var(--bg-g3) 100%) fixed !important;
+}
+/* section bands no longer paint white over the colour */
+.sec-skill, .sec-age, .sec-why, #faq.sec-white, .sec-white,
+.sec-alt, .sec-feat, .sec-row, .section-soft, .section-blue, .section-mint, .our-story-slim,
+.sec-row:not(.section-soft), .review-strip {
+  background: transparent !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+}
+/* gentle rhythm: every second band gets a light veil */
+.sec-feat, .section-soft, .sec-why { background: rgba(255,255,255,.2) !important; }
+/* text sitting directly on the colour */
+.section-head h2, .section-title, .page-title, .sec-pad .section-title { color: var(--navy) !important; }
+.section-head p, .section-subtitle, .crumbs, .crumbs a, .cc-short, .hg-note { color: var(--ink) !important; }
+.section-head .link, .head-tools .link { color: var(--navy) !important; text-decoration: underline; font-weight: 800; }
+.cat-circle b { color: var(--navy); }
+.row-tabs { border-bottom-color: rgba(43,27,74,.25); }
+.row-tab { color: var(--ink); }
+.row-tab--active { color: var(--navy); border-bottom-color: var(--navy); }
+.hero-glass .hg-blob { opacity: .35; }
+/* cards that sit on the colour stay solid/white for contrast */
+.review-strip-inner { background: rgba(255,255,255,.75) !important; }
+.shop-banner { background: rgba(255,255,255,.55) !important; }
+@media (max-width: 900px) { body { background-attachment: scroll !important; } }
