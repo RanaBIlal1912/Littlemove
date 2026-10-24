@@ -5,6 +5,14 @@
   Disabled sections are skipped.
 {% endcomment %}
 {% block body_class %}has-hero{% endblock %}
+{% block head %}
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"OnlineStore","name":"{{ shop.store_name|escapejs }}","url":"{{ request.scheme }}://{{ request.get_host }}/","description":"Developmental, sensory and speech toys for babies and kids, chosen with therapists. Cash on delivery across Pakistan.","areaServed":"PK","address":{"@type":"PostalAddress","addressLocality":"{{ shop.city|escapejs }}","addressCountry":"PK"},"paymentAccepted":"Cash on delivery, JazzCash, EasyPaisa","currenciesAccepted":"PKR"},
+{"@type":"WebSite","name":"{{ shop.store_name|escapejs }}","url":"{{ request.scheme }}://{{ request.get_host }}/","potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"{{ request.scheme }}://{{ request.get_host }}/shop/?q={search_term_string}"},"query-input":"required name=search_term_string"}}
+]}
+</script>
+{% endblock %}
 {% block content %}
 
 {% for section_type in section_order %}
@@ -82,8 +90,8 @@
       {% for c in categories %}
       <a class="cat-circle t-{{ c.color }}" href="{{ c.get_absolute_url }}">
         <span class="cc-img">
-          {% if c.image %}<img src="{{ c.image.url }}" alt="" loading="lazy">
-          {% elif c.cover %}<img src="{{ c.cover.image.url }}" alt="" loading="lazy">
+          {% if c.image %}<img src="{{ c.image.url }}" alt="" width="150" height="150" loading="lazy">
+          {% elif c.cover %}<img src="{{ c.cover.image.url }}" alt="" width="150" height="150" loading="lazy">
           {% else %}{% with first=c.products.first %}{% illus first.illustration|default:'blocks' %}{% endwith %}{% endif %}
         </span>
         <b>{{ c.name }}</b>

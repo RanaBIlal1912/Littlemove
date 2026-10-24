@@ -2821,3 +2821,35 @@ class HeroSearchTests(TestCase):
         make_product(cat, name="Rainbow Stacking Rings")
         resp = self.client.get("/shop/", {"q": "rainbow"})
         self.assertContains(resp, "Rainbow Stacking Rings")
+
+
+class SeoMetaTests(TestCase):
+    """Each page type gets its own description, and the home page has structured data."""
+
+    def test_pages_have_distinct_descriptions(self):
+        import re
+        seen = {}
+        for url in ("/", "/shop/", "/cart/", "/track/", "/delivery-and-returns/"):
+            html = self.client.get(url).content.decode()
+            m = re.search(r'<meta name="description" content="([^"]*)"', html)
+            self.assertIsNotNone(m, url)
+            seen[url] = m.group(1)
+        self.assertEqual(len(set(seen.values())), len(seen), seen)
+
+    def test_category_page_description_names_the_category(self):
+        cat = make_category("Wooden toys")
+        make_product(cat)
+        html = self.client.get(cat.get_absolute_url()).content.decode()
+        self.assertIn("wooden toys", html.split('name="description"')[1][:300].lower())
+
+    def test_home_has_valid_organization_and_search_jsonld(self):
+        import re
+        html = self.client.get("/").content.decode()
+        m = re.search(r'<script type="application/ld\+json">\s*(\{.*?\})\s*</script>', html, re.S)
+        self.assertIsNotNone(m)
+        data = json.loads(m.group(1))
+        types = [n["@type"] for n in data["@graph"]]
+        self.assertIn("OnlineStore", types)
+        self.assertIn("WebSite", types)
+        site = next(n for n in data["@graph"] if n["@type"] == "WebSite")
+        self.assertIn("{search_term_string}", site["potentialAction"]["target"]["urlTemplate"])
