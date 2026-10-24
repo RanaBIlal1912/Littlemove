@@ -2973,14 +2973,14 @@ a.lifestyle-video-placeholder:hover::before { transform: scale(1.1); }
 
 /* buttons: solid colour with a small base edge (a touch of 3D) */
 .btn { background: var(--brand); color: #fff; border: 0; box-shadow: 0 4px 0 var(--brand-dark); filter: none; }
-.btn:hover { background: #4DB0F0; transform: translateY(-1px); filter: none; }
+.btn:hover { background: var(--brand-l); transform: translateY(-1px); filter: none; }
 .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--brand-dark); }
 .btn-sun { background: var(--yellow); color: var(--ink); box-shadow: 0 4px 0 #D9A400; }
 .btn-sun:hover { background: #FFD25C; }
 .btn-pink, .btn-pink:hover { background: #FF6B6B !important; color: #fff !important; border: 0 !important; box-shadow: 0 4px 0 #D94F4F !important; filter: none; }
 .btn-wa { background: #25D366; box-shadow: 0 4px 0 #1BA34E; }
 .btn-wa:hover { background: #3BE07E; }
-.btn-ghost { background: #fff; color: var(--brand-dark); border: 2px solid #CFE3F4; box-shadow: 0 3px 0 #CFE3F4; }
+.btn-ghost { background: #fff; color: var(--brand-dark); border: 2px solid var(--brand-soft-2); box-shadow: 0 3px 0 var(--brand-soft-2); }
 .btn-ghost:hover { background: var(--brand-soft); }
 .btn-wa-ghost { background: #fff; color: #138A45; border: 2px solid var(--wa); box-shadow: 0 3px 0 #BFEBD2; }
 .btn-wa-ghost:hover { background: #E9FBF1; color: #138A45; }
@@ -2996,10 +2996,10 @@ a.lifestyle-video-placeholder:hover::before { transform: scale(1.1); }
 .hp-title { color: var(--navy); text-shadow: none; }
 .hp-sub { color: var(--ink-2); text-shadow: none; }
 .hp-points { color: var(--ink); text-shadow: none; }
-.hp-pill { background: #fff; color: var(--brand-dark); border: 1px solid #CFE3F4; box-shadow: none; }
+.hp-pill { background: #fff; color: var(--brand-dark); border: 1px solid var(--brand-soft-2); box-shadow: none; }
 .hp-cta a.btn-white, .hp-cta .btn-white { background: var(--brand) !important; color: #fff !important; border: 0 !important; box-shadow: 0 4px 0 var(--brand-dark) !important; }
-.hp-cta .btn-white:hover { background: #4DB0F0 !important; }
-.hp-cta .btn-hero-ghost, .hp-cta button.btn-hero-ghost { background: #fff !important; color: var(--brand-dark) !important; border: 2px solid #CFE3F4 !important; box-shadow: 0 3px 0 #CFE3F4 !important; }
+.hp-cta .btn-white:hover { background: var(--brand-l) !important; }
+.hp-cta .btn-hero-ghost, .hp-cta button.btn-hero-ghost { background: #fff !important; color: var(--brand-dark) !important; border: 2px solid var(--brand-soft-2) !important; box-shadow: 0 3px 0 var(--brand-soft-2) !important; }
 .hp-card { box-shadow: 0 14px 28px -14px rgba(35,49,74,.45); }
 .hp-card:hover, .hp-card.is-tilting { box-shadow: 0 22px 34px -14px rgba(35,49,74,.5) !important; }
 .hp-sticker { background: #fff; color: var(--navy); box-shadow: 0 0 0 4px var(--yellow), 0 12px 20px -8px rgba(35,49,74,.4); }
@@ -3088,10 +3088,10 @@ a.lifestyle-video-placeholder:hover::before { transform: scale(1.1); }
 .pcard .price-sale { color: #E5232B; }
 
 /* hero: sunny cream-to-mint stage */
-.hp-stage { background: linear-gradient(135deg, #FFF3C4 0%, #FDF7E3 45%, #DDF7EC 100%) !important; border-bottom: 0; }
-.hp-pill { background: #fff; color: #138A6E; border-color: #BDEBDD; }
+.hp-stage { background: linear-gradient(135deg, var(--sun-soft) 0%, var(--sun-soft) 45%, var(--tint) 100%) !important; border-bottom: 0; }
+.hp-pill { background: #fff; color: var(--tint-ink); border-color: #BDEBDD; }
 .hp-points li::before { background: var(--orange); color: #fff; }
-.hero-play .trust .ti { background: #DDF7EC; color: #138A6E; }
+.hero-play .trust .ti { background: var(--tint); color: var(--tint-ink); }
 
 /* round category photos */
 .cat-circles { display: flex; gap: clamp(14px, 2.4vw, 34px); justify-content: center; flex-wrap: wrap; margin-top: 8px; }
@@ -3111,7 +3111,7 @@ a.lifestyle-video-placeholder:hover::before { transform: scale(1.1); }
 
 /* "Shop by little one" cards with cartoon children */
 .age-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-top: 22px; }
-.age-card { --bgc: #DDF7EC; --tt: #14996B; display: flex; flex-direction: column; border-radius: 30px; background: var(--bgc); text-decoration: none; color: var(--navy); overflow: hidden; box-shadow: 0 14px 24px -14px rgba(35,49,74,.4); transition: transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s; }
+.age-card { --bgc: var(--tint); --tt: #14996B; display: flex; flex-direction: column; border-radius: 30px; background: var(--bgc); text-decoration: none; color: var(--navy); overflow: hidden; box-shadow: 0 14px 24px -14px rgba(35,49,74,.4); transition: transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s; }
 .age-card:hover { transform: translateY(-8px) rotate(-.6deg); box-shadow: 0 22px 32px -14px rgba(35,49,74,.5); }
 .age-card-img { display: grid; place-items: end center; padding-top: 14px; aspect-ratio: 1 / .86; background: radial-gradient(circle at 50% 70%, rgba(255,255,255,.85) 0 38%, transparent 39%); }
 .age-card-img img { width: 82%; height: auto; max-height: 100%; object-fit: contain; transition: transform .3s; }
@@ -3134,7 +3134,7 @@ a.lifestyle-video-placeholder:hover::before { transform: scale(1.1); }
 .price-blurb { font-size: .88rem; color: var(--ink-2); min-height: 2.6em; }
 .price-card em { align-self: flex-start; margin-top: 10px; padding: 9px 16px; border-radius: 999px; background: #fff; color: var(--pc); font: 800 .85rem var(--body); font-style: normal; box-shadow: 0 3px 0 rgba(35,49,74,.12); }
 .price-card.tone-pink   { --pc: #E0457B; --pb: #FFE3EC; }
-.price-card.tone-green  { --pc: #14996B; --pb: #DDF7EC; }
+.price-card.tone-green  { --pc: #14996B; --pb: var(--tint); }
 .price-card.tone-orange { --pc: #E8590C; --pb: #FFEBD2; }
 @media (max-width: 900px) { .age-cards, .price-cards { grid-template-columns: repeat(2, 1fr); gap: 12px; } .price-card { padding-top: 58px; } }
 @media (max-width: 420px) { .age-card-body b { font-size: 1rem; } .age-card-body small { font-size: .7rem; } .age-go { width: 30px; height: 30px; } }
@@ -3142,9 +3142,9 @@ a.lifestyle-video-placeholder:hover::before { transform: scale(1.1); }
 /* sections tint mint instead of beige */
 .sec-alt, .sec-feat, .sec-row, .section-soft, .section-blue, .section-mint, .our-story-slim { background: var(--calm-cream) !important; }
 .sec-age { background: #fff !important; }
-.shop-banner { background: linear-gradient(135deg, #FFF3C4, #DDF7EC) !important; }
+.shop-banner { background: linear-gradient(135deg, var(--sun-soft), var(--tint)) !important; }
 .section-head h2::after, .section-title::after { background: var(--orange); }
-.wa-help-strip { background: #DDF7EC; }
+.wa-help-strip { background: var(--tint); }
 
 /* Add to cart now lives under the price on every card (desktop and phone) */
 .pcard-body { flex: 1; display: flex; flex-direction: column; }
@@ -3168,7 +3168,7 @@ a.lifestyle-video-placeholder:hover::before { transform: scale(1.1); }
 .review-cta { text-align: center; }
 .review-cta p { max-width: 34em; margin: 6px auto 16px; color: var(--ink-2); }
 .review-strip { background: #fff !important; padding: 34px 0; }
-.review-strip-inner { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; padding: 22px 26px; border-radius: 26px; background: #DDF7EC; }
+.review-strip-inner { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; padding: 22px 26px; border-radius: 26px; background: var(--tint); }
 @media (max-width: 640px) { .review-strip-inner { flex-direction: column; text-align: center; } }
 .review-strip-inner { box-sizing: border-box; width: calc(100% - 2 * var(--gutter)); max-width: calc(var(--wrap) - 56px); margin-inline: auto; padding-inline: 26px; }
 
@@ -3181,13 +3181,13 @@ a.lifestyle-video-placeholder:hover::before { transform: scale(1.1); }
    Frosted hero card with a big search box, floating glass chips, soft
    colour blobs behind, translucent header and panels.
    ===================================================================== */
-html { background: #F4FBF8; }
+html { background: var(--page-base); }
 body {
   background:
-    radial-gradient(900px 520px at 6% 2%, #CDF4E3 0, rgba(205,244,227,0) 62%),
-    radial-gradient(820px 620px at 98% 16%, #D3E7FF 0, rgba(211,231,255,0) 62%),
-    radial-gradient(900px 600px at 46% 100%, #FFF0C4 0, rgba(255,240,196,0) 62%),
-    #F4FBF8;
+    radial-gradient(900px 520px at 6% 2%, var(--page-a) 0, rgba(205,244,227,0) 62%),
+    radial-gradient(820px 620px at 98% 16%, var(--page-b) 0, rgba(211,231,255,0) 62%),
+    radial-gradient(900px 600px at 46% 100%, var(--page-c) 0, rgba(255,240,196,0) 62%),
+    var(--page-base);
   background-attachment: fixed;
 }
 
@@ -3205,9 +3205,9 @@ body {
 /* hero */
 .hero-glass { position: relative; overflow: hidden; padding: 16px 0 0; }
 .hg-blob { position: absolute; z-index: 0; border-radius: 50%; filter: blur(70px); pointer-events: none; }
-.hg-b1 { width: 460px; height: 460px; left: -120px; top: -80px; background: #8EE8C5; opacity: .65; }
-.hg-b2 { width: 520px; height: 520px; right: -140px; top: 20px; background: #9CCBFF; opacity: .6; }
-.hg-b3 { width: 420px; height: 300px; left: 38%; bottom: -60px; background: #FFE08A; opacity: .55; }
+.hg-b1 { width: 460px; height: 460px; left: -120px; top: -80px; background: var(--blob-a); opacity: .65; }
+.hg-b2 { width: 520px; height: 520px; right: -140px; top: 20px; background: var(--blob-b); opacity: .6; }
+.hg-b3 { width: 420px; height: 300px; left: 38%; bottom: -60px; background: var(--blob-c); opacity: .55; }
 .hg-card {
   position: relative; z-index: 1; display: grid; grid-template-columns: 1.05fr .95fr; gap: clamp(20px, 3vw, 44px); align-items: center;
   padding: clamp(22px, 3.4vw, 46px); border-radius: 38px;
@@ -3237,7 +3237,7 @@ body {
   background: rgba(255,255,255,.78); border: 1px solid rgba(255,255,255,.95); font: 800 .88rem var(--body); color: var(--navy); white-space: nowrap;
   -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); box-shadow: 0 18px 28px -14px rgba(35,49,74,.5);
 }
-.hg-chip i { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: #DDF7EC; color: #138A6E; font-style: normal; }
+.hg-chip i { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--tint); color: var(--tint-ink); font-style: normal; }
 .hg-c1 { left: -7%; top: 12%; }
 .hg-c2 { right: -5%; top: 40%; }
 .hg-c3 { left: 10%; bottom: -5%; }
@@ -3268,4 +3268,18 @@ body {
   .faq-see-all { min-height: 44px; }
   .mila-opt, .mila-chip { min-height: 36px; padding-top: 8px; padding-bottom: 8px; display: inline-flex; align-items: center; }
   .mila-x { min-width: 40px; min-height: 40px; }
+}
+
+
+/* =====================================================================
+   COLOUR THEME: change the whole site's colours from this one block.
+   Current theme: "Berry" (raspberry + lavender + deep plum).
+   ===================================================================== */
+:root {
+  --brand: #D6336C; --brand-dark: #A82455; --brand-l: #E64A82; --brand-soft: #FFE3EE; --brand-soft-2: #F4C2D6;
+  --orange: #D6336C; --orange-d: #A82455; --orange-l: #E64A82;
+  --navy: #2B1B4A; --ink: #2E2150; --ink-2: #6B6384;
+  --tint: #EFE5FF; --tint-ink: #6B3FC4; --calm-cream: #F7F1FF; --sun-soft: #FFF1C9;
+  --page-a: #F0E2FF; --page-b: #FFE0EC; --page-c: #FFF1C9; --page-base: #FBF7FF;
+  --blob-a: #D4B4FF; --blob-b: #FFB3D1; --blob-c: #FFE08A;
 }
